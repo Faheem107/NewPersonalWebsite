@@ -57,15 +57,15 @@ export default function CustomCursor() {
     }
 
     const handleMouseEnter = (e: MouseEvent) => {
-      const target = e.target as HTMLElement
-      if (target.closest('a, button, [role="button"], .cursor-pointer, .interactive')) {
+      const target = e.target
+      if (target instanceof Element && target.closest('a, button, [role="button"], .cursor-pointer, .interactive')) {
         setCursorVariant("highlight")
       }
     }
 
     const handleMouseLeave = (e: MouseEvent) => {
-      const target = e.target as HTMLElement
-      if (target.closest('a, button, [role="button"], .cursor-pointer, .interactive')) {
+      const target = e.target
+      if (target instanceof Element && target.closest('a, button, [role="button"], .cursor-pointer, .interactive')) {
         setCursorVariant("default")
       }
     }
