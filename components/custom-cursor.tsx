@@ -3,7 +3,8 @@
 import React, { useEffect, useRef, useState } from "react"
 import { motion, useMotionValue, useSpring } from "framer-motion"
 
-const DEFAULT_SIZE = 20
+const DEFAULT_SIZE = 12
+const HIGHLIGHT_SIZE = 32
 
 export default function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null)
@@ -17,9 +18,10 @@ export default function CustomCursor() {
     y: useMotionValue(0),
   }
   
+  // Very smooth spring settings for buttery cursor movement
   const springMouse = {
-    x: useSpring(mouse.x, { stiffness: 500, damping: 28, mass: 0.5 }),
-    y: useSpring(mouse.y, { stiffness: 500, damping: 28, mass: 0.5 }),
+    x: useSpring(mouse.x, { stiffness: 150, damping: 15, mass: 0.1 }),
+    y: useSpring(mouse.y, { stiffness: 150, damping: 15, mass: 0.1 }),
   }
   
   const scale = {
@@ -28,8 +30,8 @@ export default function CustomCursor() {
   }
   
   const scaleSpring = {
-    x: useSpring(scale.x, { stiffness: 800, damping: 20, mass: 1 }),
-    y: useSpring(scale.y, { stiffness: 800, damping: 20, mass: 1 }),
+    x: useSpring(scale.x, { stiffness: 300, damping: 20, mass: 0.5 }),
+    y: useSpring(scale.y, { stiffness: 300, damping: 20, mass: 0.5 }),
   }
 
   useEffect(() => {
@@ -47,8 +49,8 @@ export default function CustomCursor() {
     }
 
     const mouseTapStart = () => {
-      scale.x.set(0.8)
-      scale.y.set(0.8)
+      scale.x.set(0.85)
+      scale.y.set(0.85)
     }
 
     const mouseTapEnd = () => {
@@ -94,7 +96,7 @@ export default function CustomCursor() {
         size.current = { x: DEFAULT_SIZE, y: DEFAULT_SIZE }
         break
       case 'highlight':
-        size.current = { x: 60, y: 60 }
+        size.current = { x: HIGHLIGHT_SIZE, y: HIGHLIGHT_SIZE }
         break
       default:
         size.current = { x: DEFAULT_SIZE, y: DEFAULT_SIZE }
@@ -113,20 +115,20 @@ export default function CustomCursor() {
       opacity: 1,
       width: DEFAULT_SIZE,
       height: DEFAULT_SIZE,
-      transition: { duration: 0.15 },
+      transition: { duration: 0.2, ease: "easeOut" },
     },
     highlight: {
       opacity: 1,
-      width: 60,
-      height: 60,
-      transition: { duration: 0.15 },
+      width: HIGHLIGHT_SIZE,
+      height: HIGHLIGHT_SIZE,
+      transition: { duration: 0.2, ease: "easeOut" },
     },
   }
 
   return (
     <motion.div
       ref={cursorRef}
-      className="fixed top-0 left-0 pointer-events-none z-[9999] rounded-full border border-foreground/80 mix-blend-difference"
+      className="fixed top-0 left-0 pointer-events-none z-[9999] rounded-full border border-foreground/60 mix-blend-difference"
       variants={variants}
       initial="hidden"
       animate={cursorVariant}
