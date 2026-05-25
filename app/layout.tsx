@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 import { Analytics } from '@vercel/analytics/next'
+import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Mohammed Faheem - Bioengineering & Research',
-  description: 'Personal portfolio and creative space of Mohammed Faheem',
+  title: 'Faheem - Physics at NYU Abu Dhabi',
+  description: 'Personal portfolio of Faheem',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -31,9 +32,16 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="bg-background">
+    <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased">
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

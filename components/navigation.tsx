@@ -14,8 +14,8 @@ const NAV_ITEMS = [
 
 export default function Navigation() {
   return (
-    <nav className="fixed top-0 right-0 z-50 p-6 md:p-8">
-      <ul className="flex flex-wrap justify-end gap-4 md:gap-6">
+    <nav className="fixed top-0 left-0 right-0 z-40 p-6 md:p-8">
+      <ul className="flex flex-wrap justify-end gap-4 md:gap-6 mr-12">
         {NAV_ITEMS.map((item, index) => (
           <motion.li
             key={item.href}
