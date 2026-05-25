@@ -5,12 +5,18 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 import CustomCursor from "@/components/custom-cursor"
 import Navigation from "@/components/navigation"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function AboutPage() {
   return (
     <main className="min-h-screen bg-background">
       <CustomCursor />
       <Navigation />
+
+      {/* Theme Toggle */}
+      <div className="fixed top-6 right-6 z-50">
+        <ThemeToggle />
+      </div>
 
       <div className="max-w-3xl mx-auto px-8 py-24 md:py-32">
         {/* Header */}
@@ -24,10 +30,10 @@ export default function AboutPage() {
             href="/"
             className="text-sm font-mono text-muted-foreground hover:text-foreground transition-colors mb-8 inline-block interactive"
           >
-            &larr; back home
+            &larr; Back Home
           </Link>
-          <h1 className="text-4xl md:text-5xl font-sans font-light tracking-tight mb-4">
-            about
+          <h1 className="text-4xl md:text-5xl font-sans font-bold tracking-tight mb-4">
+            About
           </h1>
         </motion.div>
 
@@ -41,18 +47,19 @@ export default function AboutPage() {
           {/* Main Bio */}
           <div className="space-y-6 text-lg leading-relaxed text-muted-foreground">
             <p>
-              {"I'm"} Mohammed Faheem, a freshman studying Interactive Media at NYU Abu Dhabi. 
-              My work sits at the intersection of bioengineering, creative technology, and human experience.
+              {"I'm"} Mohammed Faheem, a student at NYU Abu Dhabi majoring in Physics 
+              with a minor in Film and New Media. My work explores the intersection of 
+              scientific inquiry and creative expression.
             </p>
             <p>
-              I believe in building things that matter - whether {"it's"} research that could improve 
-              healthcare accessibility or creative projects that explore how we connect with technology 
-              and each other.
+              I believe in building things that matter - whether {"it's"} research that pushes 
+              the boundaries of our understanding or creative projects that explore how we 
+              connect with the world around us.
             </p>
             <p>
-              When {"I'm"} not in the lab or coding, you can find me experimenting with photography, 
-              getting lost in philosophical discussions about consciousness and AI, or obsessing 
-              over the perfect cup of coffee.
+              When {"I'm"} not in the lab or working on films, you can find me experimenting 
+              with photography, getting lost in philosophical discussions about consciousness 
+              and the nature of reality, or obsessing over the perfect cup of coffee.
             </p>
           </div>
 
@@ -64,24 +71,24 @@ export default function AboutPage() {
             transition={{ delay: 0.5 }}
           >
             <h2 className="text-sm font-mono uppercase tracking-wider text-muted-foreground mb-6">
-              quick facts
+              Quick Facts
             </h2>
             <div className="grid grid-cols-2 gap-6 text-sm">
               <div>
-                <span className="text-muted-foreground">location</span>
-                <p className="font-medium mt-1">Abu Dhabi, UAE</p>
+                <span className="text-muted-foreground">Location</span>
+                <p className="font-bold mt-1">Abu Dhabi, UAE</p>
               </div>
               <div>
-                <span className="text-muted-foreground">studying</span>
-                <p className="font-medium mt-1">Interactive Media @ NYUAD</p>
+                <span className="text-muted-foreground">Studying</span>
+                <p className="font-bold mt-1">Physics (Major) @ NYUAD</p>
               </div>
               <div>
-                <span className="text-muted-foreground">interests</span>
-                <p className="font-medium mt-1">Bioengineering, AI, Philosophy</p>
+                <span className="text-muted-foreground">Minor</span>
+                <p className="font-bold mt-1">Film and New Media</p>
               </div>
               <div>
-                <span className="text-muted-foreground">currently reading</span>
-                <p className="font-medium mt-1">{"Gödel, Escher, Bach"}</p>
+                <span className="text-muted-foreground">Currently Reading</span>
+                <p className="font-bold mt-1">{"Gödel, Escher, Bach"}</p>
               </div>
             </div>
           </motion.div>
@@ -94,14 +101,14 @@ export default function AboutPage() {
             transition={{ delay: 0.6 }}
           >
             <h2 className="text-sm font-mono uppercase tracking-wider text-muted-foreground mb-6">
-              get in touch
+              Get In Touch
             </h2>
             <div className="flex flex-wrap gap-6">
               <a
                 href="mailto:hello@faheem.dev"
                 className="text-sm text-accent hover:text-foreground transition-colors interactive link-hover"
               >
-                email
+                Email
               </a>
               <a
                 href="https://instagram.com"
@@ -109,7 +116,7 @@ export default function AboutPage() {
                 rel="noopener noreferrer"
                 className="text-sm text-accent hover:text-foreground transition-colors interactive link-hover"
               >
-                instagram
+                Instagram
               </a>
               <a
                 href="https://linkedin.com"
@@ -117,7 +124,7 @@ export default function AboutPage() {
                 rel="noopener noreferrer"
                 className="text-sm text-accent hover:text-foreground transition-colors interactive link-hover"
               >
-                linkedin
+                LinkedIn
               </a>
               <a
                 href="https://github.com"
@@ -125,7 +132,7 @@ export default function AboutPage() {
                 rel="noopener noreferrer"
                 className="text-sm text-accent hover:text-foreground transition-colors interactive link-hover"
               >
-                github
+                GitHub
               </a>
             </div>
           </motion.div>
@@ -139,7 +146,7 @@ export default function AboutPage() {
           transition={{ delay: 0.8 }}
         >
           <p className="text-xs font-mono text-muted-foreground text-center">
-            this website is forever ongoing, and will be regularly updated with new work
+            This website is forever ongoing, and will be regularly updated with new work
           </p>
         </motion.div>
       </div>

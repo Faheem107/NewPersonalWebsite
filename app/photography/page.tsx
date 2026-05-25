@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import CustomCursor from "@/components/custom-cursor"
 import Navigation from "@/components/navigation"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 const GALLERY_ITEMS = [
   {
@@ -70,6 +71,11 @@ export default function PhotographyPage() {
       <CustomCursor />
       <Navigation />
 
+      {/* Theme Toggle */}
+      <div className="fixed top-6 right-6 z-50">
+        <ThemeToggle />
+      </div>
+
       <div className="max-w-6xl mx-auto px-8 py-24 md:py-32">
         {/* Header */}
         <motion.div
@@ -82,13 +88,13 @@ export default function PhotographyPage() {
             href="/"
             className="text-sm font-mono text-muted-foreground hover:text-foreground transition-colors mb-8 inline-block interactive"
           >
-            &larr; back home
+            &larr; Back Home
           </Link>
-          <h1 className="text-4xl md:text-5xl font-sans font-light tracking-tight mb-4">
-            photography & films
+          <h1 className="text-4xl md:text-5xl font-sans font-bold tracking-tight mb-4">
+            Photography & Films
           </h1>
-          <p className="text-lg text-muted-foreground font-light mb-8">
-            visual stories and experiments
+          <p className="text-lg text-muted-foreground mb-8">
+            Visual stories and experiments
           </p>
 
           {/* Filter */}
@@ -97,13 +103,13 @@ export default function PhotographyPage() {
               <button
                 key={filterOption}
                 onClick={() => setFilter(filterOption)}
-                className={`text-sm font-mono lowercase transition-all duration-300 interactive ${
+                className={`text-sm font-mono transition-all duration-300 interactive ${
                   filter === filterOption
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {filterOption}
+                {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
                 {filter === filterOption && (
                   <motion.div
                     className="h-px bg-foreground mt-1"
@@ -139,7 +145,7 @@ export default function PhotographyPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                  <p className="text-sm font-medium text-white">{item.title}</p>
+                  <p className="text-sm font-bold text-white">{item.title}</p>
                   <p className="text-xs text-white/70 font-mono">{item.type} - {item.year}</p>
                 </div>
               </motion.div>
@@ -171,7 +177,7 @@ export default function PhotographyPage() {
                 className="w-full h-auto rounded-lg"
               />
               <div className="mt-4 text-white">
-                <h2 className="text-xl font-sans font-medium">{selectedItem.title}</h2>
+                <h2 className="text-xl font-sans font-bold">{selectedItem.title}</h2>
                 <p className="text-sm text-white/70 font-mono mt-1">
                   {selectedItem.type} - {selectedItem.year}
                 </p>
@@ -181,7 +187,7 @@ export default function PhotographyPage() {
                 onClick={() => setSelectedItem(null)}
                 className="absolute -top-12 right-0 text-white/70 hover:text-white text-sm font-mono interactive"
               >
-                close [esc]
+                Close [esc]
               </button>
             </motion.div>
           </motion.div>

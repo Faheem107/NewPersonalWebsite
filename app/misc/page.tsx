@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 import CustomCursor from "@/components/custom-cursor"
 import Navigation from "@/components/navigation"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 const MISC_ITEMS = [
   {
@@ -45,6 +46,11 @@ export default function MiscPage() {
       <CustomCursor />
       <Navigation />
 
+      {/* Theme Toggle */}
+      <div className="fixed top-6 right-6 z-50">
+        <ThemeToggle />
+      </div>
+
       <div className="max-w-4xl mx-auto px-8 py-24 md:py-32">
         {/* Header */}
         <motion.div
@@ -57,13 +63,13 @@ export default function MiscPage() {
             href="/"
             className="text-sm font-mono text-muted-foreground hover:text-foreground transition-colors mb-8 inline-block interactive"
           >
-            &larr; back home
+            &larr; Back Home
           </Link>
-          <h1 className="text-4xl md:text-5xl font-sans font-light tracking-tight mb-4">
-            misc.
+          <h1 className="text-4xl md:text-5xl font-sans font-bold tracking-tight mb-4">
+            Misc.
           </h1>
-          <p className="text-lg text-muted-foreground font-light">
-            random things that bring me joy
+          <p className="text-lg text-muted-foreground">
+            Random things that bring me joy
           </p>
         </motion.div>
 
@@ -80,7 +86,7 @@ export default function MiscPage() {
               <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
                 {item.category}
               </span>
-              <h2 className="text-lg font-sans font-medium mt-2 mb-3 group-hover:text-foreground transition-colors">
+              <h2 className="text-lg font-sans font-bold mt-2 mb-3 group-hover:text-foreground transition-colors">
                 {item.title}
               </h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
@@ -98,7 +104,7 @@ export default function MiscPage() {
           transition={{ delay: 1 }}
         >
           <p className="text-sm text-muted-foreground font-mono italic">
-            (feat. my trusty tools)
+            (Feat. my trusty tools)
           </p>
         </motion.div>
       </div>

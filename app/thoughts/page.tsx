@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 import CustomCursor from "@/components/custom-cursor"
 import Navigation from "@/components/navigation"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 const THOUGHTS = [
   {
@@ -89,6 +90,11 @@ export default function ThoughtsPage() {
       <CustomCursor />
       <Navigation />
 
+      {/* Theme Toggle */}
+      <div className="fixed top-6 right-6 z-50">
+        <ThemeToggle />
+      </div>
+
       <div className="max-w-3xl mx-auto px-8 py-24 md:py-32">
         {/* Header */}
         <motion.div
@@ -101,13 +107,13 @@ export default function ThoughtsPage() {
             href="/"
             className="text-sm font-mono text-muted-foreground hover:text-foreground transition-colors mb-8 inline-block interactive"
           >
-            &larr; back home
+            &larr; Back Home
           </Link>
-          <h1 className="text-4xl md:text-5xl font-sans font-light tracking-tight mb-4">
-            some thoughts!
+          <h1 className="text-4xl md:text-5xl font-sans font-bold tracking-tight mb-4">
+            Some Thoughts!
           </h1>
-          <p className="text-lg text-muted-foreground font-light">
-            musings on physics, philosophy, and the general strangeness of being alive
+          <p className="text-lg text-muted-foreground">
+            Musings on physics, philosophy, and the general strangeness of being alive
           </p>
         </motion.div>
 
@@ -124,7 +130,7 @@ export default function ThoughtsPage() {
               <span className="text-sm font-mono text-muted-foreground">
                 {thought.date}
               </span>
-              <h2 className="text-xl md:text-2xl font-sans font-medium mt-2 mb-6">
+              <h2 className="text-xl md:text-2xl font-sans font-bold mt-2 mb-6">
                 {thought.title}
               </h2>
               <div className="prose prose-neutral dark:prose-invert max-w-none">
@@ -149,7 +155,7 @@ export default function ThoughtsPage() {
           transition={{ delay: 1 }}
         >
           <p className="text-sm font-mono text-muted-foreground italic">
-            more thoughts incoming... probably at 2am
+            More thoughts incoming... probably at 2am
           </p>
         </motion.div>
       </div>

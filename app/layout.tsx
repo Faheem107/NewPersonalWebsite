@@ -5,7 +5,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Faheem - Physics at NYU Abu Dhabi',
-  description: 'Personal portfolio of Faheem',
+  description: 'Personal portfolio of Faheem - Physics Major, Film and New Media Minor at NYU Abu Dhabi',
   generator: 'v0.app',
   icons: {
     icon: [

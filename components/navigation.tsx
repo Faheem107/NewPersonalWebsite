@@ -5,11 +5,11 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 
 const NAV_ITEMS = [
-  { label: "research", href: "/research" },
-  { label: "photography & films", href: "/photography" },
-  { label: "some thoughts!", href: "/thoughts" },
-  { label: "misc.", href: "/misc" },
-  { label: "about", href: "/about" },
+  { label: "Research", href: "/research" },
+  { label: "Photography & Films", href: "/photography" },
+  { label: "Some Thoughts!", href: "/thoughts" },
+  { label: "Misc.", href: "/misc" },
+  { label: "About", href: "/about" },
 ]
 
 export default function Navigation() {
@@ -25,7 +25,7 @@ export default function Navigation() {
           >
             <Link
               href={item.href}
-              className="text-sm font-sans lowercase tracking-wide text-foreground/80 hover:text-foreground transition-all duration-300 link-hover interactive"
+              className="text-sm font-sans font-bold tracking-wide text-foreground/80 hover:text-foreground transition-all duration-300 link-hover interactive"
             >
               {item.label}
             </Link>

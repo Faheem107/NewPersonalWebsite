@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import { motion } from "framer-motion"
 import CustomCursor from "@/components/custom-cursor"
 import Navigation from "@/components/navigation"
@@ -9,6 +9,9 @@ import TimeMachine from "@/components/time-machine"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function Home() {
+  const [isHoveringLeft, setIsHoveringLeft] = useState(false)
+  const [isHoveringRight, setIsHoveringRight] = useState(false)
+
   return (
     <main className="min-h-screen bg-background relative overflow-hidden">
       <CustomCursor />
@@ -19,61 +22,75 @@ export default function Home() {
         <ThemeToggle />
       </div>
 
-      {/* Background Infinite Scroll Images - Full opacity for landing */}
+      {/* Background Infinite Scroll Images - Full screen and interactive */}
       <div className="fixed inset-0 z-0">
         <TimeMachine />
       </div>
 
-      {/* Main Content Overlay */}
-      <div className="relative z-10 min-h-screen flex items-center">
+      {/* Main Content Overlay - pointer-events-none so scrolling works */}
+      <div className="relative z-10 min-h-screen flex items-center pointer-events-none">
         <div className="w-full flex flex-col md:flex-row items-center justify-between px-8 md:px-16 lg:px-24">
           
           {/* Left Side - Vinyl Player */}
           <motion.div
-            className="mb-8 md:mb-0"
+            className="mb-8 md:mb-0 pointer-events-auto"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
+            onMouseEnter={() => setIsHoveringLeft(true)}
+            onMouseLeave={() => setIsHoveringLeft(false)}
           >
-            <VinylPlayer />
+            <motion.div
+              animate={{ opacity: isHoveringLeft ? 1 : 0.15 }}
+              transition={{ duration: 0.3 }}
+            >
+              <VinylPlayer />
+            </motion.div>
           </motion.div>
 
           {/* Right Side - Name and Title */}
           <motion.div
-            className="text-right"
+            className="text-right pointer-events-auto"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
+            onMouseEnter={() => setIsHoveringRight(true)}
+            onMouseLeave={() => setIsHoveringRight(false)}
           >
-            <motion.h1
-              className="text-5xl md:text-7xl lg:text-8xl font-sans font-light tracking-tight text-foreground lowercase"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
+            <motion.div
+              animate={{ opacity: isHoveringRight ? 1 : 0.15 }}
+              transition={{ duration: 0.3 }}
             >
-              faheem
-            </motion.h1>
-            <motion.p
-              className="text-lg md:text-xl font-sans font-light text-muted-foreground mt-2"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-            >
-              Physics at NYU Abu Dhabi
-            </motion.p>
+              <motion.h1
+                className="text-5xl md:text-7xl lg:text-8xl font-sans font-bold tracking-tight text-foreground"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                Faheem
+              </motion.h1>
+              <motion.p
+                className="text-lg md:text-xl font-sans font-bold text-muted-foreground mt-2"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                Physics at NYU Abu Dhabi
+              </motion.p>
+            </motion.div>
           </motion.div>
         </div>
       </div>
 
       {/* Decorative Elements */}
       <motion.div
-        className="fixed bottom-8 left-8 z-20"
+        className="fixed bottom-8 left-8 z-20 pointer-events-none"
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        animate={{ opacity: 0.5 }}
         transition={{ delay: 1 }}
       >
         <p className="text-xs font-mono text-muted-foreground">
-          last updated: may 2026
+          Last Updated: May 2026
         </p>
       </motion.div>
     </main>
