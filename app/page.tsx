@@ -2,14 +2,12 @@
 
 import React, { useState } from "react"
 import { motion } from "framer-motion"
-import Image from "next/image"
 import CustomCursor from "@/components/custom-cursor"
 import Navigation from "@/components/navigation"
 import TimeMachine from "@/components/time-machine"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function Home() {
-  const [isHoveringLeft, setIsHoveringLeft] = useState(false)
   const [isHoveringRight, setIsHoveringRight] = useState(false)
 
   return (
@@ -29,32 +27,7 @@ export default function Home() {
 
       {/* Main Content Overlay - pointer-events-none so scrolling works */}
       <div className="relative z-10 min-h-screen flex items-center pointer-events-none">
-        <div className="w-full flex flex-col md:flex-row items-center justify-between px-8 md:px-16 lg:px-24">
-          
-          {/* Left Side - Pixel Art Turntable */}
-          <motion.div
-            className="mb-8 md:mb-0 pointer-events-auto"
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            onMouseEnter={() => setIsHoveringLeft(true)}
-            onMouseLeave={() => setIsHoveringLeft(false)}
-          >
-            <motion.div
-              animate={{ opacity: isHoveringLeft ? 1 : 0.15 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              className="interactive"
-            >
-              <Image
-                src="/images/vinyl-turntable.png"
-                alt="Pixel art turntable"
-                width={200}
-                height={200}
-                className="w-32 h-32 md:w-48 md:h-48 object-contain"
-                style={{ imageRendering: "pixelated" }}
-              />
-            </motion.div>
-          </motion.div>
+        <div className="w-full flex items-center justify-end px-8 md:px-16 lg:px-24">
 
           {/* Right Side - Name and Title */}
           <motion.div

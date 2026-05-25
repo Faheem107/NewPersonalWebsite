@@ -70,29 +70,6 @@ const MOVIES = [
   }
 ]
 
-const MISC_ITEMS = [
-  {
-    title: "My iPad Setup",
-    description: "A collection of apps, workflows, and accessories that make my iPad the perfect creative companion.",
-    category: "tools"
-  },
-  {
-    title: "Keyboard Builds",
-    description: "My journey into mechanical keyboards. Currently typing on a custom 65% with lubed switches.",
-    category: "hobbies"
-  },
-  {
-    title: "Favorite Fonts",
-    description: "A curated collection of typefaces I keep coming back to. From Helvetica to Space Grotesk.",
-    category: "design"
-  },
-  {
-    title: "Coffee Notes",
-    description: "Tracking my coffee journey through different beans and brewing methods.",
-    category: "food"
-  }
-]
-
 export default function MiscPage() {
   const [showBooks, setShowBooks] = useState(false)
   const [showMovies, setShowMovies] = useState(false)
@@ -285,42 +262,12 @@ export default function MiscPage() {
           )}
         </AnimatePresence>
 
-        {/* Miscellaneous Grid */}
-        <motion.section
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
-        >
-          <h2 className="text-2xl font-sans font-bold mb-8">other things</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {MISC_ITEMS.map((item, index) => (
-              <motion.article
-                key={item.title}
-                className="border border-border rounded-lg p-6 hover:border-foreground/30 transition-colors duration-300 interactive group"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 + 0.5, duration: 0.4, ease: "easeOut" }}
-              >
-                <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
-                  {item.category}
-                </span>
-                <h3 className="text-lg font-sans font-bold mt-2 mb-3 group-hover:text-foreground transition-colors duration-300">
-                  {item.title}
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {item.description}
-                </p>
-              </motion.article>
-            ))}
-          </div>
-        </motion.section>
-
         {/* Footer */}
         <motion.div
           className="mt-16 text-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.6 }}
+          transition={{ delay: 0.6, duration: 0.6 }}
         >
           <p className="text-sm text-muted-foreground font-mono italic">
             (feat. my trusty tools)
