@@ -117,7 +117,7 @@ export function TorusShader() {
   return (
     <points ref={pointsRef} onPointerMove={handlePointerMove}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions as Float32Array} itemSize={3} />
+        <bufferAttribute attach="attributes-position" args={[positions as Float32Array, 3]} count={count} itemSize={3} />
       </bufferGeometry>
       <primitive object={shaderMaterial} ref={materialRef} attach="material" />
     </points>
