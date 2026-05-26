@@ -61,8 +61,9 @@ const MOVIES = [
   { title: "Chungking Express", director: "Wong Kar-wai", year: "1994" },
 ]
 
-export default function CircularMenu() {
-  const [isExpanded, setIsExpanded] = useState(false)
+export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolean }) {
+  const [hovered, setHovered] = useState(false)
+  const isExpanded = hovered || forceOpen
   const [activeItem, setActiveItem] = useState<string | null>(null)
   const [showModal, setShowModal] = useState<"vinyl" | "books" | "movies" | null>(null)
   const [angle, setAngle] = useState(0)
@@ -135,8 +136,8 @@ export default function CircularMenu() {
       <div
         className="relative flex items-center justify-center"
         style={{ width: 240, height: 240 }}
-        onMouseEnter={() => setIsExpanded(true)}
-        onMouseLeave={() => { setIsExpanded(false); setActiveItem(null) }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => { setHovered(false); setActiveItem(null) }}
       >
         {/* WebGL torus shader center */}
         <motion.div
@@ -150,7 +151,7 @@ export default function CircularMenu() {
             gl={{ antialias: true, alpha: true }}
             style={{ background: "transparent", width: "100%", height: "100%" }}
           >
-            <TorusShader />
+            <TorusShader explode={isExpanded} />
           </Canvas>
         </motion.div>
 

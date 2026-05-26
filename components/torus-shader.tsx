@@ -2,13 +2,16 @@
 
 import { useRef, useMemo, useState } from "react"
 import { useFrame, useThree } from "@react-three/fiber"
+import { useTheme } from "next-themes"
 import * as THREE from "three"
 
-export function TorusShader() {
+export function TorusShader({ explode = false }: { explode?: boolean }) {
   const pointsRef = useRef<THREE.Points>(null)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
   const [mouse3D, setMouse3D] = useState(new THREE.Vector3(0, 0, -10))
   const { camera } = useThree()
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark"
 
   const { positions, count } = useMemo(() => {
     const torusGeometry = new THREE.TorusGeometry(1.5, 0.6, 128, 256)
@@ -17,6 +20,9 @@ export function TorusShader() {
     return { positions, count }
   }, [])
 
+  // Particle base color: white on dark, near-black on light
+  const baseColor = isDark ? [1.0, 1.0, 1.0] : [0.08, 0.08, 0.08]
+
   const shaderMaterial = useMemo(
     () =>
       new THREE.ShaderMaterial({
@@ -24,17 +30,32 @@ export function TorusShader() {
           uTime: { value: 0 },
           uMouse: { value: new THREE.Vector3(0, 0, -10) },
           uMagnetStrength: { value: 0.9 },
+          uExplode: { value: 0.0 },
+          uBaseColor: { value: new THREE.Vector3(0.08, 0.08, 0.08) },
         },
         vertexShader: `
           uniform float uTime;
           uniform vec3 uMouse;
           uniform float uMagnetStrength;
+          uniform float uExplode;
           varying float vDistanceFromCenter;
           varying float vMouseInfluence;
           varying vec3 vWorldPosition;
           varying vec3 vNormal;
           void main() {
             vec3 pos = position;
+
+            // Organic noise-driven drift
+            float noiseX = sin(pos.x * 1.3 + uTime * 0.4) * cos(pos.y * 0.9 + uTime * 0.3) * 0.06;
+            float noiseY = cos(pos.z * 1.1 + uTime * 0.35) * sin(pos.x * 0.8 + uTime * 0.45) * 0.06;
+            pos += vec3(noiseX, noiseY, 0.0);
+
+            // Explode outward
+            if (uExplode > 0.0) {
+              float len = length(pos);
+              pos += normalize(pos) * uExplode * 2.5;
+            }
+
             float radius = 1.5;
             float tubeRadius = 0.6;
             vec2 center = normalize(pos.xy) * radius;
@@ -60,30 +81,18 @@ export function TorusShader() {
         `,
         fragmentShader: `
           uniform float uTime;
+          uniform vec3 uBaseColor;
           varying float vDistanceFromCenter;
           varying float vMouseInfluence;
-          varying vec3 vWorldPosition;
-          varying vec3 vNormal;
-          vec3 getIridescentColor(vec3 worldPos, vec3 normal, float time) {
-            float angle = atan(worldPos.y, worldPos.x);
-            float height = worldPos.z;
-            float colorShift = angle * 0.5 + height * 0.3 + time * 0.1;
-            vec3 color1 = vec3(0.6, 0.8, 1.0);
-            vec3 color2 = vec3(0.8, 0.6, 1.0);
-            vec3 color3 = vec3(1.0, 0.7, 0.8);
-            vec3 iridescent = mix(color1, color2, sin(colorShift) * 0.5 + 0.5);
-            iridescent = mix(iridescent, color3, cos(colorShift * 1.3) * 0.5 + 0.5);
-            return iridescent;
-          }
           void main() {
             vec2 center = gl_PointCoord - 0.5;
             float dist = length(center);
             if (dist > 0.5) discard;
             float alpha = smoothstep(0.0, 0.8, vDistanceFromCenter);
             alpha = mix(alpha, 1.0, vMouseInfluence * 0.8);
-            vec3 iridescent = getIridescentColor(vWorldPosition, vNormal, uTime);
-            vec3 finalColor = mix(vec3(1.0), iridescent, 0.15);
-            gl_FragColor = vec4(finalColor, alpha);
+            // Subtle iridescent tint on hover, otherwise pure base color
+            vec3 tint = mix(uBaseColor, vec3(0.6, 0.8, 1.0), vMouseInfluence * 0.25);
+            gl_FragColor = vec4(tint, alpha);
           }
         `,
         transparent: true,
@@ -92,6 +101,12 @@ export function TorusShader() {
       }),
     [],
   )
+
+  // Keep uniforms synced to theme changes and explode prop without recreating material
+  if (materialRef.current) {
+    materialRef.current.uniforms.uBaseColor.value.set(...(baseColor as [number, number, number]))
+    materialRef.current.uniforms.uExplode.value = explode ? 1.0 : 0.0
+  }
 
   const handlePointerMove = (event: { pointer: THREE.Vector2 }) => {
     if (!pointsRef.current) return
@@ -107,10 +122,12 @@ export function TorusShader() {
 
   useFrame((state) => {
     if (pointsRef.current && materialRef.current) {
-      pointsRef.current.rotation.y += 0.005
-      pointsRef.current.rotation.x += 0.002
+      // Organic gentle rotation
+      pointsRef.current.rotation.y += 0.003 + Math.sin(state.clock.elapsedTime * 0.2) * 0.001
+      pointsRef.current.rotation.x += 0.0015 + Math.cos(state.clock.elapsedTime * 0.15) * 0.0008
       materialRef.current.uniforms.uTime.value = state.clock.elapsedTime
       materialRef.current.uniforms.uMouse.value.copy(mouse3D)
+      materialRef.current.uniforms.uBaseColor.value.set(...(baseColor as [number, number, number]))
     }
   })
 

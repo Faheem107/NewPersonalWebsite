@@ -7,36 +7,31 @@ import CustomCursor from "@/components/custom-cursor"
 import Navigation from "@/components/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 
-const NOTES = [
+const NOTES: { id: string; title: string; description: string }[] = [
   {
     id: "statistical-mechanics",
     title: "Statistical Mechanics",
     description: "The bridge between microscopic physics and macroscopic thermodynamics",
-    topics: ["Microstates & Macrostates", "Boltzmann Distribution", "Partition Functions", "Quantum Statistics"],
   },
   {
     id: "thermodynamics",
     title: "Thermodynamics",
     description: "The laws governing energy, entropy, and the arrow of time",
-    topics: ["Laws of Thermodynamics", "Entropy & Free Energy", "Phase Transitions", "Heat Engines"],
   },
   {
     id: "electromagnetism",
     title: "Electromagnetism & Special Relativity",
     description: "Maxwell's equations and the geometry of spacetime",
-    topics: ["Maxwell's Equations", "Electromagnetic Waves", "Lorentz Transformations", "Relativistic Dynamics"],
   },
   {
     id: "differential-equations",
     title: "Differential Equations",
     description: "The language of change and dynamical systems",
-    topics: ["ODEs & PDEs", "Boundary Value Problems", "Green's Functions", "Eigenvalue Problems"],
   },
   {
     id: "linear-algebra",
     title: "Linear Algebra",
     description: "Vector spaces, operators, and the mathematics of quantum mechanics",
-    topics: ["Vector Spaces", "Linear Transformations", "Eigenvalues & Eigenvectors", "Inner Product Spaces"],
   },
 ]
 
@@ -84,13 +79,6 @@ export default function NotesPage() {
                       <p className="text-sm text-muted-foreground leading-relaxed">
                         {note.description}
                       </p>
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {note.topics.map((t) => (
-                          <span key={t} className="text-xs text-muted-foreground/60 font-sans">
-                            {t}
-                          </span>
-                        ))}
-                      </div>
                     </div>
                     <span className="text-muted-foreground/30 group-hover:text-foreground/60 group-hover:translate-x-1 transition-all duration-200 mt-0.5 text-lg flex-shrink-0">
                       →
@@ -102,14 +90,6 @@ export default function NotesPage() {
           ))}
         </div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-          className="mt-16 text-xs text-muted-foreground/40 italic"
-        >
-          These notes emphasise clarity and mathematical rigour over completeness.
-        </motion.p>
       </div>
     </main>
   )
