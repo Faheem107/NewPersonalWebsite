@@ -1,70 +1,53 @@
 "use client"
 
-import React, { useRef, useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import Link from "next/link"
 
-// ASCII Art representations
-const VINYL_ASCII = `
-    ╭──────────╮
-   ╱  ╭────╮   ╲
-  │  ╱ ╭──╮ ╲   │
-  │ │  │▪▪│  │  │
-  │  ╲ ╰──╯ ╱   │
-   ╲  ╰────╯   ╱
-    ╰──────────╯
-`
+// ASCII Art icons - minimal and clean
+const VINYL_ASCII = `  ╭───────╮
+ ╱ ╭───╮ ╲
+│ │ ● │ │
+ ╲ ╰───╯ ╱
+  ╰───────╯`
 
-const BOOK_ASCII = `
-   ┌─────────┐
-   │ ═══════ │
-   │ ─────── │
-   │ ═══════ │
-   │ ─────── │
-   │ ═══════ │
-   └─────────┘
-`
+const BOOK_ASCII = `  ┌─────┐
+  │░░░░░│
+  │─────│
+  │░░░░░│
+  └─────┘`
 
-const LAPIS_ASCII = `
-      ◆
-     ╱ ╲
-    ╱   ╲
-   ╱  ◇  ╲
-   ╲     ╱
-    ╲   ╱
-     ╲ ╱
-      ◆
-`
+const GEM_ASCII = `    ◆
+   ╱ ╲
+  ╱   ╲
+  ╲   ╱
+   ╲ ╱
+    ◆`
 
-const INSTAGRAM_ASCII = `
-   ┌───────┐
-   │ ┌───┐ │
-   │ │ ◉ │ │
-   │ └───┘ │
-   └───────┘
-`
+const INSTA_ASCII = `  ┌─────┐
+  │┌───┐│
+  ││ ○ ││
+  │└───┘│
+  └─────┘`
 
-const LINKEDIN_ASCII = `
-   ┌───────┐
-   │ in    │
-   │ ───── │
-   │ ───── │
-   └───────┘
-`
+const LINKEDIN_ASCII = `  ┌─────┐
+  │ in  │
+  │ ─── │
+  │ ─── │
+  └─────┘`
 
-interface MenuItemData {
+interface MenuItem {
   id: string
   label: string
   ascii: string
   href?: string
-  action?: () => void
+  modalType?: "vinyl" | "books" | "movies"
 }
 
-const MENU_ITEMS: MenuItemData[] = [
-  { id: "vinyl", label: "Music", ascii: VINYL_ASCII, action: () => {} },
-  { id: "books", label: "Books", ascii: BOOK_ASCII, action: () => {} },
-  { id: "movies", label: "Movies", ascii: LAPIS_ASCII, action: () => {} },
-  { id: "instagram", label: "Instagram", ascii: INSTAGRAM_ASCII, href: "https://www.instagram.com/faheemmmm._" },
+const MENU_ITEMS: MenuItem[] = [
+  { id: "vinyl", label: "Music", ascii: VINYL_ASCII, modalType: "vinyl" },
+  { id: "books", label: "Books", ascii: BOOK_ASCII, modalType: "books" },
+  { id: "movies", label: "Movies", ascii: GEM_ASCII, modalType: "movies" },
+  { id: "instagram", label: "Instagram", ascii: INSTA_ASCII, href: "https://www.instagram.com/faheemmmm._" },
   { id: "linkedin", label: "LinkedIn", ascii: LINKEDIN_ASCII, href: "https://www.linkedin.com/in/mohammed-faheem-33bb49295/" },
 ]
 
@@ -95,16 +78,25 @@ const MOVIES = [
 export default function CircularMenu() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [activeItem, setActiveItem] = useState<string | null>(null)
-  const [showModal, setShowModal] = useState<string | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [showModal, setShowModal] = useState<"vinyl" | "books" | "movies" | null>(null)
+  const [rotation, setRotation] = useState(0)
 
-  const handleItemClick = (item: MenuItemData) => {
+  // Slow continuous rotation when expanded
+  useEffect(() => {
+    if (!isExpanded) return
+    const interval = setInterval(() => {
+      setRotation(r => r + 0.3)
+    }, 50)
+    return () => clearInterval(interval)
+  }, [isExpanded])
+
+  const handleItemClick = useCallback((item: MenuItem) => {
     if (item.href) {
       window.open(item.href, "_blank", "noopener,noreferrer")
-    } else if (item.id === "vinyl" || item.id === "books" || item.id === "movies") {
-      setShowModal(item.id)
+    } else if (item.modalType) {
+      setShowModal(item.modalType)
     }
-  }
+  }, [])
 
   // Close modal on escape
   useEffect(() => {
@@ -115,90 +107,100 @@ export default function CircularMenu() {
     return () => window.removeEventListener("keydown", handleEsc)
   }, [])
 
-  const radius = isExpanded ? 100 : 0
+  const baseRadius = 80
+  const expandedRadius = isExpanded ? baseRadius : 0
   const angleStep = (2 * Math.PI) / MENU_ITEMS.length
 
   return (
     <>
       <div
-        ref={containerRef}
-        className="relative"
+        className="relative w-48 h-48 flex items-center justify-center"
         onMouseEnter={() => setIsExpanded(true)}
         onMouseLeave={() => {
           setIsExpanded(false)
           setActiveItem(null)
         }}
       >
-        {/* Center dot */}
+        {/* Center ASCII torus/donut */}
         <motion.div
-          className="w-4 h-4 rounded-full bg-foreground/30 cursor-pointer interactive"
+          className="absolute cursor-pointer interactive select-none"
           animate={{
-            scale: isExpanded ? 1.5 : 1,
-            backgroundColor: isExpanded ? "var(--foreground)" : "rgba(var(--foreground), 0.3)",
+            scale: isExpanded ? 0.8 : 1,
+            opacity: isExpanded ? 0.5 : 1,
           }}
           transition={{ duration: 0.3, ease: "easeOut" }}
-        />
+        >
+          <pre
+            className="text-[8px] leading-[8px] font-mono text-foreground whitespace-pre"
+            style={{ fontFamily: "monospace" }}
+          >
+{`      ●●●●●
+    ●●     ●●
+   ●  ●●●●●  ●
+  ●  ●     ●  ●
+  ● ●   ●   ● ●
+  ●  ●     ●  ●
+   ●  ●●●●●  ●
+    ●●     ●●
+      ●●●●●`}
+          </pre>
+        </motion.div>
 
-        {/* Orbital items */}
+        {/* Orbital ASCII items */}
         <AnimatePresence>
-          {isExpanded && (
-            <>
-              {MENU_ITEMS.map((item, index) => {
-                const angle = angleStep * index - Math.PI / 2 // Start from top
-                const x = Math.cos(angle) * radius
-                const y = Math.sin(angle) * radius
+          {isExpanded && MENU_ITEMS.map((item, index) => {
+            const angle = angleStep * index - Math.PI / 2 + (rotation * Math.PI / 180)
+            const x = Math.cos(angle) * expandedRadius
+            const y = Math.sin(angle) * expandedRadius
 
-                return (
-                  <motion.div
-                    key={item.id}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer interactive"
-                    initial={{ x: 0, y: 0, opacity: 0, scale: 0 }}
-                    animate={{ x, y, opacity: 1, scale: 1 }}
-                    exit={{ x: 0, y: 0, opacity: 0, scale: 0 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 200,
-                      damping: 20,
-                      delay: index * 0.05,
-                    }}
-                    onMouseEnter={() => setActiveItem(item.id)}
-                    onMouseLeave={() => setActiveItem(null)}
-                    onClick={() => handleItemClick(item)}
-                  >
-                    <motion.div
-                      className="flex items-center justify-center"
-                      animate={{
-                        scale: activeItem === item.id ? 1.3 : 1,
-                      }}
-                      transition={{ duration: 0.2 }}
+            return (
+              <motion.div
+                key={item.id}
+                className="absolute cursor-pointer interactive"
+                initial={{ x: 0, y: 0, opacity: 0, scale: 0 }}
+                animate={{ 
+                  x, 
+                  y, 
+                  opacity: 1, 
+                  scale: activeItem === item.id ? 1.2 : 1 
+                }}
+                exit={{ x: 0, y: 0, opacity: 0, scale: 0 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 260,
+                  damping: 20,
+                  delay: index * 0.04,
+                }}
+                onMouseEnter={() => setActiveItem(item.id)}
+                onMouseLeave={() => setActiveItem(null)}
+                onClick={() => handleItemClick(item)}
+              >
+                <pre
+                  className={`text-[5px] leading-[5px] font-mono whitespace-pre transition-colors duration-200 ${
+                    activeItem === item.id ? 'text-foreground' : 'text-foreground/60'
+                  }`}
+                  style={{ fontFamily: "monospace" }}
+                >
+                  {item.ascii}
+                </pre>
+
+                {/* Label */}
+                <AnimatePresence>
+                  {activeItem === item.id && (
+                    <motion.span
+                      className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[9px] font-sans font-bold text-foreground/80 whitespace-nowrap"
+                      initial={{ opacity: 0, y: -3 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -3 }}
+                      transition={{ duration: 0.15 }}
                     >
-                      <pre
-                        className="text-[6px] leading-[6px] font-mono text-foreground/70 hover:text-foreground transition-colors whitespace-pre select-none"
-                        style={{ fontFamily: "monospace" }}
-                      >
-                        {item.ascii}
-                      </pre>
-                    </motion.div>
-
-                    {/* Label on hover */}
-                    <AnimatePresence>
-                      {activeItem === item.id && (
-                        <motion.span
-                          className="absolute top-full left-1/2 -translate-x-1/2 mt-1 text-[10px] font-sans text-foreground/60 whitespace-nowrap"
-                          initial={{ opacity: 0, y: -5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -5 }}
-                          transition={{ duration: 0.15 }}
-                        >
-                          {item.label}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                )
-              })}
-            </>
-          )}
+                      {item.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )
+          })}
         </AnimatePresence>
       </div>
 
@@ -206,80 +208,89 @@ export default function CircularMenu() {
       <AnimatePresence>
         {showModal && (
           <motion.div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={() => setShowModal(null)}
           >
             <motion.div
-              className="bg-background border border-border rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl"
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-background/95 border border-border/50 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl backdrop-blur-xl"
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
               onClick={(e) => e.stopPropagation()}
-              style={{ fontFamily: "'MS Sans Serif', 'Segoe UI', Tahoma, sans-serif" }}
             >
               {/* Modal Header */}
-              <div className="flex items-center justify-between mb-4 pb-2 border-b border-border">
-                <h3 className="text-sm font-bold">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/30">
+                <h3 className="text-sm font-sans font-bold tracking-tight">
                   {showModal === "vinyl" && "What Faheem is listening to"}
                   {showModal === "books" && "Recent Reads"}
                   {showModal === "movies" && "Favorite Films"}
                 </h3>
                 <button
                   onClick={() => setShowModal(null)}
-                  className="text-muted-foreground hover:text-foreground transition-colors interactive"
+                  className="text-muted-foreground hover:text-foreground transition-colors interactive text-lg leading-none"
                 >
                   x
                 </button>
               </div>
 
               {/* Modal Content */}
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {showModal === "vinyl" &&
                   SONGS.map((song, i) => (
-                    <div
+                    <motion.div
                       key={i}
-                      className="flex items-center gap-3 p-2 hover:bg-muted/50 rounded transition-colors"
+                      className="flex items-center gap-3 p-2.5 hover:bg-muted/30 rounded-lg transition-colors"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
                     >
-                      <span className="text-xs text-muted-foreground w-4">{i + 1}.</span>
+                      <span className="text-xs text-muted-foreground/60 w-4 font-mono">{i + 1}</span>
                       <div>
-                        <p className="text-sm font-medium">{song.title}</p>
+                        <p className="text-sm font-sans font-bold">{song.title}</p>
                         <p className="text-xs text-muted-foreground">{song.artist}</p>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
 
                 {showModal === "books" &&
                   BOOKS.map((book, i) => (
-                    <div
+                    <motion.div
                       key={i}
-                      className="flex items-center gap-3 p-2 hover:bg-muted/50 rounded transition-colors"
+                      className="flex items-center gap-3 p-2.5 hover:bg-muted/30 rounded-lg transition-colors"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
                     >
-                      <span className="text-xs text-muted-foreground w-4">{i + 1}.</span>
+                      <span className="text-xs text-muted-foreground/60 w-4 font-mono">{i + 1}</span>
                       <div>
-                        <p className="text-sm font-medium">{book.title}</p>
+                        <p className="text-sm font-sans font-bold">{book.title}</p>
                         <p className="text-xs text-muted-foreground">{book.author}</p>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
 
                 {showModal === "movies" &&
                   MOVIES.map((movie, i) => (
-                    <div
+                    <motion.div
                       key={i}
-                      className="flex items-center gap-3 p-2 hover:bg-muted/50 rounded transition-colors"
+                      className="flex items-center gap-3 p-2.5 hover:bg-muted/30 rounded-lg transition-colors"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
                     >
-                      <span className="text-xs text-muted-foreground w-4">{i + 1}.</span>
+                      <span className="text-xs text-muted-foreground/60 w-4 font-mono">{i + 1}</span>
                       <div>
-                        <p className="text-sm font-medium">{movie.title}</p>
+                        <p className="text-sm font-sans font-bold">{movie.title}</p>
                         <p className="text-xs text-muted-foreground">
                           {movie.director} ({movie.year})
                         </p>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
               </div>
             </motion.div>

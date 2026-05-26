@@ -1,14 +1,21 @@
 "use client"
 
 import React, { useEffect, useState, useRef } from "react"
+import { useTheme } from "next-themes"
 
 export default function CustomCursor() {
   const [isHovering, setIsHovering] = useState(false)
   const [isTouchDevice, setIsTouchDevice] = useState(false)
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
   const cursorRef = useRef<HTMLDivElement>(null)
   const positionRef = useRef({ x: 0, y: 0 })
   const targetRef = useRef({ x: 0, y: 0 })
   const animationRef = useRef<number>()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const checkTouch = () => {
@@ -18,13 +25,14 @@ export default function CustomCursor() {
     
     if (isTouchDevice) return
 
-    // Smooth lerp animation
+    // Smooth lerp animation with very smooth interpolation
     const lerp = (start: number, end: number, factor: number) => {
       return start + (end - start) * factor
     }
 
     const animate = () => {
-      const smoothFactor = 0.15 // Lower = smoother, higher = snappier
+      // Very smooth factor for natural movement
+      const smoothFactor = 0.12
       
       positionRef.current.x = lerp(positionRef.current.x, targetRef.current.x, smoothFactor)
       positionRef.current.y = lerp(positionRef.current.y, targetRef.current.y, smoothFactor)
@@ -72,15 +80,20 @@ export default function CustomCursor() {
     }
   }, [isTouchDevice])
 
-  if (isTouchDevice) return null
+  if (isTouchDevice || !mounted) return null
+
+  // Black cursor in light mode, white cursor in dark mode
+  const cursorColor = resolvedTheme === 'dark' ? 'white' : 'black'
 
   return (
     <div
       ref={cursorRef}
-      className="fixed top-0 left-0 pointer-events-none z-[9999] rounded-full bg-foreground mix-blend-difference transition-[width,height] duration-200 ease-out"
+      className="fixed top-0 left-0 pointer-events-none z-[9999] rounded-full transition-[width,height] duration-200 ease-out"
       style={{
-        width: isHovering ? 32 : 10,
-        height: isHovering ? 32 : 10,
+        width: isHovering ? 28 : 8,
+        height: isHovering ? 28 : 8,
+        backgroundColor: cursorColor,
+        mixBlendMode: 'difference',
       }}
     />
   )

@@ -70,7 +70,7 @@ export default function Home() {
                 Faheem
               </motion.h1>
               <motion.p
-                className="text-lg md:text-xl font-sans font-bold text-muted-foreground mt-2"
+                className="text-lg md:text-xl font-sans font-bold text-foreground/70 mt-2"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}

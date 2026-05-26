@@ -9,6 +9,38 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import "katex/dist/katex.min.css"
 import { BlockMath, InlineMath } from "react-katex"
 
+// ASCII diagram component
+function ASCIIDiagram({ children, caption }: { children: string; caption?: string }) {
+  return (
+    <div className="my-8 p-6 bg-foreground/[0.02] border border-border/40 rounded-xl backdrop-blur-sm">
+      <pre className="text-[10px] md:text-xs leading-tight font-mono text-foreground/70 overflow-x-auto whitespace-pre">
+        {children}
+      </pre>
+      {caption && (
+        <p className="text-xs text-muted-foreground/60 text-center mt-4 italic">{caption}</p>
+      )}
+    </div>
+  )
+}
+
+// Equation box component
+function EquationBox({ label, children }: { label?: string; children: React.ReactNode }) {
+  return (
+    <motion.div 
+      className="my-6 p-5 bg-gradient-to-br from-foreground/[0.03] to-transparent border border-border/30 rounded-xl backdrop-blur-sm"
+      whileHover={{ scale: 1.01 }}
+      transition={{ duration: 0.2 }}
+    >
+      {label && (
+        <p className="text-xs font-sans font-bold text-muted-foreground/60 uppercase tracking-wider mb-3">{label}</p>
+      )}
+      <div className="text-center overflow-x-auto">
+        {children}
+      </div>
+    </motion.div>
+  )
+}
+
 export default function ElectromagnetismPage() {
   return (
     <main className="min-h-screen bg-background">
@@ -23,21 +55,21 @@ export default function ElectromagnetismPage() {
         <motion.div
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="mb-8"
         >
-          <Link href="/notes" className="text-sm text-muted-foreground hover:text-foreground transition-colors interactive">
-            {"\u2190"} Back to Notes
+          <Link href="/notes" className="text-sm text-muted-foreground hover:text-foreground transition-colors interactive inline-flex items-center gap-2" prefetch={true}>
+            <span>←</span> Back to Notes
           </Link>
         </motion.div>
 
         <motion.header
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="mb-12"
         >
-          <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4 tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-sans font-bold mb-4 tracking-tight">
             Electromagnetism & Special Relativity
           </h1>
           <p className="text-lg text-muted-foreground">
@@ -46,121 +78,240 @@ export default function ElectromagnetismPage() {
         </motion.header>
 
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          className="prose prose-lg dark:prose-invert max-w-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="space-y-12"
         >
-          <section className="mb-12">
-            <h2 className="text-2xl font-serif font-bold mb-4">{"Maxwell's Equations"}</h2>
+          {/* Maxwell's Equations */}
+          <section>
+            <h2 className="text-2xl font-sans font-bold mb-4 tracking-tight">{"Maxwell's Equations"}</h2>
             <p className="text-muted-foreground leading-relaxed mb-6">
-              {"Maxwell's four equations unify electricity, magnetism, and optics into a single theoretical framework. In differential form:"}
+              {"Maxwell's four equations unify electricity, magnetism, and optics into a single theoretical framework:"}
             </p>
-            
-            <div className="bg-muted/30 border border-border rounded-lg p-6 my-6 space-y-4">
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <InlineMath math="\nabla \cdot \mathbf{E} = \frac{\rho}{\epsilon_0}" />
-                <span className="text-sm text-muted-foreground">{"(Gauss's law)"}</span>
-              </div>
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <InlineMath math="\nabla \cdot \mathbf{B} = 0" />
-                <span className="text-sm text-muted-foreground">(No magnetic monopoles)</span>
-              </div>
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <InlineMath math="\nabla \times \mathbf{E} = -\frac{\partial \mathbf{B}}{\partial t}" />
-                <span className="text-sm text-muted-foreground">{"(Faraday's law)"}</span>
-              </div>
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <InlineMath math="\nabla \times \mathbf{B} = \mu_0 \mathbf{J} + \mu_0 \epsilon_0 \frac{\partial \mathbf{E}}{\partial t}" />
-                <span className="text-sm text-muted-foreground">{"(Ampère-Maxwell)"}</span>
-              </div>
+
+            <ASCIIDiagram caption="The four Maxwell equations in differential form">
+{`    ╔════════════════════════════════════════════════════════════════╗
+    ║                     MAXWELL'S EQUATIONS                        ║
+    ╠════════════════════════════════════════════════════════════════╣
+    ║                                                                ║
+    ║   ∇·E = ρ/ε₀              (Gauss's Law - Electric)            ║
+    ║        ↳ Electric charges are sources of E field              ║
+    ║                                                                ║
+    ║   ∇·B = 0                 (Gauss's Law - Magnetic)            ║
+    ║        ↳ No magnetic monopoles exist                          ║
+    ║                                                                ║
+    ║   ∇×E = -∂B/∂t            (Faraday's Law)                     ║
+    ║        ↳ Changing B creates E                                  ║
+    ║                                                                ║
+    ║   ∇×B = μ₀J + μ₀ε₀∂E/∂t  (Ampère-Maxwell)                     ║
+    ║        ↳ Currents and changing E create B                      ║
+    ║                                                                ║
+    ╚════════════════════════════════════════════════════════════════╝`}
+            </ASCIIDiagram>
+
+            <div className="grid md:grid-cols-2 gap-4 my-6">
+              {[
+                { name: "Gauss (E)", eq: "\\nabla \\cdot \\mathbf{E} = \\frac{\\rho}{\\epsilon_0}", desc: "Charges source E" },
+                { name: "Gauss (B)", eq: "\\nabla \\cdot \\mathbf{B} = 0", desc: "No monopoles" },
+                { name: "Faraday", eq: "\\nabla \\times \\mathbf{E} = -\\frac{\\partial \\mathbf{B}}{\\partial t}", desc: "Changing B → E" },
+                { name: "Ampère-Maxwell", eq: "\\nabla \\times \\mathbf{B} = \\mu_0 \\mathbf{J} + \\mu_0 \\epsilon_0 \\frac{\\partial \\mathbf{E}}{\\partial t}", desc: "J or changing E → B" },
+              ].map((law, i) => (
+                <motion.div
+                  key={law.name}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 * i, duration: 0.3 }}
+                  className="p-4 border border-border/40 rounded-xl bg-foreground/[0.02]"
+                  whileHover={{ y: -2 }}
+                >
+                  <p className="text-xs font-sans font-bold text-muted-foreground/60 mb-2">{law.name}</p>
+                  <div className="text-sm overflow-x-auto">
+                    <InlineMath math={law.eq} />
+                  </div>
+                  <p className="text-xs text-muted-foreground/50 mt-2">{law.desc}</p>
+                </motion.div>
+              ))}
             </div>
           </section>
 
-          <section className="mb-12">
-            <h2 className="text-2xl font-serif font-bold mb-4">Electromagnetic Waves</h2>
+          {/* Electromagnetic Waves */}
+          <section>
+            <h2 className="text-2xl font-sans font-bold mb-4 tracking-tight">Electromagnetic Waves</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              {"In vacuum, Maxwell's equations predict transverse electromagnetic waves propagating at the speed of light:"}
+              {"In vacuum, Maxwell's equations predict transverse electromagnetic waves:"}
             </p>
-            <div className="bg-muted/30 border border-border rounded-lg p-6 my-6">
-              <div className="text-center">
-                <BlockMath math="c = \frac{1}{\sqrt{\mu_0 \epsilon_0}} \approx 3 \times 10^8 \text{ m/s}" />
-              </div>
-            </div>
-            <p className="text-muted-foreground leading-relaxed">
-              {"This remarkable result—that light is an electromagnetic wave—unified optics with electromagnetism and led Einstein to develop special relativity."}
-            </p>
+
+            <ASCIIDiagram caption="Electromagnetic wave - E and B fields oscillate perpendicular to propagation">
+{`                    E field (vertical)
+                          │
+                          │ ╱╲
+                       ╱╲ │╱  ╲
+                      ╱  ╲│    ╲     ╱╲
+              ───────╱────┼─────╲───╱──╲────────▶ propagation (x)
+                    ╱     │      ╲ ╱    ╲
+                          │       ╳      ╲
+                          │      ╱ ╲
+                    ------│-----╱---╲--------- B field (into/out of page)
+                          │    ╱     ╲
+                          
+          • E ⊥ B ⊥ direction of propagation
+          • Both oscillate in phase
+          • Speed: c = 1/√(μ₀ε₀) ≈ 3×10⁸ m/s`}
+            </ASCIIDiagram>
+
+            <EquationBox label="Speed of Light">
+              <BlockMath math="c = \frac{1}{\sqrt{\mu_0 \epsilon_0}} = 299,792,458 \text{ m/s}" />
+              <p className="text-sm text-muted-foreground mt-3">
+                This result unified optics with electromagnetism and led to special relativity
+              </p>
+            </EquationBox>
           </section>
 
-          <section className="mb-12">
-            <h2 className="text-2xl font-serif font-bold mb-4">Special Relativity</h2>
+          {/* Special Relativity */}
+          <section>
+            <h2 className="text-2xl font-sans font-bold mb-4 tracking-tight">Special Relativity</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              {"Einstein's two postulates of special relativity:"}
+              {"Einstein's two postulates:"}
             </p>
-            <ol className="list-decimal list-inside space-y-2 text-muted-foreground mb-6">
+            <ol className="list-decimal list-inside space-y-2 text-muted-foreground mb-6 ml-4">
               <li>The laws of physics are the same in all inertial reference frames</li>
               <li>The speed of light in vacuum is constant for all observers</li>
             </ol>
+
+            <ASCIIDiagram caption="Lorentz transformations connect different inertial frames">
+{`          Frame S                              Frame S'
+       (at rest)                          (moving at v)
+           
+          t ▲                                  t' ▲
+            │   light                            │   light
+            │   cone                             │   cone
+            │  ╱╲                                │  ╱╲
+            │ ╱  ╲ c                             │ ╱  ╲ c
+            │╱    ╲                              │╱    ╲
+       ─────┼──────────▶ x              ────────┼──────────▶ x'
+            │╲    ╱                              │╲    ╱
+            │ ╲  ╱                               │ ╲  ╱
+            │  ╲╱                                │  ╲╱
             
-            <h3 className="text-xl font-serif font-bold mb-3">Lorentz Transformations</h3>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              {"For frames moving with relative velocity v along the x-axis:"}
-            </p>
-            <div className="bg-muted/30 border border-border rounded-lg p-6 my-6 space-y-2">
-              <div className="text-center"><BlockMath math="t' = \gamma(t - vx/c^2)" /></div>
-              <div className="text-center"><BlockMath math="x' = \gamma(x - vt)" /></div>
-              <div className="text-center"><BlockMath math="y' = y, \quad z' = z" /></div>
-              <p className="text-center text-sm text-muted-foreground mt-3">
-                where <InlineMath math="\gamma = 1/\sqrt{1 - v^2/c^2}" /> is the Lorentz factor
-              </p>
-            </div>
-          </section>
+       Lorentz Transformation:
+       t' = γ(t - vx/c²)     x' = γ(x - vt)
+       
+       where γ = 1/√(1 - v²/c²) is the Lorentz factor`}
+            </ASCIIDiagram>
 
-          <section className="mb-12">
-            <h2 className="text-2xl font-serif font-bold mb-4">Spacetime and Four-Vectors</h2>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              {"The spacetime interval between events is invariant under Lorentz transformations:"}
-            </p>
-            <div className="bg-muted/30 border border-border rounded-lg p-6 my-6">
-              <div className="text-center">
-                <BlockMath math="ds^2 = -c^2 dt^2 + dx^2 + dy^2 + dz^2" />
-              </div>
-            </div>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              {"Physical quantities naturally group into four-vectors:"}
-            </p>
             <div className="space-y-3 my-6">
-              <div className="flex items-center gap-4 p-4 bg-muted/20 rounded-lg">
-                <span className="font-serif font-bold min-w-[120px]">Position:</span>
-                <InlineMath math="x^\mu = (ct, x, y, z)" />
-              </div>
-              <div className="flex items-center gap-4 p-4 bg-muted/20 rounded-lg">
-                <span className="font-serif font-bold min-w-[120px]">Momentum:</span>
-                <InlineMath math="p^\mu = (E/c, p_x, p_y, p_z)" />
-              </div>
-              <div className="flex items-center gap-4 p-4 bg-muted/20 rounded-lg">
-                <span className="font-serif font-bold min-w-[120px]">Current:</span>
-                <InlineMath math="J^\mu = (c\rho, J_x, J_y, J_z)" />
-              </div>
+              {[
+                { name: "Time Dilation", eq: "\\Delta t' = \\gamma \\Delta t", desc: "Moving clocks run slow" },
+                { name: "Length Contraction", eq: "L' = L/\\gamma", desc: "Moving objects are shortened" },
+                { name: "Velocity Addition", eq: "u' = \\frac{u - v}{1 - uv/c^2}", desc: "Velocities don't simply add" },
+              ].map((eff, i) => (
+                <motion.div
+                  key={eff.name}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 * i, duration: 0.3 }}
+                  className="flex items-center gap-4 p-4 bg-foreground/[0.02] border border-border/30 rounded-lg hover:border-border/50 transition-colors"
+                >
+                  <span className="font-sans font-bold text-sm min-w-[140px]">{eff.name}</span>
+                  <InlineMath math={eff.eq} />
+                  <span className="text-xs text-muted-foreground/60 ml-auto hidden md:block">{eff.desc}</span>
+                </motion.div>
+              ))}
             </div>
           </section>
 
-          <section className="mb-12">
-            <h2 className="text-2xl font-serif font-bold mb-4">Relativistic Energy-Momentum</h2>
+          {/* Spacetime */}
+          <section>
+            <h2 className="text-2xl font-sans font-bold mb-4 tracking-tight">Spacetime Geometry</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              {"The energy-momentum relation for a particle of rest mass m:"}
+              {"Space and time unite into a single 4-dimensional manifold:"}
             </p>
-            <div className="bg-muted/30 border border-border rounded-lg p-6 my-6">
-              <div className="text-center">
-                <BlockMath math="E^2 = (pc)^2 + (mc^2)^2" />
-              </div>
-              <p className="text-center text-sm text-muted-foreground mt-3">
-                For massless particles: <InlineMath math="E = pc" />
+
+            <ASCIIDiagram caption="Minkowski spacetime diagram showing light cones">
+{`                           ct
+                            ▲
+                            │       FUTURE
+                            │      ╱     ╲
+                            │     ╱ light ╲
+                            │    ╱  cone   ╲
+                            │   ╱           ╲
+                 ELSEWHERE  │  ╱    HERE     ╲  ELSEWHERE
+               ─────────────┼─╱───────────────╲─────────────▶ x
+               (spacelike)  │╱   (timelike)    ╲  (spacelike)
+                            │╲                 ╱
+                            │ ╲               ╱
+                            │  ╲             ╱
+                            │   ╲  PAST     ╱
+                            │    ╲         ╱
+                            
+        • Inside light cone: causally connected (timelike)
+        • On light cone: light signals (null/lightlike)  
+        • Outside light cone: causally disconnected (spacelike)`}
+            </ASCIIDiagram>
+
+            <EquationBox label="Spacetime Interval">
+              <BlockMath math="ds^2 = -c^2 dt^2 + dx^2 + dy^2 + dz^2" />
+              <p className="text-sm text-muted-foreground mt-3">
+                The interval <InlineMath math="ds^2" /> is invariant under Lorentz transformations
               </p>
+            </EquationBox>
+
+            <div className="grid md:grid-cols-3 gap-4 my-6">
+              <motion.div 
+                className="p-4 border border-border/40 rounded-xl bg-gradient-to-br from-blue-500/5 to-transparent text-center"
+                whileHover={{ y: -2 }}
+              >
+                <p className="text-xs font-sans font-bold text-muted-foreground/60 mb-2">Position 4-vector</p>
+                <InlineMath math="x^\mu = (ct, \vec{r})" />
+              </motion.div>
+              <motion.div 
+                className="p-4 border border-border/40 rounded-xl bg-gradient-to-br from-green-500/5 to-transparent text-center"
+                whileHover={{ y: -2 }}
+              >
+                <p className="text-xs font-sans font-bold text-muted-foreground/60 mb-2">Momentum 4-vector</p>
+                <InlineMath math="p^\mu = (E/c, \vec{p})" />
+              </motion.div>
+              <motion.div 
+                className="p-4 border border-border/40 rounded-xl bg-gradient-to-br from-purple-500/5 to-transparent text-center"
+                whileHover={{ y: -2 }}
+              >
+                <p className="text-xs font-sans font-bold text-muted-foreground/60 mb-2">Current 4-vector</p>
+                <InlineMath math="J^\mu = (c\rho, \vec{J})" />
+              </motion.div>
             </div>
-            <p className="text-muted-foreground leading-relaxed">
-              The famous equation <InlineMath math="E = mc^2" /> represents the rest energy of a massive particle, revealing the equivalence of mass and energy.
-            </p>
+          </section>
+
+          {/* Energy-Momentum */}
+          <section>
+            <h2 className="text-2xl font-sans font-bold mb-4 tracking-tight">Energy-Momentum Relation</h2>
+
+            <EquationBox label="Relativistic Energy-Momentum">
+              <BlockMath math="E^2 = (pc)^2 + (mc^2)^2" />
+              <div className="text-sm text-muted-foreground mt-4 space-y-1">
+                <p>For <InlineMath math="m = 0" />: <InlineMath math="E = pc" /> (photons)</p>
+                <p>For <InlineMath math="p = 0" />: <InlineMath math="E = mc^2" /> (rest energy)</p>
+              </div>
+            </EquationBox>
+          </section>
+
+          {/* Key Takeaways */}
+          <section className="border-t border-border/30 pt-8">
+            <h2 className="text-lg font-sans font-bold mb-4 tracking-tight">Key Takeaways</h2>
+            <ul className="space-y-2 text-muted-foreground">
+              <li className="flex items-start gap-3">
+                <span className="text-foreground/40">•</span>
+                <span>{"Maxwell's equations unify E&M and predict electromagnetic waves at speed c"}</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-foreground/40">•</span>
+                <span>Special relativity follows from the invariance of c across all frames</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-foreground/40">•</span>
+                <span>Spacetime geometry is encoded in the invariant interval and 4-vectors</span>
+              </li>
+            </ul>
           </section>
         </motion.div>
       </article>
