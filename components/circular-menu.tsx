@@ -353,23 +353,22 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
       {/* Dial container */}
       <div
         className="relative flex items-center justify-center"
-        style={{ width: 260, height: 260 }}
+        style={{ width: 340, height: 340 }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => { setHovered(false); setActiveItem(null) }}
       >
-        {/* WebGL torus — scales down slightly when orbit opens */}
+        {/* WebGL torus — scales UP slightly on hover, never shrinks or clips */}
         <motion.div
-          className="rounded-full overflow-hidden"
-          animate={{ scale: isExpanded ? 0.68 : 1 }}
-          transition={{ type: "spring", stiffness: 320, damping: 26 }}
-          style={{ width: 140, height: 140 }}
+          animate={{ scale: isExpanded ? 1.12 : 1 }}
+          transition={{ type: "spring", stiffness: 280, damping: 24 }}
+          style={{ width: 220, height: 220, opacity: 1 }}
         >
           <Canvas
             camera={{ position: [0, 0, 5], fov: 45 }}
             gl={{ antialias: true, alpha: true }}
             style={{ background: "transparent", width: "100%", height: "100%" }}
           >
-            <TorusShader explode={isExpanded} />
+            <TorusShader explode={false} />
           </Canvas>
         </motion.div>
 
