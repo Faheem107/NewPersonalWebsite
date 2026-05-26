@@ -80,7 +80,7 @@ export default function AboutPage() {
               </div>
               <div>
                 <span className="text-muted-foreground">Studying</span>
-                <p className="font-bold mt-1">Physics (Major) @ NYUAD</p>
+                <p className="font-bold mt-1">Physics at NYU Abu Dhabi</p>
               </div>
               <div>
                 <span className="text-muted-foreground">Minor</span>
