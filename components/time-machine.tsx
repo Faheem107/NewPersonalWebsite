@@ -5,9 +5,9 @@ import { motion } from "framer-motion"
 import { useShortcuts, clamp } from "@/hooks/use-shortcut"
 
 const IMAGES = [
+  "/images/dubai-metro-3.jpg", // Dubai metro with sun in background - first
   "/images/dubai-metro-1.jpg",
   "/images/dubai-metro-2.jpg",
-  "/images/dubai-metro-3.jpg",
   "https://cdn.cosmos.so/5689a5cd-92a5-4cb1-b014-263da4f55731?format=jpeg",
   "https://cdn.cosmos.so/c4588488-0021-4804-9c29-a43059378bfe?format=jpeg",
   "https://cdn.cosmos.so/de8c561b-e4e4-48f3-9068-30d63b92c43e?format=jpeg",

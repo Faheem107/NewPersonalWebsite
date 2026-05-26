@@ -8,7 +8,7 @@ const NAV_ITEMS = [
   { label: "research", href: "/research" },
   { label: "photography & films", href: "/photography" },
   { label: "some thoughts!", href: "/thoughts" },
-  { label: "misc.", href: "/misc" },
+  { label: "notes", href: "/notes" },
   { label: "about", href: "/about" },
 ]
 

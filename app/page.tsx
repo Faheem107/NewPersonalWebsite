@@ -6,9 +6,11 @@ import CustomCursor from "@/components/custom-cursor"
 import Navigation from "@/components/navigation"
 import TimeMachine from "@/components/time-machine"
 import { ThemeToggle } from "@/components/theme-toggle"
+import CircularMenu from "@/components/circular-menu"
 
 export default function Home() {
   const [isHoveringRight, setIsHoveringRight] = useState(false)
+  const [isHoveringLeft, setIsHoveringLeft] = useState(false)
 
   return (
     <main className="min-h-screen bg-background relative overflow-hidden">
@@ -27,7 +29,24 @@ export default function Home() {
 
       {/* Main Content Overlay - pointer-events-none so scrolling works */}
       <div className="relative z-10 min-h-screen flex items-center pointer-events-none">
-        <div className="w-full flex items-center justify-end px-8 md:px-16 lg:px-24">
+        <div className="w-full flex items-center justify-between px-8 md:px-16 lg:px-24">
+
+          {/* Left Side - Circular Menu */}
+          <motion.div
+            className="pointer-events-auto"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            onMouseEnter={() => setIsHoveringLeft(true)}
+            onMouseLeave={() => setIsHoveringLeft(false)}
+          >
+            <motion.div
+              animate={{ opacity: isHoveringLeft ? 1 : 0.2 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            >
+              <CircularMenu />
+            </motion.div>
+          </motion.div>
 
           {/* Right Side - Name and Title */}
           <motion.div
