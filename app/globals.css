@@ -158,7 +158,22 @@ html {
   animation: spin-vinyl 3s linear infinite;
 }
 
-/* Link hover effect */
+/* Horizontal marquee */
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  animation: marquee-scroll 28s linear infinite;
+  width: max-content;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+
 .link-hover {
   position: relative;
 }

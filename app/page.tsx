@@ -1,79 +1,110 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { motion } from "framer-motion"
+import dynamic from "next/dynamic"
 import CustomCursor from "@/components/custom-cursor"
 import Navigation from "@/components/navigation"
-import TimeMachine from "@/components/time-machine"
 import { ThemeToggle } from "@/components/theme-toggle"
 import CircularMenu from "@/components/circular-menu"
+import ImageMarquee from "@/components/image-marquee"
 
-export default function Home() {
-  const [isHoveringRight, setIsHoveringRight] = useState(false)
-  const [isHoveringLeft, setIsHoveringLeft] = useState(false)
+// Load 3D torus client-side only (no SSR)
+const Torus3D = dynamic(() => import("@/components/torus-3d"), { ssr: false })
+
+const TYPING_WORDS = ["Physics.", "Film.", "Code.", "Curiosity."]
+const TYPING_SPEED = 80
+const DELETING_SPEED = 45
+const PAUSE_MS = 1800
+
+function TypingHeadline() {
+  const [wordIndex, setWordIndex] = useState(0)
+  const [displayed, setDisplayed] = useState("")
+  const [phase, setPhase] = useState<"typing" | "pausing" | "deleting">("typing")
+
+  useEffect(() => {
+    const word = TYPING_WORDS[wordIndex]
+    let timeout: ReturnType<typeof setTimeout>
+
+    if (phase === "typing") {
+      if (displayed.length < word.length) {
+        timeout = setTimeout(() => setDisplayed(word.slice(0, displayed.length + 1)), TYPING_SPEED)
+      } else {
+        timeout = setTimeout(() => setPhase("pausing"), PAUSE_MS)
+      }
+    } else if (phase === "pausing") {
+      setPhase("deleting")
+    } else {
+      if (displayed.length > 0) {
+        timeout = setTimeout(() => setDisplayed(displayed.slice(0, -1)), DELETING_SPEED)
+      } else {
+        setWordIndex((i) => (i + 1) % TYPING_WORDS.length)
+        setPhase("typing")
+      }
+    }
+
+    return () => clearTimeout(timeout)
+  }, [displayed, phase, wordIndex])
 
   return (
-    <main className="min-h-screen bg-background relative overflow-hidden">
+    <h1 className="text-5xl md:text-7xl lg:text-8xl font-sans font-bold tracking-tight text-foreground leading-none">
+      Faheem.<br />
+      <span className="text-foreground/50">
+        {displayed}
+        <span className="animate-pulse">|</span>
+      </span>
+    </h1>
+  )
+}
+
+export default function Home() {
+  return (
+    <main className="min-h-screen bg-background flex flex-col">
       <CustomCursor />
       <Navigation />
 
-      {/* Theme Toggle */}
       <div className="fixed top-6 right-6 z-50">
         <ThemeToggle />
       </div>
 
-      {/* Background Infinite Scroll Images - Full screen and interactive */}
-      <div className="fixed inset-0 z-0">
-        <TimeMachine />
-      </div>
+      {/* Hero */}
+      <div className="flex-1 flex items-center">
+        <div className="w-full flex items-center justify-between px-8 md:px-16 lg:px-24 gap-12">
 
-      {/* Main Content Overlay - pointer-events-none so scrolling works */}
-      <div className="relative z-10 min-h-screen flex items-center pointer-events-none">
-        <div className="w-full flex items-center justify-between px-8 md:px-16 lg:px-24">
-
-          {/* Left Side - Circular Menu */}
+          {/* Left — circular menu, low opacity until hover */}
           <motion.div
-            className="pointer-events-auto"
+            className="flex-shrink-0"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            onMouseEnter={() => setIsHoveringLeft(true)}
-            onMouseLeave={() => setIsHoveringLeft(false)}
+            transition={{ duration: 0.7, ease: "easeOut" }}
           >
             <motion.div
-              animate={{ opacity: isHoveringLeft ? 1 : 0.2 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
+              initial={{ opacity: 0.15 }}
+              whileHover={{ opacity: 1 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
             >
               <CircularMenu />
             </motion.div>
           </motion.div>
 
-          {/* Right Side - Name and Title */}
+          {/* Right — typing headline + subtitle */}
           <motion.div
-            className="text-right pointer-events-auto"
+            className="text-right"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-            onMouseEnter={() => setIsHoveringRight(true)}
-            onMouseLeave={() => setIsHoveringRight(false)}
+            transition={{ duration: 0.7, ease: "easeOut", delay: 0.15 }}
           >
             <motion.div
-              animate={{ opacity: isHoveringRight ? 1 : 0.15 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
+              initial={{ opacity: 0.15 }}
+              whileHover={{ opacity: 1 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
             >
-              <motion.h1
-                className="text-5xl md:text-7xl lg:text-8xl font-sans font-bold tracking-tight text-foreground"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.6, ease: "easeOut" }}
-              >
-                Faheem
-              </motion.h1>
+              <TypingHeadline />
               <motion.p
-                className="text-lg md:text-xl font-sans font-bold text-foreground/70 mt-2"
-                initial={{ opacity: 0, y: 20 }}
+                className="text-base md:text-lg font-sans font-bold text-foreground/60 mt-4"
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
+                transition={{ delay: 0.4, duration: 0.5 }}
               >
                 Physics at NYU Abu Dhabi
               </motion.p>
@@ -82,14 +113,34 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Decorative Elements */}
+      {/* Horizontal image marquee */}
       <motion.div
-        className="fixed bottom-8 left-8 z-20 pointer-events-none"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.5 }}
-        transition={{ delay: 1, duration: 0.6 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}
+        className="w-full"
       >
-        <p className="text-xs font-mono text-muted-foreground">
+        <ImageMarquee />
+      </motion.div>
+
+      {/* 3D Torus */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7, duration: 0.6, ease: "easeOut" }}
+        className="w-full flex justify-center py-6"
+      >
+        <Torus3D />
+      </motion.div>
+
+      {/* Bottom label */}
+      <motion.div
+        className="pb-6 text-center pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1, duration: 0.5 }}
+      >
+        <p className="text-xs font-sans text-muted-foreground/50 tracking-widest uppercase">
           Last Updated: May 2026
         </p>
       </motion.div>

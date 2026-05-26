@@ -85,15 +85,18 @@ export default function CustomCursor() {
   // Black cursor in light mode, white cursor in dark mode
   const cursorColor = resolvedTheme === 'dark' ? 'white' : 'black'
 
+  // In light mode: solid black dot. In dark mode: solid white dot. No blend mode needed.
   return (
     <div
       ref={cursorRef}
-      className="fixed top-0 left-0 pointer-events-none z-[9999] rounded-full transition-[width,height] duration-200 ease-out"
+      className="fixed top-0 left-0 pointer-events-none z-[9999] rounded-full"
       style={{
-        width: isHovering ? 28 : 8,
-        height: isHovering ? 28 : 8,
+        width: isHovering ? 24 : 7,
+        height: isHovering ? 24 : 7,
         backgroundColor: cursorColor,
-        mixBlendMode: 'difference',
+        border: isHovering ? `2px solid ${cursorColor}` : 'none',
+        background: isHovering ? 'transparent' : cursorColor,
+        transition: 'width 0.18s ease, height 0.18s ease, background 0.18s ease, border 0.18s ease',
       }}
     />
   )
