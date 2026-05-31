@@ -8,8 +8,6 @@ import Navigation from "@/components/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 import CircularMenu from "@/components/circular-menu"
 
-const WorkDrawer = dynamic(() => import("@/components/work-drawer"), { ssr: false })
-
 const NAME = "Faheem"
 const SUBTEXTS = ["Physics.", "Film.", "Mathematics."]
 const TYPE_SPEED = 80
@@ -81,7 +79,7 @@ export default function Home() {
   const [explode, setExplode] = useState(false)
 
   return (
-    <main className="min-h-screen bg-background flex flex-col overflow-x-hidden">
+    <main className="min-h-screen bg-background flex flex-col overflow-x-hidden border-none outline-none">
       <CustomCursor />
       <Navigation />
 
@@ -90,21 +88,23 @@ export default function Home() {
       </div>
 
       {/* ── Hero ──────────────────────────────────────────── */}
-      <div className="flex-1 flex items-center min-h-[calc(100vh-1px)]">
-        <div className="w-full grid grid-cols-2 items-center gap-8 px-10 md:px-20 lg:px-28">
+      <div className="flex-1 flex items-center min-h-[calc(100vh-1px)] border-none outline-none">
+        <div className="w-full grid grid-cols-2 items-center gap-8 px-10 md:px-20 lg:px-28 border-none outline-none">
 
-          {/* Left — WebGL torus (the circular menu center, standalone) */}
+          {/* Left — WebGL torus container */}
           <motion.div
-            className="flex items-center justify-center"
+            className="flex items-center justify-center border-none outline-none select-none"
             initial={{ opacity: 0, x: -24 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, ease: "easeOut" }}
           >
             <motion.div
+              className="border-none outline-none"
               initial={{ opacity: 0.15 }}
               whileHover={{ opacity: 1 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
             >
+              {/* Passing the state directly into your real component */}
               <CircularMenu forceOpen={explode} />
             </motion.div>
           </motion.div>
@@ -142,7 +142,6 @@ export default function Home() {
               Physics at NYU Abu Dhabi
             </motion.p>
 
-            {/* Explore button — no dot, clicking opens the circular menu */}
             <motion.button
               className="mt-8 text-xs font-sans text-muted-foreground tracking-[0.18em] uppercase hover:text-foreground transition-colors duration-200 interactive cursor-pointer"
               initial={{ opacity: 0 }}
@@ -168,8 +167,6 @@ export default function Home() {
         </p>
       </motion.div>
 
-      {/* ── Bottom drawer gallery ─────────────────────────── */}
-      <WorkDrawer />
     </main>
   )
 }

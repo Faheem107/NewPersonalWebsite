@@ -5,145 +5,162 @@ import { useFrame, useThree } from "@react-three/fiber"
 import { useTheme } from "next-themes"
 import * as THREE from "three"
 
-// +30% scale: base radii 1.5→1.95, tube 0.6→0.78
 export function TorusShader({ explode = false }: { explode?: boolean }) {
   const pointsRef = useRef<THREE.Points>(null)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
   const [mouse3D, setMouse3D] = useState(new THREE.Vector3(0, 0, -10))
   const { camera } = useThree()
+  
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme !== "light"
 
-  const { positions, count } = useMemo(() => {
-    // 30% larger geometry
-    const geo = new THREE.TorusGeometry(1.95, 0.78, 128, 256)
-    const positions = geo.attributes.position.array
-    const count = positions.length / 3
-    return { positions, count }
+  const { positions } = useMemo(() => {
+    const torusGeometry = new THREE.TorusGeometry(1.8, 0.6, 80, 160)
+    const positions = torusGeometry.attributes.position.array
+    return { positions }
   }, [])
-
-  // Dark: glowing white/silver. Light: solid matte jet-black.
-  const baseColor: [number, number, number] = isDark ? [1.0, 1.0, 1.0] : [0.04, 0.04, 0.04]
-  const glowColor: [number, number, number] = isDark ? [0.75, 0.88, 1.0] : [0.04, 0.04, 0.04]
 
   const shaderMaterial = useMemo(
     () =>
       new THREE.ShaderMaterial({
         uniforms: {
-          uTime:          { value: 0 },
-          uMouse:         { value: new THREE.Vector3(0, 0, -10) },
-          uMagnetStrength:{ value: 0.9 },
-          uExplode:       { value: 0.0 },
-          uBaseColor:     { value: new THREE.Vector3(...baseColor) },
-          uGlowColor:     { value: new THREE.Vector3(...glowColor) },
+          uTime: { value: 0 },
+          uMouse: { value: new THREE.Vector3(0, 0, -10) },
+          uMagnetStrength: { value: 1.0 },
+          uExpand: { value: 0.0 }, 
+          uIsDark: { value: 1.0 }, 
         },
-        vertexShader: /* glsl */`
+        vertexShader: `
           uniform float uTime;
-          uniform vec3  uMouse;
+          uniform vec3 uMouse;
           uniform float uMagnetStrength;
-          uniform float uExplode;
+          uniform float uExpand;
           varying float vDistanceFromCenter;
           varying float vMouseInfluence;
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying float vExpand;
+
           void main() {
             vec3 pos = position;
+            vExpand = uExpand;
 
-            // Organic breathe
-            float noiseX = sin(pos.x * 1.3 + uTime * 0.38) * cos(pos.y * 0.9  + uTime * 0.27) * 0.07;
-            float noiseY = cos(pos.z * 1.1 + uTime * 0.33) * sin(pos.x * 0.8  + uTime * 0.43) * 0.07;
-            pos += vec3(noiseX, noiseY, 0.0);
+            float radius = 1.8;
+            float tubeRadius = 0.6;
+            vec2 center = normalize(pos.xy) * radius;
+            float distFromTube = length(pos.xy - center);
+            vDistanceFromCenter = 1.0 - (distFromTube / tubeRadius);
+            
+            vec3 worldPos = (modelMatrix * vec4(pos, 1.0)).xyz;
+            vWorldPosition = worldPos;
+            vNormal = normalize((modelMatrix * vec4(normalize(pos), 0.0)).xyz);
+            
+            float distToMouse = length(worldPos - uMouse);
+            float magneticInfluence = smoothstep(4.0, 0.0, distToMouse);
+            magneticInfluence = pow(magneticInfluence, 0.7);
+            vMouseInfluence = magneticInfluence;
+            
+            vec3 direction = normalize(uMouse - worldPos);
+            vec3 perpendicular = cross(direction, vec3(0.0, 0.0, 1.0));
+            pos += direction * magneticInfluence * uMagnetStrength;
+            pos += perpendicular * magneticInfluence * 0.4 * sin(uTime * 2.0 + length(worldPos) * 3.0);
 
-            // Explode
-            if (uExplode > 0.0) {
-              pos += normalize(pos) * uExplode * 3.0;
-            }
+            float angleXY = atan(position.y, position.x);
+            float angleTube = atan(position.z, length(position.xy) - radius);
 
-            // Distance from torus tube surface
-            float radius     = 1.95;
-            float tubeRadius = 0.78;
-            vec2  center2d   = normalize(pos.xy) * radius;
-            float distFromTube = length(pos.xy - center2d);
-            vDistanceFromCenter = 1.0 - clamp(distFromTube / tubeRadius, 0.0, 1.0);
+            float targetRadius = 3.6;
+            vec3 spherePos;
+            spherePos.x = cos(angleXY) * cos(angleTube) * targetRadius;
+            spherePos.y = sin(angleXY) * cos(angleTube) * targetRadius;
+            spherePos.z = sin(angleTube) * targetRadius;
+            
+            spherePos += normalize(spherePos) * sin(uTime * 1.2 + angleXY * 4.0) * 0.15;
 
-            // Mouse magnet
-            vec3  worldPos  = (modelMatrix * vec4(pos, 1.0)).xyz;
-            float dMouse    = length(worldPos - uMouse);
-            float magnet    = pow(smoothstep(3.5, 0.0, dMouse), 0.7);
-            vMouseInfluence = magnet;
-            vec3  dir  = normalize(uMouse - worldPos);
-            vec3  perp = cross(dir, vec3(0.0, 0.0, 1.0));
-            pos += dir  * magnet * uMagnetStrength;
-            pos += perp * magnet * 0.5 * sin(uTime * 2.0 + length(worldPos) * 3.0);
-            pos += dir  * sin(dMouse * 5.0 - uTime * 3.0) * magnet * 0.2;
+            pos = mix(pos, spherePos, smoothstep(0.0, 1.0, uExpand));
 
-            vec4 mvPos = modelViewMatrix * vec4(pos, 1.0);
-            gl_Position  = projectionMatrix * mvPos;
-            gl_PointSize = 2.2 + magnet * 2.4;
+            vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+            gl_Position = projectionMatrix * mvPosition;
+            
+            // FIX: Restored the highly dynamic point sizing so the particles look like a magnetic field again
+            gl_PointSize = mix(2.2 + magneticInfluence * 2.0, 1.6, uExpand); 
           }
         `,
-        fragmentShader: /* glsl */`
-          uniform vec3  uBaseColor;
-          uniform vec3  uGlowColor;
+        fragmentShader: `
+          uniform float uTime;
+          uniform float uIsDark;
           varying float vDistanceFromCenter;
           varying float vMouseInfluence;
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying float vExpand;
+
+          vec3 getIridescentColor(vec3 worldPos, vec3 normal, float time) {
+            float angle = atan(worldPos.y, worldPos.x);
+            float height = worldPos.z;
+            float colorShift = angle * 0.6 + height * 0.4 + time * 0.2;
+            
+            vec3 color1 = vec3(0.5, 0.75, 1.0);
+            vec3 color2 = vec3(0.75, 0.5, 1.0);
+            vec3 color3 = vec3(1.0, 0.65, 0.75);
+            
+            vec3 iridescent = mix(color1, color2, sin(colorShift) * 0.5 + 0.5);
+            iridescent = mix(iridescent, color3, cos(colorShift * 1.5) * 0.5 + 0.5);
+            return iridescent;
+          }
+          
           void main() {
-            vec2  c    = gl_PointCoord - 0.5;
-            float dist = length(c);
+            vec2 center = gl_PointCoord - 0.5;
+            float dist = length(center);
             if (dist > 0.5) discard;
+            
+            float alpha = smoothstep(0.0, 0.8, vDistanceFromCenter);
+            
+            // Enforce a high minimum opacity so it never looks dim or hollow
+            alpha = max(alpha, 0.7); 
+            alpha = mix(alpha, 1.0, vMouseInfluence * 0.5);
+            alpha = mix(alpha, 0.5, vExpand); 
+            
+            vec3 iridescent = getIridescentColor(vWorldPosition, vNormal, uTime);
+            
+            // FIXED: Changed uExpand to vExpand here!
+            vec3 finalColor = iridescent * mix(6.5, 2.5, vExpand);
+            
+            if (uIsDark < 0.5) {
+                finalColor = vec3(0.05, 0.05, 0.05); 
+                alpha = mix(alpha, 0.8, vExpand); 
+            }
 
-            float alpha = smoothstep(0.0, 0.85, vDistanceFromCenter);
-            alpha       = mix(alpha, 1.0, vMouseInfluence * 0.9);
-
-            // On dark: subtle silver-blue hover tint. On light: stays jet-black.
-            vec3 col = mix(uBaseColor, uGlowColor, vMouseInfluence * 0.35);
-            gl_FragColor = vec4(col, alpha);
+            gl_FragColor = vec4(finalColor, alpha);
           }
         `,
         transparent: true,
-        depthWrite:  false,
-        blending:    THREE.AdditiveBlending,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending, 
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
 
-  // Sync theme + explode uniforms every frame (no material rebuild)
   useFrame((state) => {
-    if (!pointsRef.current || !materialRef.current) return
-    const t = state.clock.getElapsedTime()
+    if (pointsRef.current && materialRef.current) {
+      pointsRef.current.rotation.y += 0.004
+      pointsRef.current.rotation.x += 0.001
 
-    // Beautiful infinite organic loop — no jerk, no discontinuity
-    pointsRef.current.rotation.y = t * 0.28 + Math.sin(t * 0.18) * 0.22
-    pointsRef.current.rotation.x = t * 0.14 + Math.cos(t * 0.13) * 0.12
+      materialRef.current.uniforms.uTime.value = state.clock.elapsedTime
+      materialRef.current.uniforms.uMouse.value.copy(mouse3D)
+      materialRef.current.uniforms.uIsDark.value = isDark ? 1.0 : 0.0
+      
+      materialRef.current.blending = isDark ? THREE.AdditiveBlending : THREE.NormalBlending
 
-    materialRef.current.uniforms.uTime.value         = t
-    materialRef.current.uniforms.uMouse.value.copy(mouse3D)
-    materialRef.current.uniforms.uExplode.value      = explode ? 1.0 : 0.0
-    materialRef.current.uniforms.uBaseColor.value.set(...baseColor)
-    materialRef.current.uniforms.uGlowColor.value.set(...glowColor)
+      const currentExpand = materialRef.current.uniforms.uExpand.value
+      const targetExpand = explode ? 1.0 : 0.0
+      materialRef.current.uniforms.uExpand.value = THREE.MathUtils.lerp(currentExpand, targetExpand, 0.05)
+    }
   })
 
-  const handlePointerMove = (e: { pointer: THREE.Vector2 }) => {
-    if (!pointsRef.current) return
-    const raycaster = new THREE.Raycaster()
-    raycaster.setFromCamera(e.pointer, camera)
-    const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
-      new THREE.Vector3(0, 0, 1),
-      new THREE.Vector3(0, 0, pointsRef.current.position.z),
-    )
-    const hit = new THREE.Vector3()
-    raycaster.ray.intersectPlane(plane, hit)
-    if (hit) setMouse3D(hit)
-  }
-
   return (
-    <points ref={pointsRef} onPointerMove={handlePointerMove}>
+    <points ref={pointsRef}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[positions as Float32Array, 3]}
-          count={count}
-          itemSize={3}
-        />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <primitive object={shaderMaterial} ref={materialRef} attach="material" />
     </points>

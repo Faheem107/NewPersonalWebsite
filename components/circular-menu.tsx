@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Linkedin, Instagram } from "lucide-react"
+import { Linkedin, Instagram, Github, Mail } from "lucide-react"
+import { BookOpen, Disc3, Clapperboard} from "lucide-react"
 import Image from "next/image"
 import { Canvas } from "@react-three/fiber"
 import { TorusShader } from "@/components/torus-shader"
@@ -35,52 +36,24 @@ const MOVIES = [
 
 // ─── Orbit item config ────────────────────────────────────────────────────────
 
-interface MenuItem {
-  id:         string
-  label:      string
-  kind:       "img" | "icon"
-  imgSrc?:    string
-  icon?:      React.ReactNode
-  href?:      string
-  modal?:     "vinyl" | "books" | "movies"
+type MenuItem = {
+  id: string
+  label: string
+  kind: "img" | "icon"
+  imgSrc?: string
+  icon?: React.ReactNode
+  href?: string
+  modal?: "vinyl" | "books" | "movies"
 }
 
 const MENU_ITEMS: MenuItem[] = [
-  {
-    id:     "vinyl",
-    label:  "Music",
-    kind:   "img",
-    imgSrc: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/vinyl_ascii_pic-NlO1G6fmcEEbXHk00IXFpvYhFgsT36.png",
-    modal:  "vinyl",
-  },
-  {
-    id:     "books",
-    label:  "Books",
-    kind:   "img",
-    imgSrc: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/book_ascii-sd9oEY0u9yK3qLoWrZZaamnoiXSGJO.png",
-    modal:  "books",
-  },
-  {
-    id:     "movies",
-    label:  "Films",
-    kind:   "img",
-    imgSrc: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/movie_ascii_pic-ucWwLQQzdgiB0vupll4pQPc6fdrB9L.png",
-    modal:  "movies",
-  },
-  {
-    id:   "instagram",
-    label:"Instagram",
-    kind: "icon",
-    icon: <Instagram size={20} strokeWidth={1.5} />,
-    href: "https://www.instagram.com/faheemmmm._",
-  },
-  {
-    id:   "linkedin",
-    label:"LinkedIn",
-    kind: "icon",
-    icon: <Linkedin size={20} strokeWidth={1.5} />,
-    href: "https://www.linkedin.com/in/mohammed-faheem-33bb49295/",
-  },
+  { id: "music",    label: "Music",    kind: "icon", icon: <Disc3 size={22} strokeWidth={1.5} />,        modal: "vinyl" },
+  { id: "books",    label: "Books",    kind: "icon", icon: <BookOpen size={22} strokeWidth={1.5} />,     modal: "books" },
+  { id: "movies",   label: "Movies",   kind: "icon", icon: <Clapperboard size={22} strokeWidth={1.5} />, modal: "movies" },
+  { id: "linkedin", label: "LinkedIn", kind: "icon", icon: <Linkedin size={22} strokeWidth={1.5} />,     href: "https://www.linkedin.com/in/mohammed-faheem-33bb49295/" },
+  { id: "instagram",label: "Instagram",kind: "icon", icon: <Instagram size={22} strokeWidth={1.5} />,    href: "https://www.instagram.com/faheemmmm._/" },
+  { id: "github",   label: "GitHub",   kind: "icon", icon: <Github size={22} strokeWidth={1.5} />,       href: "https://github.com/Faheem107" },
+  { id: "email",    label: "Email",    kind: "icon", icon: <Mail size={22} strokeWidth={1.5} />,         href: "mailto:mj3398@nyu.edu" },
 ]
 
 // ─── Windows 95 vinyl modal ───────────────────────────────────────────────────
@@ -323,16 +296,14 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
   const [modal,      setModal]      = useState<"vinyl" | "books" | "movies" | null>(null)
   const [angle,      setAngle]      = useState(0)
 
-  const isExpanded = hovered || forceOpen
+  const isExpanded = hovered || activeItem !== null || forceOpen
 
-  // Slow orbital drift when open
   useEffect(() => {
     if (!isExpanded) return
-    const id = setInterval(() => setAngle((a) => a + 0.22), 50)
+    const id = setInterval(() => setAngle((a) => a + 0.15), 50)
     return () => clearInterval(id)
   }, [isExpanded])
 
-  // Escape key
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setModal(null) }
     window.addEventListener("keydown", onKey)
@@ -346,33 +317,32 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
 
   const N         = MENU_ITEMS.length
   const angleStep = (2 * Math.PI) / N
-  const RADIUS    = 100          // slightly larger orbit to match bigger torus
+  
+  const RADIUS    = 150 
 
   return (
     <>
-      {/* Dial container */}
       <div
-        className="relative flex items-center justify-center"
-        style={{ width: 340, height: 340 }}
+        // FIX: Added `isolate` to create a strict stacking context, preventing the canvas from falling behind the page body
+        className="relative flex items-center justify-center isolate"
+        style={{ width: 420, height: 420 }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => { setHovered(false); setActiveItem(null) }}
       >
-        {/* WebGL torus — scales UP slightly on hover, never shrinks or clips */}
-        <motion.div
-          animate={{ scale: isExpanded ? 1.12 : 1 }}
-          transition={{ type: "spring", stiffness: 280, damping: 24 }}
-          style={{ width: 220, height: 220, opacity: 1 }}
+        <div
+          // FIX: Removed `zIndex: -1` which was causing the disappearance bug when Framer Motion scaled the icons
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+          style={{ width: 800, height: 800 }}
         >
           <Canvas
-            camera={{ position: [0, 0, 5], fov: 45 }}
+            camera={{ position: [0, 0, 13], fov: 45 }}
             gl={{ antialias: true, alpha: true }}
             style={{ background: "transparent", width: "100%", height: "100%" }}
           >
-            <TorusShader explode={false} />
+            <TorusShader explode={isExpanded} />
           </Canvas>
-        </motion.div>
+        </div>
 
-        {/* Orbital nodes */}
         <AnimatePresence>
           {isExpanded &&
             MENU_ITEMS.map((item, i) => {
@@ -396,15 +366,15 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
                 >
                   {item.kind === "img" ? (
                     <div
-                      className="relative overflow-hidden"
-                      style={{ width: 44, height: 44 }}
+                      className="relative overflow-hidden shadow-2xl rounded-lg bg-background/90"
+                      style={{ width: 44, height: 44 }} 
                     >
                       <Image
                         src={item.imgSrc!}
                         alt={item.label}
                         fill
                         className={`object-contain transition-opacity duration-200 ${
-                          active ? "opacity-100" : "opacity-55"
+                          active ? "opacity-100" : "opacity-80" 
                         }`}
                         sizes="44px"
                         unoptimized
@@ -420,7 +390,6 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
                     </span>
                   )}
 
-                  {/* Label on hover */}
                   <AnimatePresence>
                     {active && (
                       <motion.span
@@ -440,7 +409,6 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
         </AnimatePresence>
       </div>
 
-      {/* Modals */}
       <AnimatePresence>
         {modal === "vinyl"  && <Win95Modal        onClose={() => setModal(null)} />}
         {modal === "books"  && <ContentModal type="books"  onClose={() => setModal(null)} />}

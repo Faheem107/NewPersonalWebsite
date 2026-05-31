@@ -1,61 +1,48 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import Link from "next/link"
 import CustomCursor from "@/components/custom-cursor"
 import Navigation from "@/components/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 
+// All 75 of your Google Drive Image IDs
+const IMAGE_IDS = [
+  "1DzRVfOkwkCyfu1im2qmUFtjVLgt6dY20", "1SPq47xnq-mTQ_teNL2QpSCNpCG5n5H3t", "1rKToFYef0Zg7AHyCzur6FCGODdKzoEgS", "1zJDhf81dcNUlPgltnFjvs1kNmiag1ZqI", 
+  "1XjW9AtjhwgXeZqUfd6bghGKADlJtq7rp", "1qEQyD4FQT6H3gSYPCbXkado9Z4Hn4lQt", "1I4-MxcTFhqyCi8ryz45EZogD7rSfe_9d", "1orHgPexhiL6HRajOXJhAmnOgwyBfjVYK", 
+  "1fVb7U7GRdWW0SQq6zqp_ly6-iKvRGP9i", "1Adws50gO9H9OaI3bNECRM0pg8V8gP2Y9", "19IXcTY0Hwa0-N6Jwg2sOparh1RTvI5UA", "1l79MkePW5JzNbg6dLKYT0JbLDhejTGoh", 
+  "1O72e5yXuHme19hPPEIY92kZ0j0aN-BwV", "1i93AY3SHZNVlmhZMfwLdgmtH_Ja63DJy", "1OQQD_U70YqAfor_ERA5qDa1O3QxwYVNy", "1O5A3vVXf5yIoma3-I5usdhEl7QObO48u", 
+  "1_dHQSwVDZgndRygcA1HEib0q6r2K9mB8", "1DaWxfoi4zYKIMFWqZqyRaNVaG0X4msOP", "1bYs0jkIVrLhvsr7r8ujBsSmS797yxVjc", "1dU5qR1KbInXy4uEEMYRbXO7Jax2Nczvr", 
+  "1WCts8vIRjVpwLW_iMcfGXp0UUVb1jfdL", "1iSZN6E_NGRyUFuF-7g7wSwZRf-cuP2TK", "16LsZRyR3Ssi16H-sk7jIzf9sPnuG1TK3", "1A6Br5lOacnQkFFFOBYh6fjdKq8-7tsF3", 
+  "15CZ5JjCuHHDJ0OXNqUxC7gMx_a2oeFsK", "1kTdWvKFmd-KMMjj51xgmY4FKSzWPaMGr", "1EDoP74ki_O3-VFON1wairdloPNKz5an8", "1g9XCClmAOZlqMlKmV8CRjxiib3fKIDDX", 
+  "1OFfkrsrPD4XGPU7hBq5xl8vLzeiB3_uO", "1PHYvILuFESvXyqByw2c2d72YXscdyZk1", "1wQhro8LEufTE_IdaJwG8aihpWSjLGaQw", "13ANpbjrDR8A9jUnk3vdXng336Du_9Iyi", 
+  "1N8VlkCinSs39SADdf6KxD06chJCdRW2X", "1Ena6hRxb8j3tYjFKY1c1X6BU11A1JYKH", "10QHg4W5mlhC3KL9tW4fSbCKc9RHsA6J6", "1ZdEA03T8nJIJ9IbhSZeScpwCPqzK46mS", 
+  "1653mbYuN8Wjx-PKP9dOqKP54McbMYQzs", "1pJWurlsVjqfjpMYw8k2zC9Ag14HC5Vtq", "1FDiOZuWgxoTg346bKXLlMn0Pcw5pUwTU", "1BQFmOd--edC08LaciNZXS1UyAflCOm4G", 
+  "1eznA4HGD3NK9uARm6Qu4YtmHERC54lLo", "18t9hNtugspICYdsceuY7Qb06nWOk-5IU", "1wSDrS5Y0nH8tGri6euVYTBy3xFdj6vhX", "1Xsoy5MzVOKz3AhuHE6uNTGgEpVVUkxbb", 
+  "1c6uL7ep4FbCZW8n4b6aIqmTQFq4-jrAI", "1ZfRnwswiyrby7n5gs6cITN4C2QbXj7VP", "1ZzF-96qehDXlfVa2lMnEHkirNZnaMlcK", "1Tk6T8vtMSEuDVRSYLi_xAjDYEqX7hwKS", 
+  "1vitDhV0UO_PWuvg-FWaIs12KyUsj0qsP", "1asrp79H4l6iQicTjTaEH1UTr8GEVRC5J", "1CozUpgCsA9toMtzvr06An_bQ4IFVHPuW", "115cklbmCjlXFlteF-cUKKCB0W-LqgZIu", 
+  "1N-QDjnKbjtcXLm7pSHopLjdeS_3Ky_Vr", "19-ZbkWYTSG7a22wFzzM2f0KebhJV9DWp", "1wQPKYPWMTOCz_ZsbH8avw_2CuG8IHqbM", "1nrIXyQvy1CbpV8p-LhcYTHR-V4RWGdaQ", 
+  "1YT20UxJMPH1M711uCjZjkgj_anB5e1KX", "1glGvSBX_0StOKV5gl6ITbSCULGdPS1x6", "1lpUjBJnJl9iqp_CHbGQBBkCpDjRtoINm", "1kXfeeSn74G7NKEfOZQt0wXGS4lKzSuZi", 
+  "1FhND_7GSEbdO3jTCQoQYQBAUZLQjVshW", "1FL-cmoPNxPAxMOSelAucR-3Za6VsvuJG", "1SuL8U6ks64BxWmpSlrTgGLFoevvxrfyk", "17SntI85XoE20Hz3el4Ysdz9J4VnRapNx", 
+  "1qCOHPIwTNhsFv2RDgeGeKbwIgYWP82VV", "1c9tdwkNl_o0g_Khyl1AR6tIciiPykKzO", "1rbsoWCNdu9M0eawqrnjIVnd31RWmJeak", "1Nuq4uw2N-hbmLp62Ask_eN_2pKVYYI7a", 
+  "1Ik4CYa57TVpehAjVVrhy66FXr8QghIpU", "1Y8LygAsLrMXHEjz4ESPy2wLdCKyXaVbH", "12suoU7RqSQKAirCP6fpzBHA1xSFo-jHq", "1E76wkocDML-PoacKeDIkrk6dfOC5BpNJ", 
+  "149t-uHElQnZygnWnls82WqnP3BvTQUm-", "1JYWgcdUY6G5_t2kwmp_rC99m2XT8wlSd", "1fY2LUq71zCsLdMYmcMFQ5dXwysX-1whs"
+]
+
 const GALLERY_ITEMS = [
   {
-    id: 1,
-    title: "Urban Fragments",
-    type: "photography",
-    year: "2026",
-    description: "A series exploring the geometry of city life",
-    imageUrl: "https://cdn.cosmos.so/5689a5cd-92a5-4cb1-b014-263da4f55731?format=jpeg"
-  },
-  {
-    id: 2,
-    title: "Quiet Moments",
-    type: "photography",
-    year: "2025",
-    description: "Finding stillness in motion",
-    imageUrl: "https://cdn.cosmos.so/c4588488-0021-4804-9c29-a43059378bfe?format=jpeg"
-  },
-  {
-    id: 3,
-    title: "Documentary Short",
+    id: "ninaivu-film",
     type: "film",
-    year: "2025",
-    description: "A 5-minute exploration of daily rituals",
-    imageUrl: "https://cdn.cosmos.so/de8c561b-e4e4-48f3-9068-30d63b92c43e?format=jpeg"
+    // Using the stable lh3 format for direct rendering
+    imageUrl: "https://lh3.googleusercontent.com/d/1J8QtfX7sUyyT346qgt8P8gFK4OrC6aOe",
+    videoUrl: "https://www.youtube.com/watch?v=1DDs1A89pIw" 
   },
-  {
-    id: 4,
-    title: "Abstract Series",
+  ...IMAGE_IDS.map((id, index) => ({
+    id: `photo-${index}`,
     type: "photography",
-    year: "2024",
-    description: "Light, shadow, and form",
-    imageUrl: "https://cdn.cosmos.so/207b3ba7-13ef-496b-a9cb-2a718e14a24e?format=jpeg"
-  },
-  {
-    id: 5,
-    title: "Night Drive",
-    type: "film",
-    year: "2024",
-    description: "Experimental short film",
-    imageUrl: "https://cdn.cosmos.so/6c41e632-d300-4516-a7af-9a1f7c0aef94?format=jpeg"
-  },
-  {
-    id: 6,
-    title: "Textures",
-    type: "photography",
-    year: "2024",
-    description: "Close-up studies of everyday materials",
-    imageUrl: "https://cdn.cosmos.so/e552eaac-8251-4890-b954-e988fc4bf2e0?format=jpeg"
-  }
+    imageUrl: `https://lh3.googleusercontent.com/d/${id}`,
+    videoUrl: undefined
+  }))
 ]
 
 export default function PhotographyPage() {
@@ -66,8 +53,54 @@ export default function PhotographyPage() {
     ? GALLERY_ITEMS 
     : GALLERY_ITEMS.filter(item => item.type === filter)
 
+  // Filter out the video so the lightbox only cycles through photos smoothly
+  const lightboxItems = filteredItems.filter(item => !item.videoUrl)
+  const currentIndex = lightboxItems.findIndex(item => item.id === selectedItem?.id)
+
+  const handleNext = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    if (currentIndex === -1) return
+    const nextIndex = (currentIndex + 1) % lightboxItems.length
+    setSelectedItem(lightboxItems[nextIndex])
+  }, [currentIndex, lightboxItems])
+
+  const handlePrev = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    if (currentIndex === -1) return
+    const prevIndex = (currentIndex - 1 + lightboxItems.length) % lightboxItems.length
+    setSelectedItem(lightboxItems[prevIndex])
+  }, [currentIndex, lightboxItems])
+
+  // Handle Keyboard Interactions (Escape, ArrowLeft, ArrowRight)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedItem || selectedItem.videoUrl) return
+      
+      if (e.key === "Escape") {
+        setSelectedItem(null)
+      } else if (e.key === "ArrowRight") {
+        handleNext()
+      } else if (e.key === "ArrowLeft") {
+        handlePrev()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    // Lock background scrolling when lightbox is open
+    if (selectedItem) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = "auto"
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+      document.body.style.overflow = "auto"
+    }
+  }, [selectedItem, handleNext, handlePrev])
+
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background relative overflow-hidden">
       <CustomCursor />
       <Navigation />
 
@@ -76,54 +109,43 @@ export default function PhotographyPage() {
         <ThemeToggle />
       </div>
 
-      <div className="max-w-6xl mx-auto px-8 py-24 md:py-32">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 pt-36 pb-32 relative z-10">
         {/* Header */}
         <motion.div
-          className="mb-12"
-          initial={{ opacity: 0, y: 20 }}
+          className="mb-20 text-center md:text-left"
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <Link
-            href="/"
-            className="text-sm font-mono text-muted-foreground hover:text-foreground transition-colors mb-8 inline-block interactive"
-          >
-            &larr; Back Home
-          </Link>
-          <h1 className="text-4xl md:text-5xl font-sans font-bold tracking-tight mb-4">
+          <h1 className="text-4xl md:text-5xl font-sans font-bold tracking-tight mb-4" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>
             Photography & Films
           </h1>
-          <p className="text-lg text-muted-foreground mb-8">
-            Visual stories and experiments
-          </p>
 
-          {/* Filter */}
-          <div className="flex gap-4">
-            {(["all", "photography", "film"] as const).map((filterOption) => (
-              <button
-                key={filterOption}
-                onClick={() => setFilter(filterOption)}
-                className={`text-sm font-mono transition-all duration-300 interactive ${
-                  filter === filterOption
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
-                {filter === filterOption && (
-                  <motion.div
-                    className="h-px bg-foreground mt-1"
-                    layoutId="filter-underline"
-                  />
-                )}
-              </button>
-            ))}
+          {/* Filter Tabs */}
+          <div className="flex gap-3 flex-wrap mt-8 justify-center md:justify-start">
+            {(["all", "photography", "film"] as const).map((filterOption) => {
+              const isActive = filter === filterOption
+              return (
+                <button
+                  key={filterOption}
+                  onClick={() => setFilter(filterOption)}
+                  className={`text-sm px-5 py-2 rounded-full transition-all duration-300 backdrop-blur-sm border interactive relative ${
+                    isActive
+                      ? "bg-foreground text-background border-transparent shadow-md"
+                      : "bg-foreground/[0.03] text-muted-foreground border-foreground/[0.08] hover:text-foreground hover:bg-foreground/[0.08]"
+                  }`}
+                  style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}
+                >
+                  {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+                </button>
+              )
+            })}
           </div>
         </motion.div>
 
-        {/* Gallery Grid */}
+        {/* Gallery Grid - Strict 2-column rendering with uncropped layout */}
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16"
           layout
         >
           <AnimatePresence mode="popLayout">
@@ -131,22 +153,40 @@ export default function PhotographyPage() {
               <motion.div
                 key={item.id}
                 layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="group relative aspect-[4/3] bg-secondary rounded-lg overflow-hidden cursor-pointer interactive"
-                onClick={() => setSelectedItem(item)}
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ 
+                  duration: 0.7, 
+                  delay: index * 0.02, 
+                  ease: [0.215, 0.610, 0.355, 1.000] 
+                }}
+                className="group flex flex-col interactive cursor-pointer"
+                onClick={() => {
+                  if (item.videoUrl) {
+                    window.open(item.videoUrl, "_blank", "noopener,noreferrer")
+                  } else {
+                    setSelectedItem(item)
+                  }
+                }}
               >
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                  <p className="text-sm font-bold text-white">{item.title}</p>
-                  <p className="text-xs text-white/70 font-mono">{item.type} - {item.year}</p>
+                {/* Pure Image Container - Added min-h-[300px] to prevent collapsing */}
+                <div className="relative w-full min-h-[300px] flex items-center justify-center rounded-2xl overflow-hidden bg-foreground/[0.03] border border-foreground/[0.06] transition-all duration-700 ease-out group-hover:shadow-2xl group-hover:-translate-y-2 group-hover:border-foreground/15">
+                  <img
+                    src={item.imageUrl}
+                    alt="Gallery item"
+                    loading="lazy" 
+                    className="w-full h-auto object-contain block transition-transform duration-700 ease-out group-hover:scale-[1.01]"
+                  />
+                  
+                  {/* Play Icon overlay for Videos */}
+                  {item.videoUrl && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                      <div className="w-16 h-16 rounded-full bg-white/25 backdrop-blur-xl text-white border border-white/30 flex items-center justify-center shadow-2xl text-2xl pl-1 group-hover:scale-110 transition-transform duration-500" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>
+                        ▶
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -154,42 +194,61 @@ export default function PhotographyPage() {
         </motion.div>
       </div>
 
-      {/* Lightbox */}
+      {/* Lightbox Overlay */}
       <AnimatePresence>
-        {selectedItem && (
+        {selectedItem && !selectedItem.videoUrl && (
           <motion.div
-            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-8"
+            className="fixed inset-0 z-50 bg-background/95 backdrop-blur-3xl flex items-center justify-center p-4 md:p-12"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedItem(null)}
           >
+            {/* Previous Arrow */}
+            <button 
+              onClick={handlePrev}
+              className="absolute left-2 md:left-8 top-1/2 -translate-y-1/2 p-4 text-3xl md:text-5xl text-muted-foreground hover:text-foreground transition-colors z-50 interactive outline-none font-light"
+              style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}
+            >
+              &#8592;
+            </button>
+
+            {/* Main Image */}
             <motion.div
-              className="relative max-w-4xl w-full"
-              initial={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-7xl w-full flex flex-col items-center select-none"
+              initial={{ scale: 0.98, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.98, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 250, damping: 30 }}
               onClick={(e) => e.stopPropagation()}
             >
               <img
                 src={selectedItem.imageUrl}
-                alt={selectedItem.title}
-                className="w-full h-auto rounded-lg"
+                alt="Selected photograph"
+                className="w-full h-auto max-h-[90vh] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-sm"
+                draggable={false}
               />
-              <div className="mt-4 text-white">
-                <h2 className="text-xl font-sans font-bold">{selectedItem.title}</h2>
-                <p className="text-sm text-white/70 font-mono mt-1">
-                  {selectedItem.type} - {selectedItem.year}
-                </p>
-                <p className="text-sm text-white/60 mt-2">{selectedItem.description}</p>
+              
+              {/* Close Button */}
+              <div className="absolute top-4 right-4 md:-top-12 md:right-0 z-50">
+                <button
+                  onClick={() => setSelectedItem(null)}
+                  className="text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground py-2 px-5 rounded-full bg-foreground/[0.03] border border-foreground/10 backdrop-blur-md transition-all hover:bg-foreground/[0.08] interactive outline-none"
+                  style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}
+                >
+                  Close [esc]
+                </button>
               </div>
-              <button
-                onClick={() => setSelectedItem(null)}
-                className="absolute -top-12 right-0 text-white/70 hover:text-white text-sm font-mono interactive"
-              >
-                Close [esc]
-              </button>
             </motion.div>
+
+            {/* Next Arrow */}
+            <button 
+              onClick={handleNext}
+              className="absolute right-2 md:right-8 top-1/2 -translate-y-1/2 p-4 text-3xl md:text-5xl text-muted-foreground hover:text-foreground transition-colors z-50 interactive outline-none font-light"
+              style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}
+            >
+              &#8594;
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

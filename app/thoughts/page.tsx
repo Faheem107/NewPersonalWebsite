@@ -6,6 +6,7 @@ import Link from "next/link"
 import CustomCursor from "@/components/custom-cursor"
 import Navigation from "@/components/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
+import VantaBackground from "@/components/vanta-bg"
 
 const THOUGHTS = [
   {
@@ -84,15 +85,16 @@ But the hydrogen in your body — about 60% of your atoms by count — was made 
 
 export default function ThoughtsPage() {
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background relative overflow-hidden">
       <CustomCursor />
       <Navigation />
+      <VantaBackground type="net" />
 
       <div className="fixed top-6 right-6 z-50">
         <ThemeToggle />
       </div>
 
-      <div className="max-w-2xl mx-auto px-6 md:px-8 pt-36 pb-24">
+      <div className="max-w-2xl mx-auto px-6 md:px-8 pt-36 pb-24 relative z-10">
         <motion.header
           className="mb-20"
           initial={{ opacity: 0, y: 16 }}
