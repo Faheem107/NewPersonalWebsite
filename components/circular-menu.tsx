@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Linkedin, Instagram, Github, Mail } from "lucide-react"
 import { BookOpen, Disc3, Clapperboard} from "lucide-react"
@@ -310,11 +310,6 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
     return () => window.removeEventListener("keydown", onKey)
   }, [])
 
-  const handleClick = useCallback((item: MenuItem) => {
-    if (item.href)  window.open(item.href, "_blank", "noopener,noreferrer")
-    else if (item.modal) setModal(item.modal)
-  }, [])
-
   const N         = MENU_ITEMS.length
   const angleStep = (2 * Math.PI) / N
   
@@ -323,14 +318,12 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
   return (
     <>
       <div
-        // FIX: Added `isolate` to create a strict stacking context, preventing the canvas from falling behind the page body
         className="relative flex items-center justify-center isolate"
         style={{ width: 420, height: 420 }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => { setHovered(false); setActiveItem(null) }}
       >
         <div
-          // FIX: Removed `zIndex: -1` which was causing the disappearance bug when Framer Motion scaled the icons
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
           style={{ width: 800, height: 800 }}
         >
@@ -351,8 +344,13 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
               const oy     = Math.sin(theta) * RADIUS
               const active = activeItem === item.id
 
+              // FIX: Determine if the item needs to be an anchor tag (<a>) or a button
+              const isLink = !!item.href
+              const MotionComponent = isLink ? motion.a : motion.button
+
               return (
-                <motion.button
+                <MotionComponent
+                  // @ts-ignore (Framer motion types can get angry when dynamically switching components, but it works perfectly)
                   key={item.id}
                   className="absolute flex flex-col items-center gap-0.5 cursor-pointer"
                   style={{ x: ox, y: oy }}
@@ -362,7 +360,17 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
                   transition={{ type: "spring", stiffness: 380, damping: 28, delay: i * 0.04 }}
                   onMouseEnter={() => setActiveItem(item.id)}
                   onMouseLeave={() => setActiveItem(null)}
-                  onClick={() => handleClick(item)}
+                  // FIX: If it's a link, pass href and target natively. If it's a modal, use onClick.
+                  {...(isLink 
+                    ? { 
+                        href: item.href, 
+                        target: item.id === 'email' ? "_self" : "_blank", 
+                        rel: "noopener noreferrer" 
+                      } 
+                    : { 
+                        onClick: () => { if (item.modal) setModal(item.modal) }
+                      }
+                  )}
                 >
                   {item.kind === "img" ? (
                     <div
@@ -403,7 +411,7 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
                       </motion.span>
                     )}
                   </AnimatePresence>
-                </motion.button>
+                </MotionComponent>
               )
             })}
         </AnimatePresence>
