@@ -105,7 +105,7 @@ export default function ThoughtsPage() {
             Some Thoughts!
           </h1>
           <p className="text-base text-muted-foreground leading-relaxed max-w-md">
-            Musings on physics, mathematics, and the general strangeness of existing in this particular universe.
+            Just writing down stuff I got to know from YouTube videos!
           </p>
         </motion.header>
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useTheme } from "next-themes"
 
 declare global {
@@ -44,9 +44,18 @@ const loadScript = (src: string, globalCheck: () => boolean): Promise<void> => {
 export default function VantaBackground({ type = "dots" }: { type?: VantaType }) {
   const vantaRef = useRef<HTMLDivElement>(null)
   const { resolvedTheme } = useTheme()
-  const isDark = resolvedTheme !== "light"
+  const [mounted, setMounted] = useState(false)
+
+  // Prevent Hydration Error
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const isDark = mounted ? resolvedTheme !== "light" : true
 
   useEffect(() => {
+    if (!mounted) return
+
     let vantaEffect: any = null
     let isCancelled = false
 
@@ -80,9 +89,17 @@ export default function VantaBackground({ type = "dots" }: { type?: VantaType })
 
       if (isCancelled || !vantaRef.current || !window.VANTA) return
 
-      // Use a richer black (0x111111) in light mode for better contrast
-      const fgColor = isDark ? 0xffffff : 0x111111
-      const bgColor = isDark ? 0x000000 : 0xffffff
+      // --- THE EXACT COLOR LOGIC ---
+      const isHalo = type === "halo"
+      
+      // If it's Halo & Light Mode: Use your exact hex codes. Otherwise, stay default.
+      const fgColor = isHalo 
+        ? (isDark ? 0xffffff : 0xe800da) 
+        : (isDark ? 0xffffff : 0x111111)
+        
+      const bgColor = isHalo 
+        ? (isDark ? 0x000000 : 0xd7baba) 
+        : (isDark ? 0x000000 : 0xffffff)
 
       try {
         if (vantaRef.current) {
@@ -112,8 +129,8 @@ export default function VantaBackground({ type = "dots" }: { type?: VantaType })
             mouseControls: true, touchControls: true, gyroControls: false,
             minHeight: 200.0, minWidth: 200.0,
             baseColor: fgColor, 
-            backgroundColor: bgColor, backgroundAlpha: 0,
-            amplitudeFactor: 1.5 // Boosts the ring intensity slightly
+            backgroundColor: bgColor, 
+            amplitudeFactor: 1.5 
           })
         } else if (type === "trunk" && window.VANTA.TRUNK) {
           vantaEffect = window.VANTA.TRUNK({
@@ -137,13 +154,19 @@ export default function VantaBackground({ type = "dots" }: { type?: VantaType })
         vantaEffect.destroy()
       }
     }
-  }, [type, isDark])
+  }, [type, isDark, mounted])
 
-  // Dynamically boost opacity to 40% in light mode so it doesn't wash out against the white background
-  const opacityClass = isDark ? "opacity-25" : "opacity-40"
+  if (!mounted) {
+    return <div className="fixed inset-0 z-0 pointer-events-none" />
+  }
+
+  // Force the Halo canvas to be 100% opaque in light mode so your #d7baba color fills the whole screen perfectly.
+  const opacityClass = type === "halo"
+    ? (isDark ? "opacity-25" : "opacity-100")
+    : (isDark ? "opacity-25" : "opacity-40")
 
   return (
-    <div className={`fixed inset-0 z-0 pointer-events-none mix-blend-normal ${opacityClass}`}>
+    <div className={`fixed inset-0 z-0 pointer-events-none transition-opacity duration-700 ${opacityClass}`}>
       <div ref={vantaRef} className="w-full h-full" />
     </div>
   )

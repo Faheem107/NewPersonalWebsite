@@ -1,15 +1,31 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import CustomCursor from "@/components/custom-cursor"
 import Navigation from "@/components/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 import VantaBackground from "@/components/vanta-bg"
+import { useTheme } from "next-themes"
 
 export default function AboutPage() {
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  // Prevent hydration mismatch by waiting until component mounts
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Check if we are in light mode specifically for this page
+  const isLightMode = mounted && resolvedTheme === "light"
+
   return (
-    <main className="min-h-screen bg-background relative overflow-hidden">
+    <main 
+      className="min-h-screen relative overflow-hidden transition-colors duration-700"
+      // Dynamically override the background color in light mode to match the Halo backdrop
+      style={{ backgroundColor: isLightMode ? "#d7baba" : "var(--background)" }}
+    >
       <CustomCursor />
       <Navigation />
       <VantaBackground type="halo" />
@@ -41,7 +57,7 @@ export default function AboutPage() {
               Hi! I am Mohammed Faheem. I am a second-year student at NYU Abu Dhabi majoring in Physics with a minor in Film & New Media. My academic work primarily revolves around using mathematical and computational tools to understand biological systems and physical phenomena.
             </p>
             <p>
-              Alongside my coursework and lab research, I am deeply involved in science communication and visual arts. I believe scientific education holds its greatest value when it is shared across multiple mediums. It is important to uphold the philosophy behind what we study, keeping our work rooted in the belief that science must ultimately benefit humanity. This is what I aim for in my education: to progress, and at the same time, to share.
+              Alongside my coursework and lab research, I am deeply involved in science communication and visual arts. I believe scientific education holds its greatest value when it is shared through multiple mediums of communication. It is important to uphold the philosophy behind what we study as scientists, keeping our work rooted in the belief that science must ultimately benefit humanity. This is what I aim for in my education: to progress, and at the same time, to share.
             </p>
             <p>
               Outside of academics and filmmaking, I also enjoy football and reading!

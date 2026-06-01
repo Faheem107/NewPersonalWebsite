@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Linkedin, Instagram, Github, Mail } from "lucide-react"
-import { BookOpen, Disc3, Clapperboard} from "lucide-react"
+import { BookOpen, Disc3, Clapperboard } from "lucide-react"
 import Image from "next/image"
 import { Canvas } from "@react-three/fiber"
 import { TorusShader } from "@/components/torus-shader"
@@ -11,11 +11,11 @@ import { TorusShader } from "@/components/torus-shader"
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 const SONGS = [
-  { title: "Resonance",         artist: "HOME" },
-  { title: "Midnight City",     artist: "M83" },
-  { title: "Tadow",             artist: "Masego & FKJ" },
-  { title: "Redbone",           artist: "Childish Gambino" },
-  { title: "Pink + White",      artist: "Frank Ocean" },
+  { title: "Hublots",  artist: "Frank Ocean",  audioSrc: "/audio/hublots.mp3",  imgSrc: "/audio/endless.jpg" },
+  { title: "Bliss",    artist: "klsr.av",      audioSrc: "/audio/bliss.mp3",    imgSrc: "/audio/bliss.jpg" },
+  { title: "Higgs",    artist: "Frank Ocean",  audioSrc: "/audio/higgs.mp3",    imgSrc: "/audio/endless.jpg" },
+  { title: "West",     artist: "River Tiber",  audioSrc: "/audio/west.mp3",     imgSrc: "/audio/west.jpg" },
+  { title: "Earrings", artist: "Malcolm Todd", audioSrc: "/audio/earrings.mp3", imgSrc: "/audio/earrings.jpg" },
 ]
 
 const BOOKS = [
@@ -59,15 +59,100 @@ const MENU_ITEMS: MenuItem[] = [
 // ─── Windows 95 vinyl modal ───────────────────────────────────────────────────
 
 function Win95Modal({ onClose }: { onClose: () => void }) {
+  const [currentTrack, setCurrentTrack] = useState(0)
+  const [isPlaying, setIsPlaying]       = useState(false)
+  const [volume, setVolume]             = useState(0.5)
+  const [bars, setBars]                 = useState<number[]>(Array(22).fill(6))
+  const audioRef                        = useRef<HTMLAudioElement>(null)
+
+  // Visualizer Animation
+  useEffect(() => {
+    if (!isPlaying) {
+      setBars(Array(22).fill(4))
+      return
+    }
+    const interval = setInterval(() => {
+      setBars(Array.from({ length: 22 }, () => Math.random() * 32 + 8))
+    }, 120)
+    return () => clearInterval(interval)
+  }, [isPlaying])
+
+  // Playback & "Middle 30s" Logic
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const handleTimeUpdate = () => {
+      if (audio.duration) {
+        const midPoint = audio.duration / 2
+        const endTime = midPoint + 15
+        
+        if (audio.currentTime >= endTime) {
+          audio.pause()
+          setIsPlaying(false)
+          audio.currentTime = midPoint - 15 // Reset to start point
+        }
+      }
+    }
+
+    const handleLoadedMetadata = () => {
+      const midPoint = audio.duration / 2
+      audio.currentTime = Math.max(0, midPoint - 15)
+      if (isPlaying) {
+        audio.play().catch((e) => console.log("Autoplay prevented:", e))
+      }
+    }
+
+    audio.addEventListener("timeupdate", handleTimeUpdate)
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata)
+    audio.addEventListener("ended", () => setIsPlaying(false))
+
+    return () => {
+      audio.removeEventListener("timeupdate", handleTimeUpdate)
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata)
+      audio.removeEventListener("ended", () => setIsPlaying(false))
+    }
+  }, [currentTrack, isPlaying])
+
+  // Volume Control
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume
+    }
+  }, [volume])
+
+  const togglePlay = () => {
+    if (!audioRef.current) return
+    if (isPlaying) audioRef.current.pause()
+    else audioRef.current.play().catch(() => {})
+    setIsPlaying(!isPlaying)
+  }
+
+  const nextTrack = () => {
+    setCurrentTrack((prev) => (prev + 1) % SONGS.length)
+    setIsPlaying(true)
+  }
+
+  const prevTrack = () => {
+    setCurrentTrack((prev) => (prev - 1 + SONGS.length) % SONGS.length)
+    setIsPlaying(true)
+  }
+
   return (
     <motion.div
       className="fixed inset-0 z-[200] flex items-center justify-center"
-      style={{ background: "rgba(0,0,0,0.45)" }}
+      style={{ background: "rgba(0,0,0,0.45)", touchAction: "none" }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
     >
+      <audio 
+        ref={audioRef} 
+        src={SONGS[currentTrack].audioSrc} 
+        autoPlay={isPlaying}
+      />
+
       <motion.div
         initial={{ scale: 0.94, opacity: 0, y: 10 }}
         animate={{ scale: 1,    opacity: 1, y: 0 }}
@@ -82,6 +167,7 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
           fontFamily:  '"MS Sans Serif", "Pixelated MS Sans Serif", Arial, sans-serif',
           minWidth:    320,
           maxWidth:    380,
+          margin:      "0 16px" // Adds padding on small mobile screens
         }}
       >
         {/* Title bar */}
@@ -100,59 +186,81 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
         >
           <span>Winamp — Now Playing</span>
           <div style={{ display: "flex", gap: 2 }}>
-            {["_", "□", "×"].map((c) => (
-              <button
-                key={c}
-                onClick={c === "×" ? onClose : undefined}
-                style={{
-                  background:  "#c0c0c0",
-                  border:      "2px solid",
-                  borderColor: "#ffffff #808080 #808080 #ffffff",
-                  color:       "#000",
-                  width:       16,
-                  height:      14,
-                  fontSize:    9,
-                  fontFamily:  "inherit",
-                  cursor:      "pointer",
-                  display:     "flex",
-                  alignItems:  "center",
-                  justifyContent: "center",
-                  lineHeight:  1,
-                }}
-              >
-                {c}
-              </button>
-            ))}
+            <button
+              onClick={onClose}
+              style={{
+                background:  "#c0c0c0",
+                border:      "2px solid",
+                borderColor: "#ffffff #808080 #808080 #ffffff",
+                color:       "#000",
+                width:       16,
+                height:      14,
+                fontSize:    9,
+                cursor:      "pointer",
+                display:     "flex",
+                alignItems:  "center",
+                justifyContent: "center",
+                lineHeight:  1,
+              }}
+            >
+              ×
+            </button>
           </div>
         </div>
 
         {/* Body */}
         <div style={{ padding: "10px 12px 12px" }}>
-          {/* Visualiser bar */}
-          <div
-            style={{
-              background:  "#000",
-              height:      48,
-              marginBottom: 8,
-              display:     "flex",
-              alignItems:  "flex-end",
-              gap:         2,
-              padding:     "4px 6px",
-            }}
-          >
-            {Array.from({ length: 28 }).map((_, i) => {
-              const h = 6 + Math.abs(Math.sin(i * 0.9)) * 30
-              return (
+          
+          {/* Rotating Vinyl & Visualizer Row */}
+          <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+            {/* Spinning Vinyl */}
+            <motion.div
+              animate={{ rotate: isPlaying ? 360 : 0 }}
+              transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+              style={{
+                width: 50, height: 50,
+                borderRadius: '50%',
+                background: '#111',
+                border: '2px solid #333',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                position: 'relative', overflow: 'hidden', flexShrink: 0,
+                boxShadow: "0 2px 4px rgba(0,0,0,0.5)"
+              }}
+            >
+              <Image 
+                src={SONGS[currentTrack].imgSrc} 
+                alt="album" 
+                fill 
+                className="object-cover opacity-90" 
+                unoptimized
+              />
+              {/* Center hole of the record */}
+              <div style={{ position: 'absolute', width: 10, height: 10, background: '#c0c0c0', borderRadius: '50%', border: '1px solid #555' }} />
+            </motion.div>
+
+            {/* Visualizer bars */}
+            <div
+              style={{
+                flex: 1,
+                background:  "#000",
+                display:     "flex",
+                alignItems:  "flex-end",
+                gap:         2,
+                padding:     "4px 6px",
+              }}
+            >
+              {bars.map((h, i) => (
                 <div
                   key={i}
                   style={{
                     flex:       1,
                     height:     h,
-                    background: i < 10 ? "#00ff00" : i < 20 ? "#ffff00" : "#ff4444",
+                    background: i < 8 ? "#00ff00" : i < 16 ? "#ffff00" : "#ff4444",
+                    transition: "height 0.1s ease-in-out"
                   }}
                 />
-              )
-            })}
+              ))}
+            </div>
           </div>
 
           {/* Track list */}
@@ -168,62 +276,65 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
             {SONGS.map((s, i) => (
               <div
                 key={i}
+                onClick={() => { setCurrentTrack(i); setIsPlaying(true) }}
                 style={{
                   padding:     "3px 8px",
                   fontSize:    11,
                   display:     "flex",
                   gap:         8,
-                  background:  i === 2 ? "#000080" : "transparent",
-                  color:       i === 2 ? "#fff" : "#000",
-                  cursor:      "default",
+                  background:  i === currentTrack ? "#000080" : "transparent",
+                  color:       i === currentTrack ? "#fff" : "#000",
+                  cursor:      "pointer",
                 }}
               >
-                <span style={{ color: i === 2 ? "#aac8ff" : "#808080", minWidth: 14 }}>{i + 1}.</span>
+                <span style={{ color: i === currentTrack ? "#aac8ff" : "#808080", minWidth: 14 }}>{i + 1}.</span>
                 <span>{s.title}</span>
-                <span style={{ marginLeft: "auto", color: i === 2 ? "#aac8ff" : "#808080" }}>{s.artist}</span>
+                <span style={{ marginLeft: "auto", color: i === currentTrack ? "#aac8ff" : "#808080" }}>{s.artist}</span>
               </div>
             ))}
           </div>
 
-          {/* Buttons */}
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 6 }}>
-            {["  |◄◄  ", "  ►  ", "  ■  ", "  ► ►|  "].map((label) => (
-              <button
-                key={label}
-                style={{
-                  background:  "#c0c0c0",
-                  border:      "2px solid",
-                  borderColor: "#ffffff #808080 #808080 #ffffff",
-                  fontSize:    10,
-                  fontFamily:  "inherit",
-                  padding:     "2px 6px",
-                  cursor:      "pointer",
-                  letterSpacing: 0.5,
-                }}
-              >
-                {label}
-              </button>
-            ))}
-            <button
-              onClick={onClose}
-              style={{
-                background:  "#c0c0c0",
-                border:      "2px solid",
-                borderColor: "#ffffff #808080 #808080 #ffffff",
-                fontSize:    10,
-                fontFamily:  "inherit",
-                padding:     "2px 10px",
-                cursor:      "pointer",
-                marginLeft:  8,
-              }}
-            >
-              Close
-            </button>
+          {/* Bottom Controls (Volume & Playback) */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            
+            {/* Volume Slider */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 10, fontWeight: "bold", letterSpacing: 0.5 }}>VOL</span>
+              <input 
+                type="range" 
+                min="0" 
+                max="1" 
+                step="0.01" 
+                value={volume}
+                onChange={(e) => setVolume(parseFloat(e.target.value))}
+                style={{ width: 64, cursor: "pointer", accentColor: "#000080" }}
+              />
+            </div>
+
+            {/* Buttons */}
+            <div style={{ display: "flex", gap: 4 }}>
+              <button onClick={prevTrack} style={buttonStyle}> |◄◄ </button>
+              <button onClick={togglePlay} style={buttonStyle}> {isPlaying ? " || " : " ► "} </button>
+              <button onClick={() => { setIsPlaying(false); if(audioRef.current) audioRef.current.pause() }} style={buttonStyle}> ■ </button>
+              <button onClick={nextTrack} style={buttonStyle}> ► ►| </button>
+              <button onClick={onClose} style={{ ...buttonStyle, marginLeft: 8 }}>Close</button>
+            </div>
           </div>
         </div>
       </motion.div>
     </motion.div>
   )
+}
+
+const buttonStyle = {
+  background:  "#c0c0c0",
+  border:      "2px solid",
+  borderColor: "#ffffff #808080 #808080 #ffffff",
+  fontSize:    10,
+  fontFamily:  "inherit",
+  padding:     "2px 6px",
+  cursor:      "pointer",
+  letterSpacing: 0.5,
 }
 
 // ─── Generic dark modal (books / movies) ─────────────────────────────────────
@@ -296,36 +407,91 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
   const [modal,      setModal]      = useState<"vinyl" | "books" | "movies" | null>(null)
   const [angle,      setAngle]      = useState(0)
 
-  const isExpanded = hovered || activeItem !== null || forceOpen
+  // ─── Mobile Responsiveness State ───
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
 
+  // Detect screen size on mount and resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640)
+    }
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
+
+  // The menu expands if forced, if hovered on desktop, or if tapped on mobile
+  const isExpanded = forceOpen || (isMobile ? mobileOpen : (hovered || activeItem !== null))
+
+  // Handle continuous rotation
   useEffect(() => {
     if (!isExpanded) return
     const id = setInterval(() => setAngle((a) => a + 0.15), 50)
     return () => clearInterval(id)
   }, [isExpanded])
 
+  // Handle escape key to close modals
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setModal(null) }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
   }, [])
 
+  // Handle click on individual menu items
+  const handleClick = useCallback((item: MenuItem, e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent the container click from firing and closing the menu
+    if (item.href)  window.open(item.href, "_blank", "noopener,noreferrer")
+    else if (item.modal) setModal(item.modal)
+  }, [])
+
+  // Handle click on the central container (for mobile tap-to-toggle)
+  const handleContainerClick = () => {
+    if (isMobile) {
+      setMobileOpen(!mobileOpen)
+    }
+  }
+
   const N         = MENU_ITEMS.length
   const angleStep = (2 * Math.PI) / N
   
-  const RADIUS    = 150 
+  // ─── Dynamic Math for Responsiveness ───
+  const RADIUS        = isMobile ? 112 : 150 
+  const containerSize = isMobile ? 330 : 420
+  const itemScale     = isMobile ? 0.85 : 1
 
   return (
     <>
+      {/* Mobile background overlay to tap-out and close */}
+      {isMobile && mobileOpen && (
+        <div 
+          className="fixed inset-0 z-[40]" 
+          onClick={() => setMobileOpen(false)} 
+        />
+      )}
+
       <div
-        className="relative flex items-center justify-center isolate"
-        style={{ width: 420, height: 420 }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => { setHovered(false); setActiveItem(null) }}
+        className="relative flex items-center justify-center isolate select-none touch-none"
+        style={{ width: containerSize, height: containerSize }}
+        onMouseEnter={() => !isMobile && setHovered(true)}
+        onMouseLeave={() => { 
+          if (!isMobile) {
+            setHovered(false); 
+            setActiveItem(null) 
+          }
+        }}
+        onClick={handleContainerClick}
       >
+        {/* Mobile tap hint */}
+        {isMobile && !mobileOpen && (
+          <div className="absolute top-4 text-[10px] uppercase tracking-widest text-foreground/40 animate-pulse font-sans font-bold pointer-events-none">
+            Tap to explore
+          </div>
+        )}
+
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ width: 800, height: 800 }}
+          style={{ width: isMobile ? 600 : 800, height: isMobile ? 600 : 800 }}
         >
           <Canvas
             camera={{ position: [0, 0, 13], fov: 45 }}
@@ -344,33 +510,21 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
               const oy     = Math.sin(theta) * RADIUS
               const active = activeItem === item.id
 
-              // FIX: Determine if the item needs to be an anchor tag (<a>) or a button
-              const isLink = !!item.href
-              const MotionComponent = isLink ? motion.a : motion.button
-
               return (
-                <MotionComponent
-                  // @ts-ignore (Framer motion types can get angry when dynamically switching components, but it works perfectly)
+                <motion.button
                   key={item.id}
-                  className="absolute flex flex-col items-center gap-0.5 cursor-pointer"
+                  className="absolute flex flex-col items-center gap-0.5 cursor-pointer z-[50]"
                   style={{ x: ox, y: oy }}
                   initial={{ opacity: 0, scale: 0.3 }}
-                  animate={{ opacity: 1, scale: active ? 1.3 : 1 }}
+                  animate={{ 
+                    opacity: 1, 
+                    scale: active ? (itemScale * 1.3) : itemScale 
+                  }}
                   exit={{   opacity: 0, scale: 0.3 }}
                   transition={{ type: "spring", stiffness: 380, damping: 28, delay: i * 0.04 }}
-                  onMouseEnter={() => setActiveItem(item.id)}
-                  onMouseLeave={() => setActiveItem(null)}
-                  // FIX: If it's a link, pass href and target natively. If it's a modal, use onClick.
-                  {...(isLink 
-                    ? { 
-                        href: item.href, 
-                        target: item.id === 'email' ? "_self" : "_blank", 
-                        rel: "noopener noreferrer" 
-                      } 
-                    : { 
-                        onClick: () => { if (item.modal) setModal(item.modal) }
-                      }
-                  )}
+                  onMouseEnter={() => !isMobile && setActiveItem(item.id)}
+                  onMouseLeave={() => !isMobile && setActiveItem(null)}
+                  onClick={(e) => handleClick(item, e)}
                 >
                   {item.kind === "img" ? (
                     <div
@@ -382,7 +536,7 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
                         alt={item.label}
                         fill
                         className={`object-contain transition-opacity duration-200 ${
-                          active ? "opacity-100" : "opacity-80" 
+                          active || isMobile ? "opacity-100" : "opacity-80" 
                         }`}
                         sizes="44px"
                         unoptimized
@@ -391,7 +545,7 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
                   ) : (
                     <span
                       className={`transition-colors duration-150 ${
-                        active ? "text-foreground" : "text-foreground/50"
+                        active || isMobile ? "text-foreground" : "text-foreground/50"
                       }`}
                     >
                       {item.icon}
@@ -399,7 +553,7 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
                   )}
 
                   <AnimatePresence>
-                    {active && (
+                    {(active || isMobile) && (
                       <motion.span
                         className="absolute -bottom-5 text-[9px] font-sans font-bold text-foreground/80 whitespace-nowrap tracking-wide"
                         initial={{ opacity: 0, y: -2 }}
@@ -411,7 +565,7 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
                       </motion.span>
                     )}
                   </AnimatePresence>
-                </MotionComponent>
+                </motion.button>
               )
             })}
         </AnimatePresence>
