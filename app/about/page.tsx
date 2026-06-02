@@ -57,7 +57,7 @@ export default function AboutPage() {
               Hi! I am Mohammed Faheem. I am a second-year student at NYU Abu Dhabi majoring in Physics with a minor in Film & New Media. My academic work primarily revolves around using mathematical and computational tools to understand biological systems and physical phenomena.
             </p>
             <p>
-              Alongside my coursework and lab research, I am deeply involved in science communication and visual arts. I believe scientific education holds its greatest value when it is shared through multiple mediums of communication. It is important to uphold the philosophy behind what we study as scientists, keeping our work rooted in the belief that science must ultimately benefit humanity. This is what I aim for in my education: to progress, and at the same time, to share.
+              Alongside my coursework and lab research, I am deeply involved in science communication and visual arts. I believe scientific education holds its greatest value when it is shared across multiple mediums. It is important to uphold the philosophy behind what we study, keeping our work rooted in the belief that science must ultimately benefit humanity. This is what I aim for in my education: to progress, and at the same time, to share.
             </p>
             <p>
               Outside of academics and filmmaking, I also enjoy football and reading!
@@ -73,18 +73,19 @@ export default function AboutPage() {
             <h2 className="text-sm font-mono uppercase tracking-wider text-muted-foreground mb-6">
               Quick Facts
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-              <div>
+            {/* Optimized grid: evenly spaces items out on desktop and aligns University to the far right text-alignment */}
+            <div className="flex flex-col md:flex-row md:justify-between gap-6 md:gap-4 text-sm">
+              <div className="flex-1 min-w-[120px]">
                 <span className="text-muted-foreground block mb-1">Location</span>
-                <p className="font-bold">Abu Dhabi, UAE</p>
+                <p className="font-bold text-foreground">Abu Dhabi, UAE</p>
               </div>
-              <div>
+              <div className="flex-1 md:max-w-[40%]">
                 <span className="text-muted-foreground block mb-1">Major</span>
-                <p className="font-bold">Physics and Film & New Media</p>
+                <p className="font-bold text-foreground leading-snug">Physics and Film & New Media</p>
               </div>
-              <div>
+              <div className="flex-1 min-w-[140px] md:text-right">
                 <span className="text-muted-foreground block mb-1">University</span>
-                <p className="font-bold">NYU Abu Dhabi</p>
+                <p className="font-bold text-foreground">NYU Abu Dhabi</p>
               </div>
             </div>
           </motion.div>
