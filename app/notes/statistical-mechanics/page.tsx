@@ -51,15 +51,17 @@ function Ref({ href, children }: { href: string; children: React.ReactNode }) {
   )
 }
 
-// Custom Placeholder for Google Images
-function ImagePlaceholder({ alt, caption }: { alt: string; caption: string }) {
+// Live Image Component using Google Drive secure proxy
+function ContentImage({ src, alt, caption }: { src: string; alt: string; caption: string }) {
   return (
     <div className="my-12 flex flex-col items-center">
-      <div className="w-full max-w-2xl aspect-[16/9] bg-foreground/[0.02] dark:bg-[#0a0a0a] border-2 border-dashed border-foreground/15 dark:border-white/10 rounded-2xl flex items-center justify-center relative overflow-hidden group hover:border-foreground/30 transition-colors">
-        {/* TO DO: Replace this div with an <img> tag referencing your Google Drive / Images */}
-        <p className="text-muted-foreground/50 font-mono text-xs md:text-sm tracking-[0.15em] uppercase px-4 text-center">
-          [ Insert Image: {alt} ]
-        </p>
+      <div className="w-full max-w-2xl bg-foreground/[0.02] dark:bg-[#0a0a0a] border border-foreground/15 dark:border-white/10 rounded-2xl flex items-center justify-center relative overflow-hidden group shadow-sm">
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          className="w-full h-auto object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+        />
       </div>
       <p className="text-xs text-center mt-4 text-muted-foreground/60 font-mono tracking-wider uppercase max-w-lg">{caption}</p>
     </div>
@@ -116,7 +118,8 @@ export default function StatMechPage() {
             To begin, we define the microscopic state of the entire system as a single point in a <InlineMath math="6N" />-dimensional manifold called <strong>Phase Space</strong> (<InlineMath math="\Gamma" />). This space is spanned by <InlineMath math="3N" /> generalized coordinates <InlineMath math="q_i" /> and <InlineMath math="3N" /> conjugate momenta <InlineMath math="p_i" />.
           </p>
           
-          <ImagePlaceholder 
+          <ContentImage 
+            src="https://lh3.googleusercontent.com/d/1SSvGGsnhWDoo8rwERb7kTckBzaKHySI0"
             alt="Phase space trajectory and Liouville's volume preservation" 
             caption="Fig 1: A point representing the entire system traces a trajectory through Phase Space. By Liouville's Theorem, a local volume of these points evolves like an incompressible fluid."
           />
@@ -163,7 +166,8 @@ export default function StatMechPage() {
           </p>
           <Eq math="P_i = \frac{1}{Z} e^{-\beta E_i} \quad \text{where} \quad \beta \equiv \frac{1}{k_B T}" label="The Boltzmann Factor" />
           
-          <ImagePlaceholder 
+          <ContentImage 
+            src="https://lh3.googleusercontent.com/d/1XXJZQcOvVd3-h6oK4PLQFpJO1e_GHL5i"
             alt="Graph of the Boltzmann Distribution P(E) vs E for different temperatures" 
             caption="Fig 2: The exponential decay of microstate probability. Notice how at higher temperatures (lower beta), the distribution flattens, allowing the system to access higher energy states more frequently."
           />
@@ -225,7 +229,8 @@ export default function StatMechPage() {
             <li><strong>Bosons:</strong> Particles with integer spin (photons, phonons, Helium-4 atoms). They have symmetric wavefunctions. They not only share states but actively "prefer" to bunch up into the same state.</li>
           </ul>
           
-          <ImagePlaceholder 
+          <ContentImage 
+            src="https://lh3.googleusercontent.com/d/12qBRNWZYJ6e9h25jByWT_LtP1g6Pv4Fl"
             alt="Comparison of Maxwell-Boltzmann, Fermi-Dirac, and Bose-Einstein distribution functions" 
             caption="Fig 3: Average occupation number ⟨n⟩ vs Energy. Notice the Fermi step function at T=0, and the divergence of the Bose curve at low energies."
           />
@@ -256,7 +261,8 @@ export default function StatMechPage() {
             Bosons behave entirely differently. Because they like to share states, as we cool a gas of bosons down, something spectacular happens. At a specific critical temperature <InlineMath math="T_c" />, the macroscopic occupation of the lowest available energy level (the ground state) begins.
           </p>
           
-          <ImagePlaceholder 
+          <ContentImage 
+            src="https://lh3.googleusercontent.com/d/1S1e7cFqvJ75C6NvmwdowNPEG1LdoF60G"
             alt="Density profile of a Bose-Einstein Condensate forming as temperature drops below Tc" 
             caption="Fig 4: Velocity distribution of rubidium atoms. As the temperature drops below the critical threshold, a massive spike appears at zero velocity—a macroscopic quantum state."
           />
@@ -284,7 +290,8 @@ export default function StatMechPage() {
           </p>
           <Eq math="m = \tanh\big(\beta (J z m + h)\big)" label="Mean-Field Magnetization" />
           
-          <ImagePlaceholder 
+          <ContentImage 
+            src="https://lh3.googleusercontent.com/d/1WvFTCX5UMx6T7ThuEO6E7W812ko_INTI"
             alt="Graph of spontaneous magnetization (m) vs Temperature (T) showing a continuous phase transition at Tc" 
             caption="Fig 5: Spontaneous symmetry breaking. As T drops below Tc, the magnetization bifurcates from zero, choosing either a positive or negative macroscopic alignment."
           />

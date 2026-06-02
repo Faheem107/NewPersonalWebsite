@@ -95,7 +95,7 @@ export default function NotesPage() {
             Notes
           </h1>
           <p className="text-base text-muted-foreground leading-relaxed max-w-2xl">
-            A structured repository of mathematical proofs, derivations, and comprehensive topics from my undergraduate physics and quantitative coursework.
+            A structured repository of mathematical proofs and comprehensive topics from my classes. Updates are currently underway!
           </p>
         </motion.header>
 
