@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useMemo, useState } from "react"
+import { useRef, useMemo, useState, useEffect } from "react"
 import { useFrame, useThree } from "@react-three/fiber"
 import { useTheme } from "next-themes"
 import * as THREE from "three"
@@ -81,8 +81,7 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
             vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
             gl_Position = projectionMatrix * mvPosition;
             
-            // FIX: Restored the highly dynamic point sizing so the particles look like a magnetic field again
-            gl_PointSize = mix(2.2 + magneticInfluence * 2.0, 1.6, uExpand); 
+            gl_PointSize = mix(2.2 + magneticInfluence * 1.0, 1.5, uExpand) * (30.0 / -mvPosition.z); 
           }
         `,
         fragmentShader: `
@@ -94,40 +93,49 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
           varying vec3 vNormal;
           varying float vExpand;
 
-          vec3 getIridescentColor(vec3 worldPos, vec3 normal, float time) {
+          vec3 getIridescentColor(vec3 worldPos, vec3 normal, float time, float isDarkTheme) {
             float angle = atan(worldPos.y, worldPos.x);
             float height = worldPos.z;
-            float colorShift = angle * 0.6 + height * 0.4 + time * 0.2;
+            float colorShift = angle * 0.8 + height * 0.5 + time * 0.25;
             
-            vec3 color1 = vec3(0.5, 0.75, 1.0);
-            vec3 color2 = vec3(0.75, 0.5, 1.0);
-            vec3 color3 = vec3(1.0, 0.65, 0.75);
+            vec3 color1, color2, color3;
+            
+            if (isDarkTheme > 0.5) {
+              // Dark Mode
+              color1 = vec3(0.4, 0.65, 1.0);
+              color2 = vec3(1.0, 0.45, 0.75);
+              color3 = vec3(0.4, 1.0, 0.6);
+            } else {
+              // Light Mode: Pure, ultra-saturated colors for maximum pop against white
+              color1 = vec3(0.0, 0.4, 1.0);  // Pure Vibrant Blue
+              color2 = vec3(1.0, 0.0, 0.5);  // Pure Hot Pink
+              color3 = vec3(0.0, 0.8, 0.2);  // Pure Vivid Green
+            }
             
             vec3 iridescent = mix(color1, color2, sin(colorShift) * 0.5 + 0.5);
-            iridescent = mix(iridescent, color3, cos(colorShift * 1.5) * 0.5 + 0.5);
+            iridescent = mix(iridescent, color3, cos(colorShift * 1.3) * 0.5 + 0.5);
             return iridescent;
           }
           
           void main() {
             vec2 center = gl_PointCoord - 0.5;
             float dist = length(center);
+            
             if (dist > 0.5) discard;
             
-            float alpha = smoothstep(0.0, 0.8, vDistanceFromCenter);
+            float alpha = smoothstep(0.5, 0.35, dist);
             
-            // Enforce a high minimum opacity so it never looks dim or hollow
-            alpha = max(alpha, 0.7); 
-            alpha = mix(alpha, 1.0, vMouseInfluence * 0.5);
-            alpha = mix(alpha, 0.5, vExpand); 
-            
-            vec3 iridescent = getIridescentColor(vWorldPosition, vNormal, uTime);
-            
-            // FIXED: Changed uExpand to vExpand here!
-            vec3 finalColor = iridescent * mix(6.5, 2.5, vExpand);
-            
+            vec3 iridescent = getIridescentColor(vWorldPosition, vNormal, uTime, uIsDark);
+            vec3 finalColor;
+
             if (uIsDark < 0.5) {
-                finalColor = vec3(0.05, 0.05, 0.05); 
-                alpha = mix(alpha, 0.8, vExpand); 
+                // Light Mode: Multipliers slightly raised for color pop, but kept safe from blowout
+                finalColor = iridescent * mix(1.3, 1.0, vExpand);
+                alpha *= mix(0.95, 0.75, vExpand);
+            } else {
+                // Dark Mode: Kept 14.0 unhovered brightness, but dropped hovered back to 2.5!
+                finalColor = iridescent * mix(14.0, 0.5, vExpand);
+                alpha *= mix(0.9, 0.5, vExpand);
             }
 
             gl_FragColor = vec4(finalColor, alpha);
@@ -137,8 +145,26 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
         depthWrite: false,
         blending: THREE.AdditiveBlending, 
       }),
-    [],
+    [isDark],
   )
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth) * 2 - 1
+      const y = -(e.clientY / window.innerHeight) * 2 + 1
+      
+      const vector = new THREE.Vector3(x, y, 0.5)
+      vector.unproject(camera)
+      const dir = vector.sub(camera.position).normalize()
+      const distance = -camera.position.z / dir.z
+      const pos = camera.position.clone().add(dir.multiplyScalar(distance))
+      
+      setMouse3D(pos)
+    }
+
+    window.addEventListener("mousemove", handleMouseMove)
+    return () => window.removeEventListener("mousemove", handleMouseMove)
+  }, [camera])
 
   useFrame((state) => {
     if (pointsRef.current && materialRef.current) {

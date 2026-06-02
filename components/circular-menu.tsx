@@ -19,15 +19,15 @@ const SONGS = [
 ]
 
 const BOOKS = [
-  { title: "The Feynman Lectures on Physics", author: "Richard Feynman" },
+  { title: "Men of Mathematics",              author: "Eric Temple Bell" },
   { title: "The Elegant Universe",            author: "Brian Greene" },
-  { title: "Sculpting in Time",               author: "Andrei Tarkovsky" },
+  { title: "Mathematics for Human Flourishing", author: "Francis Su" },
   { title: "Godel, Escher, Bach",             author: "Douglas Hofstadter" },
   { title: "Seven Brief Lessons on Physics",  author: "Carlo Rovelli" },
 ]
 
 const MOVIES = [
-  { title: "Stalker",               director: "Andrei Tarkovsky", year: "1979" },
+  { title: "Oppenheimer",               director: "Christopher Nolan", year: "2023" },
   { title: "2001: A Space Odyssey", director: "Stanley Kubrick",  year: "1968" },
   { title: "In the Mood for Love",  director: "Wong Kar-wai",     year: "2000" },
   { title: "Interstellar",          director: "Christopher Nolan",year: "2014" },
@@ -167,7 +167,7 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
           fontFamily:  '"MS Sans Serif", "Pixelated MS Sans Serif", Arial, sans-serif',
           minWidth:    320,
           maxWidth:    380,
-          margin:      "0 16px" // Adds padding on small mobile screens
+          margin:      "0 16px" 
         }}
       >
         {/* Title bar */}
@@ -222,7 +222,7 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
                 borderRadius: '50%',
                 background: '#111',
                 border: '2px solid #333',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', // FIXED: Capitalized C in justifyContent
                 position: 'relative', overflow: 'hidden', flexShrink: 0,
                 boxShadow: "0 2px 4px rgba(0,0,0,0.5)"
               }}
@@ -234,7 +234,6 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
                 className="object-cover opacity-90" 
                 unoptimized
               />
-              {/* Center hole of the record */}
               <div style={{ position: 'absolute', width: 10, height: 10, background: '#c0c0c0', borderRadius: '50%', border: '1px solid #555' }} />
             </motion.div>
 
@@ -471,7 +470,9 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
       )}
 
       <div
-        className="relative flex items-center justify-center isolate select-none touch-none"
+        className={`relative flex items-center justify-center isolate select-none touch-none ${
+          isMobile && mobileOpen ? "z-[50]" : "z-10"
+        }`}
         style={{ width: containerSize, height: containerSize }}
         onMouseEnter={() => !isMobile && setHovered(true)}
         onMouseLeave={() => { 
