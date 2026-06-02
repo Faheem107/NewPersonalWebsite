@@ -57,7 +57,7 @@ export default function AboutPage() {
               Hi! I am Mohammed Faheem. I am a second-year student at NYU Abu Dhabi majoring in Physics with a minor in Film & New Media. My academic work primarily revolves around using mathematical and computational tools to understand biological systems and physical phenomena.
             </p>
             <p>
-              Alongside my coursework and lab research, I am deeply involved in science communication and visual arts. I believe scientific education holds its greatest value when it is shared across multiple mediums. It is important to uphold the philosophy behind what we study, keeping our work rooted in the belief that science must ultimately benefit humanity. This is what I aim for in my education: to progress, and at the same time, to share.
+              Alongside my coursework and lab research, I am deeply involved in science communication and visual arts. I believe scientific education holds its greatest value when it is shared across multiple mediums of communication. It is important to uphold the philosophy behind what we study as scientists, keeping our work rooted in the belief that science must ultimately benefit humanity. This is what I aim for in my education: to progress, and at the same time, to share.
             </p>
             <p>
               Outside of academics and filmmaking, I also enjoy football and reading!
