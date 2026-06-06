@@ -8,6 +8,9 @@ import { ThemeToggle } from "@/components/theme-toggle"
 
 // IDs MANUALLY REVERSED - No functions used.
 const IMAGE_IDS = [
+  "1XcNIzTmNrtkomKoppJsLMEjTcENUfz1B", "1PhNBab_5paap_X27Gj-xPYJTXmQ2I2Bj", "1qOmAoPLTr8OqyQvxhgW1auXF8epvXMER", "1vcAxfwY_wW3NSN8Tx6YM5Zp91x5TXxuH", 
+  "1DrxqKOTs-rP1FHLavu0QRO3rvUo-YYft", "1shsjqOuaQEzSocBdXGp2FCSBjkYcvc3i", "1PkpfwXJYruM5y_yY9ipzgK4Q29Klzk1X", "17IB6cMe6DUovEqUpZQzaF2VfkNlvhGSN", 
+  "1ZQ2tLOnzAJ0PU8ZpnB0YG_b2qg95mJBx", "18gGBC9WuReuNllqISRUTSU0MHb5AMr_b", "1_hkbv8vKqNGhm2A37DZUNW69TY_4VNiH", "1J41akVBClrF3zsSIgpEvCbKXjT-jUZaG",
   "1fY2LUq71zCsLdMYmcMFQ5dXwysX-1whs", "1JYWgcdUY6G5_t2kwmp_rC99m2XT8wlSd", "149t-uHElQnZygnWnls82WqnP3BvTQUm-", "1E76wkocDML-PoacKeDIkrk6dfOC5BpNJ", 
   "12suoU7RqSQKAirCP6fpzBHA1xSFo-jHq", "1Y8LygAsLrMXHEjz4ESPy2wLdCKyXaVbH", "1Ik4CYa57TVpehAjVVrhy66FXr8QghIpU", "1Nuq4uw2N-hbmLp62Ask_eN_2pKVYYI7a", 
   "1rbsoWCNdu9M0eawqrnjIVnd31RWmJeak", "1c9tdwkNl_o0g_Khyl1AR6tIciiPykKzO", "1qCOHPIwTNhsFv2RDgeGeKbwIgYWP82VV", "17SntI85XoE20Hz3el4Ysdz9J4VnRapNx", 
