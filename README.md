@@ -1,33 +1,68 @@
-# NewPersonalWebsite
+# faheem.
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+Personal site — research, notes, photography and film.
 
-## Built with v0
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
-
-[Continue working on v0 →](https://v0.app/chat/projects/prj_XhQ1G8hTFVyyv92fUmHsEQoJBYEO)
-
-## Getting Started
-
-First, run the development server:
+## Running it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+npm install
+npm run dev        # http://localhost:3000
+npm run build      # production build; typecheck runs as part of it
+npm run typecheck  # tsc --noEmit on its own
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Layout
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+app/                        routes
+  notes/[subject]/[topic]/  note pages, generated from content/
+components/
+  backdrop/field-lines      the WebGL streamline backdrop
+  mdx/                      the shared note vocabulary
+  notes/                    the plate menu and note chrome
+content/notes/              the notes themselves, as MDX
+lib/
+  notes.ts                  builds the note tree from the filesystem
+  motion/                   pointer, magnetic and reveal primitives
+```
 
-## Learn More
+## Adding a note
 
-To learn more, take a look at the following resources:
+Drop an `.mdx` file into `content/notes/<subject>/` with frontmatter:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+```mdx
+---
+title: Green's Functions
+summary: Solve for a point source once, and every other source is an integral.
+order: 2
+updated: May 2026
+---
+```
+
+The route, the entry in the notes menu, the prev/next links and the sitemap all
+follow from the file being there. Nothing else needs editing.
+
+Subject-level metadata lives in `content/notes/<subject>/_meta.json` — title,
+blurb, sort order, and which backdrop field the subject uses.
+
+Maths is written as `$inline$` and `$$display$$`, rendered to HTML at build time by
+`remark-math` + `rehype-katex`. There is no maths runtime in the browser.
+
+Components available inside a note: `<Figure>`, `<Diagram>`, `<Aside>`,
+`<Definition>`, `<Theorem>`, `<Proof>`, `<Statement>`. See `components/mdx`.
+
+## Notes on the design
+
+The palette and type are built around the cyanotype — the one process that is both a
+photographic print and the origin of the word blueprint. Cold paper, Prussian blue,
+and content presented on "plates" (a framed field with a caption rail) rather than
+cards.
+
+Newsreader and Archivo are both variable fonts, and several interactions depend on
+that: links and headings shift weight rather than colour on hover, and captions use
+Archivo's width axis for a condensed cut instead of loading a second family.
+
+`prefers-reduced-motion` is honoured throughout — the backdrop renders a single static
+frame, smooth scrolling is not installed, and the custom cursor is disabled.

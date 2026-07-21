@@ -1,78 +1,70 @@
-"use client"
+'use client'
 
-import React, { useEffect, useState } from "react"
-import { motion, useMotionValue, useSpring } from "framer-motion"
-import { useTheme } from "next-themes"
+import { useEffect } from 'react'
+import { motion, useMotionValue } from 'motion/react'
+import { usePointer } from '@/lib/motion/pointer'
 
+/**
+ * The pointer. Uses mix-blend-mode: difference so it inverts whatever sits
+ * under it — which means it needs no knowledge of the theme, and stays legible
+ * over photographs and the field-line backdrop alike.
+ */
 export default function CustomCursor() {
-  const [isHovering, setIsHovering] = useState(false)
-  const [isTouchDevice, setIsTouchDevice] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const { resolvedTheme } = useTheme()
+  const { smoothX, smoothY, variant, stickTarget, hasPointer } = usePointer()
 
-  const rawX = useMotionValue(-100)
-  const rawY = useMotionValue(-100)
+  const cx = useMotionValue(-100)
+  const cy = useMotionValue(-100)
 
-  // Framer Motion spring physics — stiffness 300, damping 20 per spec
-  const x = useSpring(rawX, { stiffness: 300, damping: 20, mass: 0.4 })
-  const y = useSpring(rawY, { stiffness: 300, damping: 20, mass: 0.4 })
-
+  // When stuck, the cursor parks on the target's centre instead of tracking the
+  // pointer — that is what makes a link feel like it caught the cursor.
   useEffect(() => {
-    setMounted(true)
-    setIsTouchDevice("ontouchstart" in window || navigator.maxTouchPoints > 0)
-  }, [])
-
-  useEffect(() => {
-    if (isTouchDevice) return
-
-    const onMove = (e: MouseEvent) => {
-      rawX.set(e.clientX)
-      rawY.set(e.clientY)
-    }
-
-    const onEnter = (e: MouseEvent) => {
-      if (e.target instanceof Element &&
-          e.target.closest('a, button, [role="button"], .cursor-pointer, .interactive')) {
-        setIsHovering(true)
+    const write = () => {
+      if (stickTarget) {
+        cx.set(stickTarget.left + stickTarget.width / 2)
+        cy.set(stickTarget.top + stickTarget.height / 2)
+      } else {
+        cx.set(smoothX.get())
+        cy.set(smoothY.get())
       }
     }
+    write()
+    const unsubscribe = [smoothX.on('change', write), smoothY.on('change', write)]
+    return () => unsubscribe.forEach(u => u())
+  }, [stickTarget, smoothX, smoothY, cx, cy])
 
-    const onLeave = (e: MouseEvent) => {
-      if (e.target instanceof Element &&
-          e.target.closest('a, button, [role="button"], .cursor-pointer, .interactive')) {
-        setIsHovering(false)
-      }
-    }
+  if (!hasPointer) return null
 
-    window.addEventListener("mousemove", onMove)
-    document.addEventListener("mouseenter", onEnter, true)
-    document.addEventListener("mouseleave", onLeave, true)
-    return () => {
-      window.removeEventListener("mousemove", onMove)
-      document.removeEventListener("mouseenter", onEnter, true)
-      document.removeEventListener("mouseleave", onLeave, true)
-    }
-  }, [isTouchDevice, rawX, rawY])
-
-  if (!mounted || isTouchDevice) return null
-
-  const isDark = resolvedTheme === "dark"
-  const color = isDark ? "#ffffff" : "#000000"
+  const stuck = variant === 'stuck' && stickTarget !== null
+  const size = stuck
+    ? { width: stickTarget!.width + 16, height: stickTarget!.height + 12 }
+    : variant === 'highlight'
+      ? { width: 34, height: 34 }
+      : { width: 9, height: 9 }
 
   return (
     <motion.div
-      className="fixed top-0 left-0 pointer-events-none z-[9999] rounded-full"
+      aria-hidden
+      className="pointer-events-none fixed left-0 top-0 z-[9999]"
       style={{
-        x,
-        y,
-        translateX: "-50%",
-        translateY: "-50%",
-        width: isHovering ? 28 : 8,
-        height: isHovering ? 28 : 8,
-        backgroundColor: isHovering ? "transparent" : color,
-        border: isHovering ? `1.5px solid ${color}` : "none",
-        transition: "width 0.15s ease, height 0.15s ease, background-color 0.15s ease, border 0.15s ease",
+        x: cx,
+        y: cy,
+        translateX: '-50%',
+        translateY: '-50%',
+        mixBlendMode: 'difference',
       }}
-    />
+    >
+      <motion.div
+        style={{
+          background: variant === 'default' ? '#fff' : 'transparent',
+          border: variant === 'default' ? 'none' : '1.5px solid #fff',
+        }}
+        animate={{
+          width: size.width,
+          height: size.height,
+          borderRadius: stuck ? stickTarget!.radius + 7 : 999,
+        }}
+        transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.5 }}
+      />
+    </motion.div>
   )
 }

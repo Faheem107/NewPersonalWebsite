@@ -1,0 +1,73 @@
+---
+title: Separation of Variables
+summary: The one trick that works, why it works, and the geometry that decides whether it will.
+order: 1
+updated: May 2026
+---
+
+Almost every partial differential equation solved by hand is solved the same way:
+guess that the solution factorises, and see whether the equation permits it.
+
+## The method
+
+Take the heat equation on a bar of length $L$, held at zero at both ends:
+
+$$
+\frac{\partial u}{\partial t} = \alpha \frac{\partial^2 u}{\partial x^2}
+$$
+
+Try $u(x,t) = X(x)\,T(t)$. Substituting and dividing through by $XT$:
+
+$$
+\frac{1}{\alpha T}\frac{dT}{dt} = \frac{1}{X}\frac{d^2X}{dx^2}
+$$
+
+The left side depends only on $t$, the right only on $x$. Two functions of independent
+variables can agree everywhere only by both being constant. Call it $-\lambda$ and the
+PDE becomes two ODEs.
+
+<Aside>
+The sign of the separation constant is not arbitrary. Choosing $+\lambda$ gives
+growing exponentials in time, which the boundary conditions then exclude — the
+physics rejects them, not the algebra.
+</Aside>
+
+## The boundary conditions do the real work
+
+$X'' + \lambda X = 0$ with $X(0) = X(L) = 0$ has solutions only for
+
+$$
+\lambda_n = \left(\frac{n\pi}{L}\right)^2, \qquad X_n = \sin\frac{n\pi x}{L}
+$$
+
+This is an eigenvalue problem, and the discreteness is imposed by the boundary, not by
+the equation. A bounded domain quantises. That single observation is the entire origin
+of quantised energy levels in quantum mechanics — the Schrödinger equation is a
+boundary value problem and the integers come from the box.
+
+Superposing and matching the initial condition:
+
+$$
+u(x,t) = \sum_{n=1}^{\infty} b_n \sin\frac{n\pi x}{L}\, e^{-\alpha \lambda_n t}
+$$
+
+with $b_n$ the Fourier sine coefficients of $u(x,0)$.
+
+## Why high modes vanish first
+
+Each term decays at rate $\alpha\lambda_n \propto n^2$. Fine structure — large $n$ —
+disappears quadratically faster than coarse structure.
+
+This is why heat diffusion smooths, and why running it backwards is hopeless: the
+inverse problem amplifies exactly the modes that carry the least reliable information.
+It is the same reason deblurring an image is hard.
+
+## When it fails
+
+Separation requires the boundary to be a coordinate surface. A rectangle in Cartesians,
+a disc in polars, a sphere in sphericals — fine. An L-shaped domain, or a
+non-concentric annulus — no coordinate system separates it, and no amount of
+cleverness will make it.
+
+There are exactly eleven coordinate systems in which the Helmholtz equation separates.
+Everything else needs conformal mapping, Green's functions, or a computer.

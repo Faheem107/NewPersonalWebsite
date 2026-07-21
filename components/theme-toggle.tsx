@@ -1,66 +1,43 @@
-"use client"
+'use client'
 
-import { useTheme } from "next-themes"
-import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
+import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
+import { motion } from 'motion/react'
+import { useStick } from '@/lib/motion/pointer'
 
-export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
+/**
+ * Light and dark are drawn as a single disc that fills and empties, rather than
+ * a sun swapping for a moon — closer to an exposure than an icon set.
+ */
+export default function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const stick = useStick()
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  useEffect(() => setMounted(true), [])
 
-  if (!mounted) {
-    return <div className="w-8 h-8" />
-  }
+  // Reserve the space so the header does not reflow when the theme resolves.
+  if (!mounted) return <div className="size-8" aria-hidden />
+
+  const isDark = resolvedTheme === 'dark'
 
   return (
-    <motion.button
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="w-8 h-8 flex items-center justify-center rounded-full border border-border bg-background hover:bg-secondary transition-colors interactive"
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.95 }}
-      aria-label="Toggle theme"
+    <button
+      {...stick}
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      className="grid size-8 place-items-center rounded-full border border-border transition-colors hover:border-foreground/40"
+      aria-label={`Switch to ${isDark ? 'light' : 'dark'} theme`}
     >
-      {theme === "dark" ? (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="12" cy="12" r="4" />
-          <path d="M12 2v2" />
-          <path d="M12 20v2" />
-          <path d="m4.93 4.93 1.41 1.41" />
-          <path d="m17.66 17.66 1.41 1.41" />
-          <path d="M2 12h2" />
-          <path d="M20 12h2" />
-          <path d="m6.34 17.66-1.41 1.41" />
-          <path d="m19.07 4.93-1.41 1.41" />
-        </svg>
-      ) : (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-        </svg>
-      )}
-    </motion.button>
+      <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
+        <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        <motion.path
+          d="M12 4 A8 8 0 0 0 12 20 Z"
+          fill="currentColor"
+          initial={{ opacity: isDark ? 1 : 0.15 }}
+          animate={{ opacity: isDark ? 1 : 0.15 }}
+          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        />
+      </svg>
+    </button>
   )
 }

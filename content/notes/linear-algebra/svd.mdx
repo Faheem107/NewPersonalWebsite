@@ -1,0 +1,77 @@
+---
+title: Singular Value Decomposition
+summary: Every matrix, without exception, is a rotation then a scaling then another rotation.
+order: 3
+updated: May 2026
+---
+
+Diagonalisation needs a square matrix and a cooperative one. The SVD needs nothing:
+
+$$
+A = U \Sigma V^\dagger
+$$
+
+for *any* $m \times n$ matrix, with $U$ and $V$ unitary and $\Sigma$ diagonal with
+non-negative entries $\sigma_1 \geq \sigma_2 \geq \cdots \geq 0$.
+
+## The geometry
+
+Every linear map, read right to left, is: rotate ($V^\dagger$), scale along the axes
+($\Sigma$), rotate again ($U$).
+
+Equivalently: every matrix maps the unit sphere to an ellipsoid. The singular values
+are the semi-axis lengths and the columns of $U$ are their directions. There are no
+exceptions and no special cases.
+
+## Where it comes from
+
+$A^\dagger A$ is Hermitian and positive semi-definite whatever $A$ was, so the spectral
+theorem applies to it. Its eigenvectors are the columns of $V$, and
+$\sigma_i = \sqrt{\lambda_i}$. The SVD is the spectral theorem laundered through a
+matrix that is guaranteed to be well behaved.
+
+## Low-rank approximation
+
+<Theorem title="Eckart–Young">
+Truncating the SVD after $k$ terms,
+
+$$
+A_k = \sum_{i=1}^{k} \sigma_i \, u_i v_i^\dagger,
+$$
+
+gives the best rank-$k$ approximation to $A$ in both the spectral and Frobenius norms.
+No other rank-$k$ matrix is closer.
+</Theorem>
+
+That optimality is what makes the SVD ubiquitous. Image compression keeps the large
+$\sigma_i$ and discards the rest. Principal component analysis is the SVD of a centred
+data matrix. Latent semantic analysis is the SVD of a term–document matrix. In each
+case the singular values rank directions by how much variance they carry, and the tail
+is usually noise.
+
+## Conditioning
+
+$$
+\kappa(A) = \frac{\sigma_{\max}}{\sigma_{\min}}
+$$
+
+The condition number bounds how much a relative error in the input can be amplified in
+the output. A large $\kappa$ means the ellipsoid is a long thin sliver and the inverse
+is dominated by whichever direction was squashed most.
+
+<Statement kind="Practice" title="The pseudoinverse">
+When $A$ is singular or rectangular, $A^+ = V\Sigma^+U^\dagger$ — inverting the
+non-zero singular values and transposing — gives the least-squares solution of minimum
+norm. Truncating small $\sigma_i$ before inverting is regularisation, and it is the
+standard fix for an ill-posed inverse problem such as deconvolving a microscope image.
+</Statement>
+
+## Why it beats eigendecomposition in practice
+
+Eigenvectors of a non-symmetric matrix can be nearly parallel, which makes the change
+of basis numerically hostile. The SVD's bases are orthonormal by construction, so the
+decomposition is backward stable — the computed answer is the exact answer to a
+slightly perturbed problem.
+
+For anything involving measured data, that stability is worth more than the extra
+structure diagonalisation would have given.

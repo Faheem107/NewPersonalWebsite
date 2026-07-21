@@ -1,0 +1,80 @@
+---
+title: Vector Spaces and Inner Products
+summary: The axioms are short and dull; what they let you do to infinite-dimensional function spaces is not.
+order: 1
+updated: May 2026
+---
+
+A vector space is a set you can add and scale. That is nearly the whole definition, and
+its emptiness is the point — anything satisfying it inherits every theorem, whether
+its elements are arrows, polynomials, or quantum states.
+
+## Inner products give you geometry
+
+Addition and scaling alone give no notion of length or angle. An inner product does:
+
+$$
+\langle u, v \rangle : V \times V \to \mathbb{C}
+$$
+
+conjugate-symmetric, linear in one argument, and positive definite. From it,
+$\|v\| = \sqrt{\langle v,v\rangle}$, and orthogonality means $\langle u,v\rangle = 0$.
+
+<Theorem title="Cauchy–Schwarz">
+$$
+|\langle u, v \rangle| \leq \|u\| \, \|v\|
+$$
+
+with equality precisely when $u$ and $v$ are parallel.
+</Theorem>
+
+This one inequality is the triangle inequality, the correlation coefficient's bound of
+$\pm 1$, and — applied to position and momentum operators — the Heisenberg uncertainty
+principle. Uncertainty is not a statement about disturbing what you measure; it is
+Cauchy–Schwarz applied to non-commuting operators.
+
+## Functions are vectors
+
+Take continuous functions on $[a,b]$ with
+
+$$
+\langle f, g \rangle = \int_a^b \overline{f(x)}\, g(x)\, w(x)\, dx
+$$
+
+Every axiom holds. The space is infinite-dimensional, and the Sturm–Liouville
+eigenfunctions from the previous subject are an orthogonal basis for it.
+
+<Statement kind="Consequence" title="Fourier series, demystified">
+Expanding a function in sines and cosines is not a special technique. It is resolving
+a vector into components along an orthonormal basis:
+
+$$
+c_n = \frac{\langle e_n, f \rangle}{\langle e_n, e_n \rangle}
+$$
+
+the same formula as projecting an arrow onto an axis.
+</Statement>
+
+## Completeness
+
+Finite-dimensional spaces are all the same up to isomorphism. Infinite-dimensional
+ones are not, and the distinction that matters is whether Cauchy sequences converge
+*inside* the space.
+
+A **Hilbert space** is an inner product space that is complete. $L^2$ — square
+integrable functions — is the canonical example, and it is the state space of quantum
+mechanics. Completeness is what guarantees that an infinite superposition of states is
+still a state, which is not a technicality you can skip.
+
+## Gram–Schmidt
+
+Any linearly independent set can be orthogonalised:
+
+$$
+u_k = v_k - \sum_{j<k} \frac{\langle u_j, v_k \rangle}{\langle u_j, u_j \rangle} u_j
+$$
+
+Run it on $\{1, x, x^2, \ldots\}$ over $[-1,1]$ and the Legendre polynomials come out.
+Run it with weight $e^{-x^2}$ over the real line and you get Hermite polynomials. The
+classical orthogonal polynomials are Gram–Schmidt applied to monomials under different
+weights — nothing more exotic than that.

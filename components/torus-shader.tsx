@@ -93,28 +93,29 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
           varying vec3 vNormal;
           varying float vExpand;
 
-          vec3 getIridescentColor(vec3 worldPos, vec3 normal, float time, float isDarkTheme) {
+          // Cyanotype, not iridescence. Three closely related cold blues rather
+          // than three opposing hues, so the surface reads as one material
+          // catching light instead of an oil slick.
+          vec3 getSurfaceColor(vec3 worldPos, vec3 normal, float time, float isDarkTheme) {
             float angle = atan(worldPos.y, worldPos.x);
             float height = worldPos.z;
-            float colorShift = angle * 0.8 + height * 0.5 + time * 0.25;
-            
-            vec3 color1, color2, color3;
-            
+            float shift = angle * 0.8 + height * 0.5 + time * 0.18;
+
+            vec3 shadow, body, highlight;
+
             if (isDarkTheme > 0.5) {
-              // Dark Mode
-              color1 = vec3(0.4, 0.65, 1.0);
-              color2 = vec3(1.0, 0.45, 0.75);
-              color3 = vec3(0.4, 1.0, 0.6);
+              shadow    = vec3(0.10, 0.24, 0.38);
+              body      = vec3(0.33, 0.55, 0.74);
+              highlight = vec3(0.72, 0.87, 0.97);
             } else {
-              // Light Mode: Pure, ultra-saturated colors for maximum pop against white
-              color1 = vec3(0.0, 0.4, 1.0);  // Pure Vibrant Blue
-              color2 = vec3(1.0, 0.0, 0.5);  // Pure Hot Pink
-              color3 = vec3(0.0, 0.8, 0.2);  // Pure Vivid Green
+              shadow    = vec3(0.05, 0.19, 0.33);
+              body      = vec3(0.11, 0.31, 0.47);
+              highlight = vec3(0.44, 0.66, 0.81);
             }
-            
-            vec3 iridescent = mix(color1, color2, sin(colorShift) * 0.5 + 0.5);
-            iridescent = mix(iridescent, color3, cos(colorShift * 1.3) * 0.5 + 0.5);
-            return iridescent;
+
+            vec3 c = mix(shadow, body, sin(shift) * 0.5 + 0.5);
+            c = mix(c, highlight, pow(cos(shift * 1.3) * 0.5 + 0.5, 2.0));
+            return c;
           }
           
           void main() {
@@ -125,17 +126,17 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
             
             float alpha = smoothstep(0.5, 0.35, dist);
             
-            vec3 iridescent = getIridescentColor(vWorldPosition, vNormal, uTime, uIsDark);
+            vec3 surface = getSurfaceColor(vWorldPosition, vNormal, uTime, uIsDark);
             vec3 finalColor;
 
             if (uIsDark < 0.5) {
-                // Light Mode: Multipliers slightly raised for color pop, but kept safe from blowout
-                finalColor = iridescent * mix(1.3, 1.0, vExpand);
-                alpha *= mix(0.95, 0.75, vExpand);
+                finalColor = surface * mix(1.15, 0.95, vExpand);
+                alpha *= mix(0.92, 0.7, vExpand);
             } else {
-                // Dark Mode: Kept 14.0 unhovered brightness, but dropped hovered back to 2.5!
-                finalColor = iridescent * mix(14.0, 0.5, vExpand);
-                alpha *= mix(0.9, 0.5, vExpand);
+                // Was multiplied by 14, which clipped every channel and left a flat
+                // white ring. A gain just above 1 keeps the blues as blues.
+                finalColor = surface * mix(1.45, 0.85, vExpand);
+                alpha *= mix(0.95, 0.55, vExpand);
             }
 
             gl_FragColor = vec4(finalColor, alpha);

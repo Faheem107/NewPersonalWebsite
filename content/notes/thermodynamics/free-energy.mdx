@@ -1,0 +1,69 @@
+---
+title: Phase Equilibrium
+summary: Where two phases can coexist, and what fixes the pressure at which they do.
+order: 3
+updated: May 2026
+---
+
+Water at one atmosphere boils at exactly 373.15 K. Not approximately — the coexistence
+condition is sharp, and it comes from a single requirement.
+
+## The condition
+
+Two phases coexist when a molecule is indifferent about which one it is in. In
+thermodynamic terms, the chemical potentials are equal:
+
+$$
+\mu_{\text{liquid}}(T, p) = \mu_{\text{gas}}(T, p)
+$$
+
+That is one equation in two unknowns, so its solutions form a curve in the $(T,p)$
+plane — the phase boundary. Fix the pressure and the temperature is determined.
+
+## Clausius–Clapeyron
+
+Differentiate the coexistence condition along the boundary and the slope emerges:
+
+$$
+\frac{dp}{dT} = \frac{L}{T \, \Delta v}
+$$
+
+with $L$ the latent heat and $\Delta v$ the volume change per particle.
+
+<Statement kind="Consequence" title="Why ice is strange">
+For almost every substance $\Delta v > 0$ on melting and the boundary slopes forward:
+squeeze it and it freezes. Water expands on freezing, so $\Delta v < 0$ and the
+melting curve leans backwards — pressure *melts* ice. It is why a glacier slides on a
+thin film of its own meltwater, and it is a direct consequence of the hydrogen bond
+holding the crystal open.
+</Statement>
+
+## The critical point
+
+Follow the liquid–gas boundary upward and the two phases become progressively more
+alike — the liquid thins, the vapour densifies. At the critical point the distinction
+disappears entirely and the boundary simply stops.
+
+Above it there is no transition to cross. You can take a liquid to a gas continuously
+by going around the critical point, never boiling, never seeing a meniscus.
+
+<Aside>
+Approaching $T_c$, density fluctuations grow until their correlation length reaches
+the wavelength of visible light and the fluid scatters everything. It turns milky
+white — critical opalescence — and it is the one place where you can watch a
+diverging correlation length with your eyes.
+</Aside>
+
+## Order of a transition
+
+Ehrenfest's classification is by which derivative of the free energy first jumps.
+
+- **First order** — $S$ and $V$ are discontinuous. There is latent heat, the phases
+  coexist, and you can watch a boundary between them. Boiling and melting.
+- **Second order** — the first derivatives are continuous, the second ones (heat
+  capacity, compressibility) diverge. No latent heat, no coexistence. The Curie point,
+  the superfluid transition, the critical point itself.
+
+Second-order transitions are where the universality of the previous section lives: at
+a continuous transition the correlation length diverges, the system forgets its
+microscopic structure, and utterly unrelated materials start behaving identically.

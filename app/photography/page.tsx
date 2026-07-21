@@ -1,10 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useCallback } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import CustomCursor from "@/components/custom-cursor"
-import Navigation from "@/components/navigation"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { motion, AnimatePresence } from "motion/react"
 
 // IDs MANUALLY REVERSED - No functions used.
 const IMAGE_IDS = [
@@ -100,12 +97,6 @@ export default function PhotographyPage() {
 
   return (
     <main className="min-h-screen bg-background relative overflow-hidden">
-      <CustomCursor />
-      <Navigation />
-
-      <div className="fixed top-6 right-6 z-50">
-        <ThemeToggle />
-      </div>
 
       <div className="max-w-7xl mx-auto px-6 md:px-8 pt-36 pb-32 relative z-10">
         <motion.div

@@ -1,0 +1,93 @@
+---
+title: Ensembles and the Meaning of Temperature
+summary: Three ways to count the same system, and why temperature is a property of counting rather than of matter.
+order: 2
+updated: May 2026
+---
+
+An ensemble is a bookkeeping device. We cannot follow one system through its
+history, so instead we imagine infinitely many copies of it prepared identically
+and ask what fraction sit in each microstate. Which ensemble you pick depends
+entirely on what you are holding fixed.
+
+## The three ensembles
+
+<Statement kind="Microcanonical" title="Fixed E, V, N">
+The system is isolated. Every accessible microstate is equally likely, and the
+entropy is defined by counting them:
+
+$$
+S = k_B \ln \Omega(E, V, N)
+$$
+
+This is the equation on Boltzmann's headstone, and it is the only definition of
+entropy in the subject that is not derived from something else.
+</Statement>
+
+<Statement kind="Canonical" title="Fixed T, V, N">
+The system exchanges energy with a reservoir. Microstate probabilities are
+Boltzmann-weighted, and everything follows from the partition function $Z$ through
+the Helmholtz free energy $F = -k_B T \ln Z$.
+</Statement>
+
+<Statement kind="Grand canonical" title="Fixed T, V, μ">
+The system exchanges both energy and particles. Useful whenever particle number is
+not conserved — photons, phonons, or an open region of a larger system.
+</Statement>
+
+<Aside>
+In the thermodynamic limit these three agree on every measurable quantity. They
+disagree only about fluctuations, which vanish as $1/\sqrt{N}$ — so the choice is
+one of convenience.
+</Aside>
+
+## Temperature falls out of the counting
+
+Put two isolated systems in thermal contact and let them share a fixed total energy
+$E = E_1 + E_2$. The combined number of microstates is $\Omega_1(E_1)\,\Omega_2(E_2)$,
+and the equilibrium division of energy is whichever one maximises it. Setting the
+derivative to zero:
+
+$$
+\frac{\partial \ln \Omega_1}{\partial E_1} = \frac{\partial \ln \Omega_2}{\partial E_2}
+$$
+
+<Theorem title="Temperature">
+Both sides of that equality are the same quantity, and we name it:
+
+$$
+\frac{1}{T} \equiv \frac{\partial S}{\partial E}\bigg|_{V,N}
+$$
+
+Temperature is not a substance and not an average energy. It is the rate at which a
+system's microstate count grows as you feed it energy.
+</Theorem>
+
+This reframing pays off immediately. Heat flows from hot to cold not because of any
+force, but because the total microstate count increases when it does. There is
+nothing pushing.
+
+## Negative temperature is not cold
+
+If $\Omega$ has a maximum — which happens whenever the energy spectrum is bounded
+above, as in a spin system — then past that maximum $\partial S/\partial E$ turns
+negative, and so does $T$.
+
+A system at negative temperature is not colder than absolute zero. It is *hotter than
+infinitely hot*: put it in contact with anything at positive temperature and energy
+flows out of it. The pathology is in the parametrisation, not the physics — $\beta =
+1/k_B T$ runs smoothly from $+\infty$ through zero to $-\infty$ without incident.
+
+## Equipartition, and where it fails
+
+For a Hamiltonian quadratic in some coordinate, the canonical ensemble gives that
+coordinate a mean energy of $\tfrac{1}{2}k_B T$ regardless of the coefficient. Hence
+$\tfrac{3}{2}k_B T$ for a monatomic gas, and $3k_B$ per atom for the heat capacity of
+a solid.
+
+That last result — the Dulong–Petit law — is right at room temperature and badly
+wrong as $T \to 0$, where measured heat capacities fall to zero. The failure is not
+subtle and it is not fixable classically: equipartition assumes energy is continuous.
+Once the level spacing exceeds $k_B T$, a mode simply cannot be excited and it stops
+contributing. Explaining that curve is one of the problems that produced quantum
+mechanics.

@@ -1,64 +1,106 @@
 @import 'tailwindcss';
-@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
-@font-face {
-  font-family: 'MS Sans Serif';
-  src: local('MS Sans Serif'), local('Microsoft Sans Serif');
-}
+/* ==========================================================================
+   Cyanotype
+   --------------------------------------------------------------------------
+   The cyanotype is the one process that belongs to both halves of this site:
+   it is a photographic print and it is what "blueprint" means. So the palette
+   is cold paper and Prussian blue rather than anything warm, content sits on
+   "plates" (a framed field with a caption rail) rather than cards, and the one
+   place with chroma is the accent.
+   ========================================================================== */
 
 :root {
-  --background: #ffffff;
-  --foreground: #000000;
-  --card: #ffffff;
-  --card-foreground: #000000;
+  /* paper --------------------------------------------------------------- */
+  --background: #f4f6f7;
+  --foreground: #101416;
+
+  /* A plate is a framed field, not a card: no shadow, no lift. It has to be
+     opaque enough that the backdrop blur actually frosts the field lines behind
+     it — a near-transparent plate leaves them cutting through the text. */
+  --plate: rgb(252 253 253 / 0.74);
+  --plate-border: rgb(16 20 22 / 0.1);
+  --plate-hover: rgb(252 253 253 / 0.86);
+
+  --card: var(--plate);
+  --card-foreground: var(--foreground);
   --popover: #ffffff;
-  --popover-foreground: #000000;
-  --primary: #000000;
-  --primary-foreground: #ffffff;
-  --secondary: #f5f5f5;
-  --secondary-foreground: #000000;
-  --muted: #f5f5f5;
-  --muted-foreground: #666666;
-  --accent: #0066ff;
+  --popover-foreground: var(--foreground);
+
+  --primary: #101416;
+  --primary-foreground: #f4f6f7;
+  --secondary: rgb(16 20 22 / 0.04);
+  --secondary-foreground: var(--foreground);
+  --muted: rgb(16 20 22 / 0.04);
+  --muted-foreground: #5c666b;
+
+  /* Prussian blue, dark enough to pass AA as text on paper */
+  --accent: #1b4f77;
   --accent-foreground: #ffffff;
-  --destructive: #ff3333;
+  /* the wash a cyanotype leaves where light fell — used for plate hover */
+  --wash: 27 79 119;
+
+  --destructive: #a02c2c;
   --destructive-foreground: #ffffff;
-  --border: #e5e5e5;
-  --input: #e5e5e5;
-  --ring: #000000;
-  --radius: 0.5rem;
+
+  --border: rgb(16 20 22 / 0.12);
+  --input: rgb(16 20 22 / 0.16);
+  --ring: #1b4f77;
+
+  --radius: 0.75rem;
+
+  /* the reserved margin that carries dates, figure numbers and captions */
+  --rail: 8.5rem;
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-  --card: #0a0a0a;
-  --card-foreground: #fafafa;
-  --popover: #0a0a0a;
-  --popover-foreground: #fafafa;
-  --primary: #fafafa;
-  --primary-foreground: #0a0a0a;
-  --secondary: #262626;
-  --secondary-foreground: #fafafa;
-  --muted: #262626;
-  --muted-foreground: #a3a3a3;
-  --accent: #3b82f6;
-  --accent-foreground: #fafafa;
-  --destructive: #dc2626;
-  --destructive-foreground: #fafafa;
-  --border: #262626;
-  --input: #262626;
-  --ring: #d4d4d4;
+  --background: #0a0c0e;
+  --foreground: #e9edee;
+
+  --plate: rgb(19 23 26 / 0.74);
+  --plate-border: rgb(233 237 238 / 0.11);
+  --plate-hover: rgb(23 28 31 / 0.86);
+
+  --card: var(--plate);
+  --card-foreground: var(--foreground);
+  --popover: #121517;
+  --popover-foreground: var(--foreground);
+
+  --primary: #e9edee;
+  --primary-foreground: #0a0c0e;
+  --secondary: rgb(233 237 238 / 0.06);
+  --secondary-foreground: var(--foreground);
+  --muted: rgb(233 237 238 / 0.06);
+  --muted-foreground: #8a9499;
+
+  /* the pale highlight of a cyanotype, which is what reads on a dark field */
+  --accent: #86b6dc;
+  --accent-foreground: #0a0c0e;
+  --wash: 134 182 220;
+
+  --destructive: #d97070;
+  --destructive-foreground: #0a0c0e;
+
+  --border: rgb(233 237 238 / 0.13);
+  --input: rgb(233 237 238 / 0.18);
+  --ring: #86b6dc;
 }
 
 @theme inline {
-  --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-mono: 'MS Sans Serif', 'Courier New', monospace;
-  --font-serif: Georgia, serif;
+  /* Newsreader carries the voice; Archivo does the work. Both are variable —
+     the weight-on-hover behaviour below depends on that. */
+  --font-display: var(--font-newsreader), Georgia, 'Times New Roman', serif;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  /* nothing loads a separate serif; --font-serif aliases the display face */
+  --font-serif: var(--font-display);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-plate: var(--plate);
+  --color-plate-border: var(--plate-border);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -76,119 +118,179 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 6px);
+
+  /* fluid scale — no step needs a breakpoint to stay readable */
+  --text-caption: 0.6875rem;
+  --text-micro: 0.8125rem;
+  --text-body: 1.0625rem;
+  --text-lede: clamp(1.125rem, 1.6vw, 1.3125rem);
+  --text-h3: clamp(1.125rem, 1.6vw, 1.3125rem);
+  --text-h2: clamp(1.5rem, 2.6vw, 2rem);
+  --text-h1: clamp(2rem, 4.6vw, 3.25rem);
+  --text-display: clamp(2.75rem, 8vw, 6rem);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-size: var(--text-body);
+    line-height: 1.65;
+    font-variation-settings: 'wght' 380;
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Keyboard focus was entirely absent before, and the site hides the cursor —
+     so this is the only affordance a keyboard user has. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: rgb(var(--wash) / 0.28);
+    color: var(--foreground);
   }
 }
 
-/* Hide default cursor for custom cursor */
+/* --------------------------------------------------------------------------
+   Weight-on-hover.
+   The reference site's signature interaction: text thickens under the pointer
+   instead of changing colour. Only works on a variable font, which is why both
+   faces are variable.
+   -------------------------------------------------------------------------- */
+@layer components {
+  .wght-link {
+    font-variation-settings: 'wght' 380;
+    color: var(--muted-foreground);
+    transition: font-variation-settings 0.25s ease, color 0.25s ease;
+  }
+
+  .wght-link:hover,
+  .wght-link:focus-visible,
+  .wght-link[data-active='true'] {
+    font-variation-settings: 'wght' 700;
+    color: var(--foreground);
+  }
+
+  .wght-head {
+    font-variation-settings: 'wght' 600;
+    transition: font-variation-settings 0.25s ease;
+  }
+
+  .wght-head:hover {
+    font-variation-settings: 'wght' 800;
+  }
+
+  /* The utility register: a plate caption, a film slate, a figure number.
+     Archivo's width axis does this — one family covering two jobs. */
+  .caption {
+    font-family: var(--font-sans);
+    font-size: var(--text-caption);
+    font-variation-settings: 'wght' 500, 'wdth' 84;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    line-height: 1.4;
+  }
+
+  /* A plate: framed field, hairline edge, no shadow. */
+  .plate {
+    background: var(--plate);
+    border: 1px solid var(--plate-border);
+    border-radius: var(--radius-xl);
+    backdrop-filter: blur(10px) saturate(1.1);
+    -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  }
+
+  /* Underline that draws from the leading edge. */
+  .rule-link {
+    position: relative;
+  }
+
+  .rule-link::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: currentColor;
+    transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .rule-link:hover::after,
+  .rule-link:focus-visible::after {
+    width: 100%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Cursor
+   The custom cursor uses mix-blend-mode: difference, so it inverts whatever is
+   under it and needs no theme-aware colour. Only hide the system cursor where
+   a real pointer exists and the replacement will actually be rendered.
+   -------------------------------------------------------------------------- */
 @media (pointer: fine) {
-  * {
-    cursor: none !important;
+  html.has-custom-cursor,
+  html.has-custom-cursor *:not(input):not(textarea) {
+    cursor: none;
   }
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Custom selection color */
-::selection {
-  background: #000;
-  color: #fff;
-}
-
-/* Typography utilities */
-.font-variation-light {
-  font-variation-settings: "wght" 300;
-}
-
-.font-variation-medium {
-  font-variation-settings: "wght" 500;
-}
-
-.font-variation-bold {
-  font-variation-settings: "wght" 700;
-}
-
-/* Vinyl player specific styles */
-.vinyl-groove {
-  background: repeating-radial-gradient(
-    circle at center,
-    transparent 0px,
-    transparent 2px,
-    rgba(0, 0, 0, 0.1) 2px,
-    rgba(0, 0, 0, 0.1) 3px
-  );
-}
-
-.vinyl-shine {
-  background: linear-gradient(
-    135deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.1) 45%,
-    rgba(255, 255, 255, 0.3) 50%,
-    rgba(255, 255, 255, 0.1) 55%,
-    transparent 100%
-  );
-}
-
-/* Animation for vinyl rotation */
-@keyframes spin-vinyl {
-  from {
-    transform: rotate(0deg);
+/* --------------------------------------------------------------------------
+   Reduced motion.
+   The site is heavily animated; this has to be a real off switch, not a hint.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
-  to {
-    transform: rotate(360deg);
+
+  html.has-custom-cursor,
+  html.has-custom-cursor * {
+    cursor: auto !important;
   }
 }
 
-.animate-spin-vinyl {
-  animation: spin-vinyl 3s linear infinite;
+/* KaTeX renders at build time; these keep it on our type scale. */
+.katex {
+  font-size: 1.05em;
 }
 
-/* Horizontal marquee */
-@keyframes marquee-scroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-.marquee-track {
-  animation: marquee-scroll 28s linear infinite;
-  width: max-content;
-}
-
-.marquee-track:hover {
-  animation-play-state: paused;
-}
-
-
-.link-hover {
-  position: relative;
-}
-
-.link-hover::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: currentColor;
-  transition: width 0.3s ease;
-}
-
-.link-hover:hover::after {
-  width: 100%;
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.35rem;
 }

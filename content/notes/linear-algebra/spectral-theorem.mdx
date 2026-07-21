@@ -1,0 +1,79 @@
+---
+title: Eigenvalues and the Spectral Theorem
+summary: Finding the directions in which a transformation does nothing but stretch.
+order: 2
+updated: May 2026
+---
+
+An eigenvector is a direction a transformation leaves alone:
+
+$$
+A\mathbf{v} = \lambda \mathbf{v}
+$$
+
+Find enough of them and the transformation becomes trivial — in that basis it is a
+diagonal matrix, and applying it a thousand times is raising numbers to the thousandth
+power.
+
+## The theorem
+
+<Theorem title="Spectral theorem">
+If $A$ is Hermitian ($A^\dagger = A$) then:
+
+1. All eigenvalues are real.
+2. Eigenvectors for distinct eigenvalues are orthogonal.
+3. There is an orthonormal basis of eigenvectors, so $A = U \Lambda U^\dagger$ with $U$ unitary and $\Lambda$ real diagonal.
+</Theorem>
+
+Three properties, all following from one symmetry, and between them they are why
+quantum mechanics uses Hermitian operators for observables: real eigenvalues are
+measurable numbers, orthogonality makes outcomes distinguishable, and completeness
+means the basis can express any state.
+
+<Aside>
+Symmetric real matrices are the real special case. Rotations are *not* symmetric — a
+rotation in the plane has no real eigenvectors at all, which is just the statement
+that it leaves no direction fixed.
+</Aside>
+
+## What diagonalisation is for
+
+Any function of a matrix reduces to the same function of its eigenvalues:
+
+$$
+f(A) = U f(\Lambda) U^\dagger
+$$
+
+So $e^{At}$ — the solution operator of every linear ODE system — is computable. The
+eigenvalues determine the behaviour entirely: negative real parts decay, positive
+grow, imaginary parts oscillate. Stability analysis is eigenvalue analysis.
+
+<Statement kind="Application" title="Normal modes">
+Coupled oscillators give $M\ddot{\mathbf{x}} = -K\mathbf{x}$. Diagonalising $K$
+relative to $M$ decouples the system into independent oscillators — the normal modes.
+A molecule's vibrational spectrum, a bridge's resonances, and the phonons in a crystal
+are all this computation.
+</Statement>
+
+## Degeneracy is a symmetry
+
+Repeated eigenvalues mean the eigenspace has dimension greater than one, and any basis
+of it will do.
+
+Physically, degeneracy almost always signals a symmetry: hydrogen's $\ell$ levels are
+degenerate because the Coulomb potential has a hidden $SO(4)$ symmetry beyond the
+obvious rotational one. Break the symmetry — apply a field — and the degeneracy lifts,
+splitting the spectral line. Reading which lines split, and by how much, is how the
+symmetry gets identified in the first place.
+
+## Non-Hermitian matrices misbehave
+
+Without the symmetry, guarantees evaporate. Eigenvalues may be complex, eigenvectors
+need not be orthogonal, and a matrix may not be diagonalisable at all — the Jordan
+form is what remains.
+
+Worse, non-orthogonal eigenvectors make the spectrum a poor guide to behaviour. A
+matrix with all eigenvalues inside the unit disc, and so asymptotically stable, can
+still amplify by orders of magnitude before decaying. That transient growth is why
+some fluid flows go turbulent at Reynolds numbers where linear stability analysis
+says they should not.

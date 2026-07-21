@@ -1,0 +1,78 @@
+---
+title: Magnetostatics in Media
+summary: There are no magnetic charges, and every consequence follows from that one absence.
+order: 2
+updated: May 2026
+---
+
+The magnetic field has no sources:
+
+$$
+\nabla \cdot \mathbf{B} = 0
+$$
+
+No experiment has ever found a magnetic monopole. Every magnetic field line closes on
+itself, and every magnet has two poles no matter how finely you cut it.
+
+## The vector potential
+
+Because $\mathbf{B}$ is divergence-free it can always be written as a curl:
+
+$$
+\mathbf{B} = \nabla \times \mathbf{A}
+$$
+
+$\mathbf{A}$ is not unique — adding the gradient of any scalar leaves $\mathbf{B}$
+unchanged. That freedom is **gauge invariance**, and it is a nuisance in
+electrostatics and the organising principle of all of modern field theory.
+
+Choosing the Coulomb gauge $\nabla\cdot\mathbf{A} = 0$ reduces Ampère's law to
+Poisson's equation again, one component at a time:
+
+$$
+\nabla^2 \mathbf{A} = -\mu_0 \mathbf{J}
+$$
+
+so every technique from electrostatics carries over unchanged.
+
+<Aside>
+The Aharonov–Bohm effect showed $\mathbf{A}$ is not merely a calculational device: a
+charged particle picks up a measurable phase travelling through a region where
+$\mathbf{B}$ is exactly zero but $\mathbf{A}$ is not.
+</Aside>
+
+## Matter responds in three ways
+
+Inside a material, bound currents contribute and it is cleaner to work with
+$\mathbf{H}$:
+
+$$
+\mathbf{H} = \frac{\mathbf{B}}{\mu_0} - \mathbf{M}, \qquad \nabla \times \mathbf{H} = \mathbf{J}_{\text{free}}
+$$
+
+- **Diamagnetism** — an induced moment opposing the field. Universal, weak, and a
+  direct consequence of Lenz's law at the atomic scale. Strong enough, with a strong
+  enough field, to levitate a live frog.
+- **Paramagnetism** — pre-existing moments partially aligning against thermal
+  agitation. Susceptibility follows Curie's law $\chi \propto 1/T$.
+- **Ferromagnetism** — moments aligning with *each other*. Not a magnetic effect at
+  all: the alignment comes from the exchange interaction, which is electrostatic
+  repulsion combined with the Pauli principle.
+
+## Hysteresis and domains
+
+A ferromagnet does not retrace its path. The $B$–$H$ curve encloses an area, and that
+area is energy dissipated per cycle as heat.
+
+The mechanism is domains. An unmagnetised piece of iron is not disordered — it is
+divided into regions each fully magnetised in a different direction, arranged so the
+external field cancels. Applying a field grows the favourable domains at the expense
+of the others by moving the walls between them. Those walls snag on defects and
+release suddenly, which is why the magnetisation of a real sample advances in audible
+jumps.
+
+<Statement kind="Result" title="Curie temperature">
+Above $T_c$ thermal energy overwhelms the exchange interaction and the ordering
+vanishes — a second-order transition, with the same universal exponents as the Ising
+model it is well described by. Iron loses its magnetism at 1043 K.
+</Statement>

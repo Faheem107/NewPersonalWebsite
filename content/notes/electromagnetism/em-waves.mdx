@@ -1,0 +1,84 @@
+---
+title: Electromagnetic Waves
+summary: One extra term in Ampère's law, and light falls out of the algebra.
+order: 3
+updated: May 2026
+---
+
+Maxwell's contribution was a single term. Ampère's law as inherited was
+$\nabla\times\mathbf{B} = \mu_0\mathbf{J}$, which is inconsistent with charge
+conservation — take the divergence and you get $\nabla\cdot\mathbf{J} = 0$, which is
+false whenever charge accumulates anywhere. Adding the displacement current fixes it:
+
+$$
+\nabla \times \mathbf{B} = \mu_0 \mathbf{J} + \mu_0\varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}
+$$
+
+## Light, unasked for
+
+In vacuum, take the curl of Faraday's law and substitute:
+
+$$
+\nabla^2 \mathbf{E} = \mu_0 \varepsilon_0 \frac{\partial^2 \mathbf{E}}{\partial t^2}
+$$
+
+A wave equation, with speed
+
+$$
+c = \frac{1}{\sqrt{\mu_0 \varepsilon_0}}
+$$
+
+Both constants came from benchtop experiments on capacitors and current-carrying
+wires. Neither had anything to do with optics. The number that came out was the
+measured speed of light, and there was no longer any question about what light was.
+
+## Polarisation and energy
+
+The fields are transverse and mutually perpendicular, with
+$\mathbf{E}$, $\mathbf{B}$, $\hat{\mathbf{k}}$ forming a right-handed set and
+$|\mathbf{E}| = c|\mathbf{B}|$. Energy flux is the Poynting vector:
+
+$$
+\mathbf{S} = \frac{1}{\mu_0}\mathbf{E} \times \mathbf{B}
+$$
+
+<Aside>
+$\mathbf{S}$ also carries momentum density $\mathbf{S}/c^2$. Light pushes. It is a
+small push — sunlight delivers about $9\ \mu\mathrm{N}$ per square metre — but it is
+enough to sail on, and enough to matter inside a star.
+</Aside>
+
+## Dispersion
+
+In a medium the speed becomes $c/n$, and $n$ depends on frequency because the bound
+electrons are driven oscillators with their own resonances. Model them as damped
+harmonic oscillators and you get
+
+$$
+n^2(\omega) = 1 + \frac{Ne^2}{\varepsilon_0 m}\sum_j \frac{f_j}{\omega_j^2 - \omega^2 - i\gamma_j\omega}
+$$
+
+Away from resonance $n$ rises with frequency, so blue refracts more than red. Prisms,
+rainbows and chromatic aberration are all this formula.
+
+Near resonance the medium absorbs strongly and $n$ can fall below one — the phase
+velocity exceeds $c$. Nothing is violated: information travels at the group velocity,
+which does not.
+
+## Boundaries
+
+Matching $\mathbf{E}$ and $\mathbf{B}$ across an interface gives the Fresnel
+coefficients, and with them essentially all of practical optics.
+
+<Statement kind="Result" title="Brewster's angle">
+At $\theta_B = \arctan(n_2/n_1)$ the reflected wave is completely polarised. The
+dipoles in the medium oscillate along the direction the reflected ray would have to
+travel, and a dipole radiates nothing along its own axis. Polarising sunglasses cut
+glare for exactly this reason — light reflected off water and roads is horizontally
+polarised.
+</Statement>
+
+Past the critical angle for total internal reflection the transmitted wave does not
+vanish; it becomes evanescent, decaying exponentially into the second medium while
+carrying no net energy across. Bring a third surface close enough and it tunnels —
+the optical analogue of quantum tunnelling, and the mechanism behind fibre couplers.

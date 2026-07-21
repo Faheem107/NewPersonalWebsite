@@ -1,0 +1,91 @@
+---
+title: Electrostatics and the Laplace Equation
+summary: Why the uniqueness theorem lets you guess the answer and still be rigorous.
+order: 1
+updated: May 2026
+---
+
+Electrostatics is the study of one equation and its consequences. In a charge-free
+region, the potential satisfies
+
+$$
+\nabla^2 \varphi = 0
+$$
+
+and everywhere else, Poisson's equation $\nabla^2\varphi = -\rho/\varepsilon_0$.
+
+## Harmonic functions have no secrets
+
+<Theorem title="Mean value property">
+A solution of Laplace's equation equals its own average over any sphere centred on
+the point:
+
+$$
+\varphi(\mathbf{r}) = \frac{1}{4\pi R^2} \oint_{|\mathbf{r}' - \mathbf{r}| = R} \varphi \, da'
+$$
+</Theorem>
+
+An immediate corollary: $\varphi$ can have no local maximum or minimum inside a
+region. Any extremum sits on the boundary.
+
+<Statement kind="Corollary" title="Earnshaw's theorem">
+You cannot trap a charged particle in a stable static equilibrium using electrostatic
+fields alone. There is no potential well to sit in, because there are no interior
+minima. Every practical trap therefore cheats — Paul traps oscillate the field,
+Penning traps add a magnetic field, optical tweezers use light.
+</Statement>
+
+## Uniqueness, and the licence to guess
+
+<Theorem title="Uniqueness">
+The solution of Poisson's equation in a volume $V$ is uniquely determined by $\rho$
+inside $V$ together with either $\varphi$ on the boundary (Dirichlet) or
+$\partial\varphi/\partial n$ on it (Neumann, up to a constant).
+</Theorem>
+
+This is the most practically useful theorem in the subject, because it converts
+solving into checking. If you can produce *any* function that satisfies the equation
+and matches the boundary conditions — by symmetry, by inspection, by luck — it is
+*the* solution. There is no other.
+
+## Images
+
+The method of images is uniqueness weaponised. A point charge $q$ at height $d$ above
+a grounded conducting plane: replace the conductor with a fictitious $-q$ at $-d$. The
+plane $z = 0$ is then at zero potential by symmetry, and Laplace's equation holds
+everywhere in $z > 0$ where the real problem lives. Uniqueness does the rest.
+
+The force follows immediately:
+
+$$
+F = -\frac{1}{4\pi\varepsilon_0}\frac{q^2}{(2d)^2}
+$$
+
+attractive, and exactly the attraction to the image. For a grounded sphere of radius
+$R$ the image is a charge $q' = -qR/a$ at radius $R^2/a$ — less obvious, same logic.
+
+## Separation of variables
+
+When the geometry matches a coordinate system, assume the solution factorises. In
+spherical symmetry with azimuthal invariance:
+
+$$
+\varphi(r,\theta) = \sum_{\ell=0}^{\infty}\left(A_\ell r^\ell + \frac{B_\ell}{r^{\ell+1}}\right) P_\ell(\cos\theta)
+$$
+
+The Legendre polynomials are not chosen for elegance — they are what you get when you
+demand solutions regular on the axis, and their orthogonality is what lets boundary
+conditions fix the coefficients one at a time.
+
+## Multipoles
+
+Far from a bounded charge distribution, expand in powers of $1/r$:
+
+$$
+\varphi(\mathbf{r}) = \frac{1}{4\pi\varepsilon_0}\left[\frac{Q}{r} + \frac{\mathbf{p}\cdot\hat{\mathbf{r}}}{r^2} + \cdots\right]
+$$
+
+The leading non-vanishing term dominates, and which one that is depends on the
+symmetry. A neutral molecule has no monopole; a symmetric one has no dipole either
+and leads with a quadrupole. This is why CO₂ is infrared-active only in its bending
+modes, and ultimately why it is a greenhouse gas.

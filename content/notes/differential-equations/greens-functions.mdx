@@ -1,0 +1,89 @@
+---
+title: Green's Functions
+summary: Solve the problem for a point source once, and every other source is an integral.
+order: 2
+updated: May 2026
+---
+
+Green's functions turn on a linearity argument so simple it is easy to miss how much
+it buys.
+
+## The idea
+
+For a linear operator $\mathcal{L}$, define $G$ as the response to a point source:
+
+$$
+\mathcal{L}\, G(\mathbf{r}, \mathbf{r}') = \delta(\mathbf{r} - \mathbf{r}')
+$$
+
+Then for *any* source $f$, the solution of $\mathcal{L}u = f$ is
+
+$$
+u(\mathbf{r}) = \int G(\mathbf{r}, \mathbf{r}')\, f(\mathbf{r}')\, d^3r'
+$$
+
+Decompose the source into points, add up the responses. The whole method is the
+superposition principle taken seriously.
+
+<Definition title="What G actually is">
+$G$ is the inverse of $\mathcal{L}$, written as an integral kernel. Solving a
+differential equation becomes doing an integral — and integration is a far better
+conditioned operation than differentiation.
+</Definition>
+
+## The Laplacian
+
+In three dimensions, $\nabla^2 G = \delta^3(\mathbf{r} - \mathbf{r}')$ gives
+
+$$
+G = -\frac{1}{4\pi|\mathbf{r} - \mathbf{r}'|}
+$$
+
+and the solution of Poisson's equation is Coulomb's law integrated over the charge.
+Which is to say Coulomb's law *is* the Green's function of the Laplacian, and always
+was.
+
+The $1/r$ is not a coincidence of electrostatics. It is geometry: flux spreads over a
+sphere whose area grows as $r^2$. In two dimensions the same argument gives $\ln r$,
+which is why line charges have logarithmic potentials.
+
+## Boundaries
+
+The free-space $G$ solves the problem only in infinite space. With boundaries, add any
+solution of the homogeneous equation that cancels $G$ on the surface:
+
+$$
+G_D(\mathbf{r},\mathbf{r}') = -\frac{1}{4\pi|\mathbf{r}-\mathbf{r}'|} + H(\mathbf{r},\mathbf{r}')
+$$
+
+For a grounded plane, $H$ is precisely the image charge from electrostatics. The
+method of images was a Green's function all along.
+
+<Statement kind="Property" title="Reciprocity">
+$G(\mathbf{r},\mathbf{r}') = G(\mathbf{r}',\mathbf{r})$ for self-adjoint operators.
+The response at $A$ to a source at $B$ equals the response at $B$ to the same source
+at $A$ — true for sound in a room, for antennas, and for seismic waves.
+</Statement>
+
+## Causality
+
+For time-dependent problems the wave operator has two Green's functions: retarded
+(effect after cause) and advanced (effect before it). Both are mathematically valid;
+the equations do not choose.
+
+We impose causality by hand, discarding the advanced solution. That choice is not in
+Maxwell's equations, and where it comes from is not a settled question — most
+attempts to explain it end up pointing back at the second law.
+
+## Perturbation theory
+
+Write $\mathcal{L} = \mathcal{L}_0 + \varepsilon V$ where $G_0$ is known. Iterating
+gives
+
+$$
+G = G_0 + G_0 V G_0 + G_0 V G_0 V G_0 + \cdots
+$$
+
+Every term is "propagate freely, scatter, propagate freely, scatter…". Drawing each
+one gives you Feynman diagrams; the perturbative expansion of quantum field theory is
+this series with a more elaborate $G_0$.

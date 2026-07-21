@@ -1,0 +1,165 @@
+---
+title: Probability Distributions
+summary: Why a system with 10²³ degrees of freedom is easier to predict than one with three.
+order: 1
+updated: May 2026
+---
+
+There is something faintly absurd about statistical mechanics working at all. A litre
+of gas contains something like $2.5 \times 10^{22}$ molecules. We cannot write down
+their positions, we cannot measure their velocities, and if we could solve the
+resulting $10^{23}$ coupled equations the answer would be useless. And yet the pressure
+that gas exerts on its container is so reliable you can build an engine on it.
+
+The resolution is that the difficulty inverts. Three bodies interacting
+gravitationally is a famously unsolved problem. Ten to the twenty-three bodies
+bouncing off each other is straightforward, because we stop asking about the bodies
+and start asking about the distribution.
+
+## Microstates and macrostates
+
+<Definition title="Microstate">
+A complete specification of the system: every position and every momentum. For $N$
+classical particles in three dimensions that is a single point in a $6N$-dimensional
+**phase space**.
+</Definition>
+
+<Definition title="Macrostate">
+A specification in terms of the few quantities we actually measure — energy, volume,
+particle number. Enormously many microstates correspond to the same macrostate.
+</Definition>
+
+The whole subject turns on that last sentence. Write $\Omega(E)$ for the number of
+microstates consistent with a macrostate of energy $E$. The **fundamental postulate**
+of statistical mechanics is that an isolated system in equilibrium is equally likely
+to be found in any of them:
+
+$$
+P(\text{microstate } i) = \frac{1}{\Omega(E)}
+$$
+
+This is not derived. It is the assumption that does all the work, and it is justified
+after the fact by the fact that everything built on it turns out to be true.
+
+<Figure
+  src="/notes/statistical-mechanics/phase_space.png"
+  alt="Trajectory of a system through phase space, with a shell of constant energy marked"
+  width={617}
+  height={438}
+  n="1"
+>
+  A system's history is a curve through phase space. Conservation of energy confines
+  that curve to a surface; the ergodic hypothesis says it eventually visits all of it.
+</Figure>
+
+## Why the average becomes the certainty
+
+The reason large numbers help is that the distribution of a sum sharpens as you add
+terms. For $N$ independent contributions, the mean grows like $N$ and the standard
+deviation like $\sqrt{N}$, so the *relative* fluctuation goes as
+
+$$
+\frac{\sigma}{\langle X \rangle} \sim \frac{1}{\sqrt{N}}
+$$
+
+<Aside>
+For $N \sim 10^{23}$ this is about $3 \times 10^{-12}$. You would have to measure the
+pressure in a room to twelve significant figures before you saw the gas being
+statistical about it.
+</Aside>
+
+That single factor is why thermodynamics looks deterministic. The fluctuations have
+not gone away — they are simply smaller than anything we can measure.
+
+## The Boltzmann distribution
+
+Now put our system in contact with a much larger reservoir at temperature $T$. The
+combined system is isolated, so the fundamental postulate applies to it. Counting the
+reservoir's microstates when our system holds energy $E_i$ and expanding the
+reservoir's entropy to first order gives the single most useful formula in the
+subject:
+
+$$
+P(E_i) = \frac{e^{-\beta E_i}}{Z}, \qquad \beta = \frac{1}{k_B T}
+$$
+
+<Theorem title="Partition function">
+The normalising constant
+
+$$
+Z = \sum_i e^{-\beta E_i}
+$$
+
+is not merely bookkeeping. Every thermodynamic quantity can be extracted from it by
+differentiation — it encodes the entire equilibrium behaviour of the system.
+</Theorem>
+
+For instance the mean energy is a derivative of $\log Z$:
+
+$$
+\langle E \rangle = -\frac{\partial \log Z}{\partial \beta}
+$$
+
+which is worth checking by hand once, because it makes clear that $Z$ is a generating
+function and the thermodynamics is just its moments.
+
+<Figure
+  src="/notes/statistical-mechanics/Boltzmann.png"
+  alt="Exponential decay of occupation probability with energy at several temperatures"
+  width={379}
+  height={239}
+  n="2"
+>
+  Occupation falls exponentially with energy. Raising $T$ flattens the curve — high
+  states become accessible — but the ordering never changes.
+</Figure>
+
+## Three distributions, one derivation
+
+Which distribution a system obeys depends only on what its particles are allowed to
+do when they meet.
+
+| | Occupancy | Distribution |
+|---|---|---|
+| Maxwell–Boltzmann | distinguishable, unlimited | $\bar{n} = e^{-\beta(\varepsilon - \mu)}$ |
+| Bose–Einstein | identical, unlimited | $\bar{n} = \dfrac{1}{e^{\beta(\varepsilon-\mu)} - 1}$ |
+| Fermi–Dirac | identical, at most one | $\bar{n} = \dfrac{1}{e^{\beta(\varepsilon-\mu)} + 1}$ |
+
+The three differ by a sign and a rule about double occupancy, and that is enough to
+separate an ideal gas from a superfluid from the electrons in a metal.
+
+<Figure
+  src="/notes/statistical-mechanics/distributionlaws.jpg"
+  alt="Maxwell-Boltzmann, Bose-Einstein and Fermi-Dirac occupation numbers plotted against energy"
+  width={1280}
+  height={720}
+  n="3"
+>
+  At high energy all three converge — the classical limit. They differ only where
+  occupation approaches unity and quantum statistics start to matter.
+</Figure>
+
+At low temperature they diverge completely. Fermions cannot share a state, so they
+stack upward and fill a Fermi sea. Bosons have no such restriction and collapse into
+the ground state together.
+
+<Figure
+  src="/notes/statistical-mechanics/BEC_density.png"
+  alt="Density profile of a Bose-Einstein condensate below the critical temperature"
+  width={775}
+  height={554}
+  n="4"
+  tone="keep"
+>
+  Below $T_c$ a macroscopic fraction of a Bose gas occupies a single quantum state.
+  The narrow peak is not a lot of particles that happen to be nearby; it is a lot of
+  particles in the same state.
+</Figure>
+
+## What to take away
+
+Statistical mechanics does not predict what any particle will do. It predicts what
+$10^{23}$ of them will do together, and the prediction is sharper than any measurement
+we can make. The determinism of thermodynamics is a statistical illusion — but it is
+an illusion accurate to twelve decimal places, which is a distinction without a
+practical difference.

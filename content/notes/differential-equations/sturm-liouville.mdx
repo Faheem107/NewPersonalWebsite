@@ -1,0 +1,72 @@
+---
+title: Sturm–Liouville Theory
+summary: Why every well-posed boundary value problem hands you an orthogonal basis for free.
+order: 3
+updated: May 2026
+---
+
+Fourier series, Legendre polynomials, Bessel functions, spherical harmonics, Hermite
+polynomials — these appear in unrelated corners of physics and all have the same two
+properties: they are orthogonal, and they are complete. That is not a coincidence.
+
+## The general form
+
+$$
+\frac{d}{dx}\left[p(x)\frac{dy}{dx}\right] + q(x)y + \lambda w(x) y = 0
+$$
+
+on $[a,b]$ with $p, w > 0$ and appropriate boundary conditions. Every classical
+special function of physics is an eigenfunction of some Sturm–Liouville problem.
+
+<Theorem title="Sturm–Liouville">
+For a regular problem:
+
+1. The eigenvalues are real, and form an increasing sequence $\lambda_1 < \lambda_2 < \cdots \to \infty$.
+2. Eigenfunctions for distinct eigenvalues are orthogonal with respect to the weight $w$:
+   $$\int_a^b y_m(x)\, y_n(x)\, w(x)\, dx = 0, \qquad m \neq n$$
+3. The eigenfunctions are complete: any sufficiently well-behaved function on $[a,b]$ expands in them.
+4. $y_n$ has exactly $n-1$ interior zeros.
+</Theorem>
+
+## Why orthogonality is automatic
+
+The operator is self-adjoint. Integrate by parts twice and the boundary terms cancel
+by the boundary conditions, leaving
+
+$$
+(\lambda_m - \lambda_n)\int_a^b y_m y_n w \, dx = 0
+$$
+
+so distinct eigenvalues force orthogonality. Nothing about the specific $p$, $q$ or
+$w$ entered. Self-adjointness is the whole reason, which is also why Hermitian
+operators are non-negotiable in quantum mechanics — they are what guarantee real
+eigenvalues and an orthogonal basis to measure in.
+
+## The zeros, and why they matter
+
+Property 4 is the least famous and often the most useful. The ground state has no
+interior zeros; the $n$-th excited state has $n-1$.
+
+In quantum mechanics this is the node-counting theorem: count the nodes in a
+wavefunction and you know which level it is, without solving anything. It also
+underpins the shooting method — sweep the energy, count nodes, and you know exactly
+which way to move.
+
+<Aside>
+Interlacing comes with it: between any two consecutive zeros of $y_n$ there is exactly
+one zero of $y_{n+1}$. The modes of a drum, a string, or a hydrogen atom all nest this
+way.
+</Aside>
+
+## The catalogue
+
+| Problem | Interval | Weight | Eigenfunctions |
+|---|---|---|---|
+| $y'' + \lambda y = 0$ | $[0,L]$ | $1$ | $\sin(n\pi x/L)$ |
+| Legendre | $[-1,1]$ | $1$ | $P_\ell(x)$ |
+| Bessel | $[0,a]$ | $x$ | $J_m(\alpha_{mn} x/a)$ |
+| Hermite | $(-\infty,\infty)$ | $e^{-x^2}$ | $H_n(x)$ |
+
+Each row is a geometry: a string, a sphere, a drum, a harmonic well. The special
+functions of mathematical physics are not a zoo of unrelated curiosities — they are
+one theorem, applied to the shapes the world happens to come in.

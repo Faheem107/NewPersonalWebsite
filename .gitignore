@@ -25,3 +25,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# source photography originals (555MB) — optimised copies live in public/
+/Pictures for Website/
+
+# local agent settings
+/.claude/
