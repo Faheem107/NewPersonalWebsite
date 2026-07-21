@@ -78,3 +78,35 @@ Run it on $\{1, x, x^2, \ldots\}$ over $[-1,1]$ and the Legendre polynomials com
 Run it with weight $e^{-x^2}$ over the real line and you get Hermite polynomials. The
 classical orthogonal polynomials are Gram–Schmidt applied to monomials under different
 weights — nothing more exotic than that.
+
+<Aside>
+Classical Gram–Schmidt is numerically poor: rounding errors accumulate and the later
+vectors drift out of orthogonality. Modified Gram–Schmidt, which subtracts each projection
+as soon as it is computed, is algebraically identical and far more stable. In production
+one usually reaches for a Householder QR instead.
+</Aside>
+
+## Dual spaces, and why physicists write bras
+
+Every vector space has a dual $V^*$: the space of linear maps $V \to \mathbb{C}$. In
+finite dimensions the two have the same dimension, and an inner product gives a canonical
+correspondence between them.
+
+That correspondence is exactly Dirac notation. The ket $|\psi\rangle$ is a vector; the bra
+$\langle\psi|$ is the element of the dual space the inner product associates with it; and
+$\langle\phi|\psi\rangle$ is that functional applied to that vector. The notation is not a
+physicist's shorthand for something sloppier — it is the cleanest available way of writing
+the pairing between a space and its dual.
+
+<Theorem title="Riesz representation">
+In a Hilbert space, every continuous linear functional $f$ is given by an inner product
+with a unique vector $v_f$:
+
+$$
+f(x) = \langle v_f, x \rangle
+$$
+</Theorem>
+
+This is what guarantees the bra–ket correspondence is well defined in infinite dimensions,
+where "same dimension" is no longer an argument. It is also the reason observables can be
+represented by operators at all.

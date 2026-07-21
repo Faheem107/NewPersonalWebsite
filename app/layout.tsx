@@ -6,6 +6,8 @@ import { PointerProvider } from '@/lib/motion/pointer'
 import CustomCursor from '@/components/custom-cursor'
 import SmoothScroll from '@/components/smooth-scroll'
 import SiteChrome from '@/components/site-chrome'
+import NoteSearch from '@/components/notes/note-search'
+import { getSubjects } from '@/lib/notes'
 import './globals.css'
 import 'katex/dist/katex.min.css'
 
@@ -68,6 +70,18 @@ export const viewport: Viewport = {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // Built at build time and serialised once — the palette needs no data fetching.
+  const searchIndex = getSubjects().flatMap(subject =>
+    subject.topics.map(topic => ({
+      subject: subject.slug,
+      subjectTitle: subject.title,
+      topic: topic.slug,
+      title: topic.title,
+      summary: topic.summary,
+      headings: topic.headings,
+    })),
+  )
+
   return (
     <html
       lang="en"
@@ -80,6 +94,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <SmoothScroll />
             <CustomCursor />
             <SiteChrome />
+            <NoteSearch entries={searchIndex} />
             {children}
           </PointerProvider>
         </ThemeProvider>

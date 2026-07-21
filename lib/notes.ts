@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import matter from 'gray-matter'
+import { slugify } from '@/lib/slug'
 import type { Field } from '@/components/backdrop/field-lines'
 
 /**
@@ -13,6 +14,8 @@ import type { Field } from '@/components/backdrop/field-lines'
 
 const ROOT = path.join(process.cwd(), 'content', 'notes')
 
+export type Heading = { text: string; id: string }
+
 export type Topic = {
   slug: string
   subject: string
@@ -20,6 +23,8 @@ export type Topic = {
   summary: string
   order: number
   updated?: string
+  /** Section headings, so search can reach inside a note rather than stopping at its title. */
+  headings: Heading[]
 }
 
 export type Subject = {
@@ -44,6 +49,45 @@ function titleFromSlug(slug: string) {
   return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
+/** Strips inline markdown and maths delimiters so a label reads cleanly. */
+function clean(text: string) {
+  return text
+    .replace(/\$([^$]*)\$/g, '$1')
+    .replace(/[*_`\\]/g, '')
+    .trim()
+}
+
+/**
+ * Builds the searchable anchors for a note, in document order.
+ *
+ * Covers both `##`/`###` headings and the `title` of a Statement, Theorem,
+ * Definition or Proof. The named results are the point of a physics note —
+ * indexing only the headings would miss Brewster's angle, Eckart–Young and
+ * every other thing someone would actually search for.
+ *
+ * Reads the raw markdown rather than the compiled tree; it runs once per file
+ * at build time.
+ */
+function extractHeadings(body: string): Heading[] {
+  const named = /^\s*<(?:Statement|Theorem|Definition|Proof)\b[^>]*\btitle="([^"]+)"/
+  const out: Heading[] = []
+
+  for (const line of body.split('\n')) {
+    if (line.startsWith('## ') || line.startsWith('### ')) {
+      const text = clean(line.replace(/^#{2,3}\s+/, ''))
+      if (text) out.push({ text, id: slugify(text) })
+      continue
+    }
+    const match = line.match(named)
+    if (match) {
+      const text = clean(match[1])
+      if (text) out.push({ text, id: slugify(text) })
+    }
+  }
+
+  return out
+}
+
 function readSubject(slug: string): Subject | null {
   const dir = path.join(ROOT, slug)
   if (!fs.statSync(dir).isDirectory()) return null
@@ -59,7 +103,7 @@ function readSubject(slug: string): Subject | null {
     .filter(f => f.endsWith('.mdx'))
     .map(file => {
       const topicSlug = file.replace(/\.mdx$/, '')
-      const { data } = matter(fs.readFileSync(path.join(dir, file), 'utf8'))
+      const { data, content } = matter(fs.readFileSync(path.join(dir, file), 'utf8'))
       return {
         slug: topicSlug,
         subject: slug,
@@ -67,6 +111,7 @@ function readSubject(slug: string): Subject | null {
         summary: (data.summary as string) ?? '',
         order: (data.order as number) ?? 999,
         updated: data.updated ? String(data.updated) : undefined,
+        headings: extractHeadings(content),
       }
     })
     .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))

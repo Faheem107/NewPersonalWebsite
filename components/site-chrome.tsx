@@ -35,6 +35,27 @@ function NavLink({ href, label, onClick }: { href: string; label: string; onClic
   )
 }
 
+/** Shows the shortcut rather than a magnifier, so the key combination is learnable. */
+function SearchButton() {
+  const [mac, setMac] = useState(true)
+  const stick = useStick()
+
+  useEffect(() => {
+    setMac(/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent))
+  }, [])
+
+  return (
+    <button
+      {...stick}
+      onClick={() => window.dispatchEvent(new Event('open-note-search'))}
+      aria-label="Search notes"
+      className="caption rounded-full border border-border px-2.5 py-1 transition-colors hover:border-foreground/40 hover:text-foreground"
+    >
+      {mac ? '⌘' : 'Ctrl '}K
+    </button>
+  )
+}
+
 export default function SiteChrome() {
   const [visible, setVisible] = useState(true)
   const [open, setOpen] = useState(false)
@@ -79,6 +100,7 @@ export default function SiteChrome() {
           {NAV.map(item => (
             <NavLink key={item.href} {...item} />
           ))}
+          <SearchButton />
           <ThemeToggle />
         </nav>
 

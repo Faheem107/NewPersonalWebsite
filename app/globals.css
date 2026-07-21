@@ -284,6 +284,22 @@
   }
 }
 
+/* cmdk owns the group heading element, so it is styled here rather than inline. */
+[cmdk-group-heading] {
+  font-family: var(--font-sans);
+  font-size: var(--text-caption);
+  font-variation-settings: 'wght' 500, 'wdth' 84;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  padding: 0.75rem 0.75rem 0.25rem;
+}
+
+/* Collapse the spacing of groups the filter has emptied. */
+[cmdk-group]:not([hidden]) + [cmdk-group] [cmdk-group-heading] {
+  padding-top: 0.5rem;
+}
+
 /* KaTeX renders at build time; these keep it on our type scale. */
 .katex {
   font-size: 1.05em;

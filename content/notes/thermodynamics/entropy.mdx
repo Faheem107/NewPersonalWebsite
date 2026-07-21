@@ -85,3 +85,27 @@ information must dissipate at least $k_B T \ln 2$ of heat — a thermodynamic co
 logical operation. It is also what finally killed Maxwell's demon: the demon can sort
 molecules, but it must record which way each one went, and eventually it has to clear
 its memory.
+
+<Statement kind="Aside" title="The cost is absurdly small, and it still matters">
+At room temperature $k_B T \ln 2 \approx 3 \times 10^{-21}$ J. A modern processor
+dissipates something like a billion times that per logical operation, so Landauer's bound
+is nowhere near the binding constraint on your laptop. Its interest is that the bound
+exists at all: it says computation is a physical process with a thermodynamic price, not
+an abstraction floating free of the universe running it.
+</Statement>
+
+## Entropy is not a property of the system alone
+
+The subtlety that trips people up: $\Omega$ depends on which macrostate you chose to
+describe the system with, and that choice is yours.
+
+Take a box divided by a partition, gas on both sides, same species, same pressure. Remove
+the partition. Has the entropy increased? If the molecules are genuinely identical, no —
+the macrostate did not change, and nothing observable happened. If they differ in any way
+you could in principle detect, yes, by $2Nk_B\ln 2$.
+
+The discontinuity as the two gases become more and more similar is the **Gibbs paradox**,
+and it is only a paradox classically. Quantum mechanically, identical particles are
+identical exactly, with no continuum in between: two atoms of the same isotope in the same
+state are not merely indistinguishable in practice, they are the same kind of thing. The
+paradox was an early sign that classical statistics was overcounting.

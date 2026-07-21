@@ -1,6 +1,10 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { slugify } from '@/lib/slug'
+import Plot from '@/components/mdx/plot'
+
+export { default as Plot } from '@/components/mdx/plot'
 
 /**
  * The note vocabulary. One set, shared by every note — the pages this replaces
@@ -21,7 +25,12 @@ export function Statement({
   children: ReactNode
 }) {
   return (
-    <div className="my-9 grid gap-x-8 gap-y-2 border-t border-border pt-5 md:grid-cols-[7rem_1fr]">
+    <div
+      // Titled statements get an anchor so search can deep-link to them. The id
+      // comes from the same slugify the index uses, so the two always agree.
+      id={title ? slugify(title) : undefined}
+      className="my-9 grid scroll-mt-28 gap-x-8 gap-y-2 border-t border-border pt-5 md:grid-cols-[7rem_1fr]"
+    >
       <p className="caption md:pt-1 md:text-right">{kind}</p>
       <div>
         {title && <p className="mb-1.5 font-display text-lg leading-snug">{title}</p>}
@@ -177,6 +186,7 @@ export const mdxComponents = {
     <td {...p} className="border-b border-border px-3 py-2 text-muted-foreground" />
   ),
   Figure,
+  Plot,
   Diagram,
   Aside,
   Statement,

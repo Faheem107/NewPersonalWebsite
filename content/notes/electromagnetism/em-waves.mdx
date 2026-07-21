@@ -82,3 +82,36 @@ Past the critical angle for total internal reflection the transmitted wave does 
 vanish; it becomes evanescent, decaying exponentially into the second medium while
 carrying no net energy across. Bring a third surface close enough and it tunnels —
 the optical analogue of quantum tunnelling, and the mechanism behind fibre couplers.
+
+## Radiation needs acceleration
+
+A static charge has a field but radiates nothing. A charge in uniform motion is a static
+charge in another frame, so it radiates nothing either. Only acceleration radiates, and
+the power follows Larmor's formula:
+
+$$
+P = \frac{q^2 a^2}{6\pi\varepsilon_0 c^3}
+$$
+
+<Statement kind="Consequence" title="Why classical atoms cannot exist">
+An electron orbiting a proton is accelerating, so it must radiate. Feeding the hydrogen
+ground state into Larmor gives a spiral into the nucleus in about $1.6 \times 10^{-11}$
+seconds. Classical electromagnetism does not merely fail to explain atomic stability — it
+positively forbids it, by eleven orders of magnitude. Every atom around you is a standing
+refutation, and resolving it required abandoning the orbit entirely.
+</Statement>
+
+Dipole radiation goes as $\sin^2\theta$, with nothing emitted along the dipole axis.
+That single angular factor explains an unreasonable amount: why the sky is polarised at
+ninety degrees to the Sun, why Brewster's angle exists at all, and why an antenna is
+oriented the way it is.
+
+## Why the sky is blue, quantitatively
+
+Scattering off particles much smaller than the wavelength scales as $\omega^4$. Blue light
+at 450 nm scatters roughly $(700/450)^4 \approx 5.9$ times more strongly than red at
+700 nm.
+
+That is the whole explanation, and it is the same $\omega^4$ that appears in the
+dispersion formula above — a driven oscillator far below resonance, radiating according to
+Larmor. Sunsets, blue sky and the polarisation of both come out of one calculation.

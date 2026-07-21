@@ -75,3 +75,25 @@ $$
 Nothing about the working fluid, the mechanism, or the century in which it was built
 enters this. It is a statement about temperature ratios alone — which is why it was
 correct before anyone knew what heat was.
+
+<Plot src="notes/thermodynamics/carnot.svg" n="1">
+  The Carnot cycle: two isothermals (solid) joined by two adiabatics (dashed). The
+  enclosed area is the net work per cycle. Every real engine sits inside this loop.
+</Plot>
+
+The cycle is worth walking round once. From $A$ to $B$ the gas expands in contact with
+the hot reservoir, absorbing $Q_H$ at constant $T_H$. From $B$ to $C$ it expands with no
+heat exchange, so it cools by doing work. $C$ to $D$ compresses it against the cold
+reservoir, dumping $Q_C$. $D$ to $A$ compresses adiabatically back to the start.
+
+Because entropy is a state function it must return to its initial value after a full
+loop, so $Q_H/T_H = Q_C/T_C$. Substituting into $\eta = 1 - Q_C/Q_H$ gives the bound
+directly — the efficiency limit is entropy bookkeeping, nothing more.
+
+<Statement kind="Consequence" title="Why heat pumps beat resistive heating">
+Run the cycle backwards and it moves heat instead of producing work. The coefficient of
+performance is $T_H/(T_H - T_C)$, which for typical indoor and outdoor temperatures is
+around 10. A heat pump can deliver several times more heat than the electrical energy it
+consumes, because most of that heat is moved rather than made. Nothing is violated: the
+first law counts energy, and the energy came from outside.
+</Statement>
