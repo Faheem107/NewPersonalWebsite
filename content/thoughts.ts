@@ -28,7 +28,7 @@ export const THOUGHTS: Thought[] = [
       'In 1966 Joseph Weizenbaum wrote a program called ELIZA that did almost nothing. It took your sentence, turned it around, and handed it back as a question. He watched people confide in it. His own secretary, who knew exactly how it worked because she had watched him build it, asked him to leave the room so she could talk to it in private.',
       'Sixty years later the programs are enormously better at producing sentences, and we have started saying that they want things, that they are trying, that they know. I catch myself doing it several times a day.',
       'I am not sure the reverse claim is any safer. Saying it is only predicting the next word sounds decisive, but I could describe a person that way too, and it would not settle what is going on inside them either.',
-      'What I am fairly confident about is narrower. The same detector that finds a face in a plug socket is running when I read a fluent paragraph, and it was never built to tell me what is on the other side.',
+      'What I am fairly confident about is narrower. Weizenbaum\'s secretary knew there was nothing there and wanted the room anyway. Fluency was enough for her, and the programs are far more fluent now, so whatever I conclude about them I should not treat my own sense of a mind on the other side as evidence.',
     ],
   },
   {
@@ -39,7 +39,7 @@ export const THOUGHTS: Thought[] = [
       'If you are near the equator, the ground under you is turning at about 1,600 kilometres an hour. The Earth is going around the Sun at roughly 107,000. The Sun is going around the centre of the galaxy at something like 800,000, and the galaxy itself is falling toward a concentration of mass we cannot see directly and named the Great Attractor.',
       'None of that is felt, because there is nothing to feel. You only notice acceleration, and all of this is steady.',
       'The part I keep returning to is that there is no number to add up. Speed is not a property you have, it is a relationship between you and something you picked. Change what you measure against and the answer changes with it.',
-      'So the honest answer to how fast you are moving is another question, which is: compared to what?',
+      'Which means the question has no answer until you say what you are measuring against. Every figure above quietly picked one: the axis, the Sun, the galactic centre, the cosmic microwave background.',
     ],
   },
   {
@@ -60,8 +60,8 @@ export const THOUGHTS: Thought[] = [
     body: [
       'Ronald Howard proposed a unit for small risks, because we are hopeless at comparing them in words. One micromort is a one in a million chance of dying. It lets you put things next to each other.',
       'Driving a couple of hundred miles is roughly one micromort. A general anaesthetic is somewhere around five. A single skydive is about eight. Living a day as an ordinary adult, with no particular risk taken, costs you something in the region of one anyway, just from existing.',
-      'The numbers are estimates and they move around depending on who is counting. But the ordering is stable, and the ordering is the interesting part, because it is not the ordering of our fears.',
-      'Knowing this has not made me any calmer on a plane. I am not sure that is a failure of the number so much as a fact about what fear is for.',
+      'The numbers are estimates and they move around depending on who is counting. The ordering is more stable than the values, and it is not the ordering of our fears: flying comes in below the drive to the airport.',
+      'Knowing that has never made me calmer on a plane, which suggests the unit is doing something other than what I wanted it for.',
     ],
   },
   {
@@ -82,8 +82,8 @@ export const THOUGHTS: Thought[] = [
     body: [
       'Robin Dunbar noticed that in primates, the size of the neocortex tracks the size of the group, and extrapolated to us. The number that came out was about 150: roughly how many people you can hold a real relationship with, meaning you know who they are and how they stand to each other.',
       'It has been widely repeated and it is genuinely contested. A 2021 reanalysis argued the statistics do not support a precise figure at all. So take 150 as a rough shape rather than a measurement.',
-      'The shape still seems worth sitting with. Whatever the true number, it is not in the millions, and we now live in arrangements of millions, and read the opinions of strangers all day as though they were neighbours.',
-      'I do not think that is a catastrophe. I do think it is an odd thing to have done to ourselves without ever quite deciding to.',
+      'The shape still seems worth sitting with. Whatever the true number, it is not in the millions, and we now live in arrangements of millions and read the opinions of strangers all day as though they were neighbours.',
+      'That may well be survivable. It is still an odd arrangement to have arrived at without anyone choosing it.',
     ],
   },
   {
@@ -104,7 +104,7 @@ export const THOUGHTS: Thought[] = [
     body: [
       'The universe is about 13.8 billion years old, so it would be reasonable to expect that we can see 13.8 billion light years in any direction. The actual figure is closer to 46. Space expanded while the light was in transit, so the objects that emitted the oldest light we receive are now much further away than the light has travelled.',
       'That radius defines an observable universe, and it is centred on you. Not on Earth in any grand sense, just on whoever is doing the looking. Someone far away has their own sphere, overlapping ours, extending into regions we will never receive anything from.',
-      'There is no edge out there. The edge is a fact about how long we have been able to look, which is a fact about us.',
+      'Nothing is out there at that radius. It marks how long light has had to reach us, so it moves outward as time passes, and every observer carries their own.',
     ],
   },
   {

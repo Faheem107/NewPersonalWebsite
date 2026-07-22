@@ -16,7 +16,7 @@ export default function ResearchPage() {
       <div ref={scope} className="mx-auto w-full max-w-3xl px-6 pb-32 pt-36 md:px-8 md:pt-44">
         <PageHeader
           title="Research"
-          lede="Lab work and computational projects, mostly on how things move and find each other inside a cell."
+          lede="Lab work and computational projects, mostly on stochastic processes in cell biology: transcription, diffusion in crowded media, and the statistics of active matter."
         />
 
         <div className="mt-20">

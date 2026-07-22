@@ -15,7 +15,7 @@ export default function ThoughtsPage() {
       <div ref={scope} className="mx-auto w-full max-w-2xl px-6 pb-32 pt-36 md:px-8 md:pt-44">
         <PageHeader
           title="Some thoughts!"
-          lede="Short pieces on space, on how people behave in groups, and on how badly we judge risk. Mostly things I looked up and could not put down afterwards."
+          lede="Short pieces, usually about something I went to look up and stayed with longer than I meant to. Cosmology, group behaviour, how badly we estimate risk."
         />
 
         <div className="mt-20">

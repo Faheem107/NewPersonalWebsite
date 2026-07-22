@@ -1,5 +1,5 @@
 {
   "title": "Linear Algebra",
-  "blurb": "Inner product spaces, matrix decompositions and spectral theory. Most of the rest gets written in these terms.",
+  "blurb": "Inner product spaces, matrix decompositions and spectral theory, at the level the rest of the physics notes assume.",
   "order": 5
 }

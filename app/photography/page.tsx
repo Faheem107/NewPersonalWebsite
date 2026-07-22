@@ -67,7 +67,7 @@ const WORK = [
     title: 'Labocine',
     role: 'Producer',
     when: 'Jan 2025 to present',
-    body: 'Producing work at the meeting point of systems biology, scientific illustration and cinema. Eight productions so far, most of them attempts to film something that has no natural image.',
+    body: 'Producing short films that sit between systems biology, scientific illustration and cinema. Eight so far. The recurring difficulty is that most of what they are about happens at a scale no camera reaches, so the image has to be argued for rather than captured.',
   },
   {
     title: 'The Gazelle',
@@ -257,7 +257,7 @@ export default function PhotographyPage() {
       <div className="mx-auto w-full max-w-6xl px-6 pb-32 pt-36 md:px-8 md:pt-44">
         <PageHeader
           title="Photography and Films"
-          lede="Most of what I photograph is ordinary and was going to happen whether or not I was there. The camera is mainly an excuse to keep looking."
+          lede="Film work and photography, most of it documentary. Almost everything here was going to happen whether or not I turned up with a camera."
         />
 
         <section className="mt-20">

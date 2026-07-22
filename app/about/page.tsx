@@ -38,10 +38,10 @@ export default function AboutPage() {
           </p>
           <p>
             Alongside coursework and lab research I spend a lot of time on science communication and
-            visual arts. I think scientific education is worth most when it is shared across more
-            than one medium, and that the philosophy behind what we study matters as much as the
-            results: science should end up benefiting people. That is what I am aiming at, to make
-            progress, and to pass it on.
+            visual arts. Explaining something in a second medium tends to expose the parts of it I
+            had not understood, which is most of why I keep doing it. I also think the question of
+            what a piece of research is for deserves more attention than it usually gets, and that
+            it is not a question the results answer on their own.
           </p>
           <p>Outside of all that, football and reading.</p>
         </div>

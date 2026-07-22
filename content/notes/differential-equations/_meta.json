@@ -1,5 +1,5 @@
 {
   "title": "Differential Equations",
-  "blurb": "Methods for the equations physics keeps producing, and what the boundary conditions decide on their own.",
+  "blurb": "Separation, Green's functions and Sturm-Liouville theory, with attention to what the boundary conditions fix.",
   "order": 4
 }

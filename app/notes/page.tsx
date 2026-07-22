@@ -6,7 +6,7 @@ import { getSubjects } from '@/lib/notes'
 
 export const metadata: Metadata = {
   title: 'Notes',
-  description: 'Physics and mathematics notes from coursework, worked through properly.',
+  description: 'Physics and mathematics notes from coursework, with the derivations written out.',
 }
 
 export default function NotesPage() {
@@ -21,7 +21,7 @@ export default function NotesPage() {
       <div className="mx-auto w-full max-w-6xl px-6 pb-32 pt-36 md:px-8 md:pt-44">
         <PageHeader
           title="Notes"
-          lede="Physics and mathematics from my coursework, written out in full. These are the derivations I wanted to see the first time, with the steps I got stuck on left in."
+          lede="Physics and mathematics from my coursework, written out in full. I have left in the steps that took me longest, since those are usually the ones a textbook skips."
         />
 
         <div className="mt-16">
