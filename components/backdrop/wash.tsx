@@ -38,7 +38,7 @@ const SPEED = 1.05
  * frame's position reads as a scratch rather than as flow, which is what this
  * first looked like.
  */
-const TRAIL = 22
+const TRAIL = 40
 
 /**
  * Trail sampling step, in seconds. Fixed rather than per-frame, so the trail is
@@ -59,7 +59,8 @@ precision highp float;
 uniform vec2  u_res;
 uniform float u_time;
 uniform float u_reveal;
-uniform vec3  u_tint;
+uniform vec3  u_tintA;   // the deep end of the wash
+uniform vec3  u_tintB;   // where the light fell
 uniform float u_alpha;
 uniform int   u_variant;
 
@@ -104,22 +105,38 @@ void main() {
   vec2 uv = (gl_FragCoord.xy - 0.5 * u_res) / min(u_res.x, u_res.y);
   vec2 p = uv * ${EXTENT.toFixed(1)};
 
-  float v = psi(p, u_time, u_variant);
+  // Two layers at different scales and drifting at different rates. One layer
+  // alone reads flat however it is tinted; the parallax between two is what
+  // gives the wash any sense of depth. The first is the domain-warped field the
+  // particles also follow, the second is a plain cheap fbm on top.
+  float v1 = psi(p, u_time, u_variant);
+  float v2 = fbm(p * 0.95 + vec2(9.1, -3.3) + vec2(u_time * 0.031, u_time * 0.019)) * 2.0 - 1.0;
 
-  // Two soft bands rather than a single ramp: it keeps some structure without
-  // ever producing an edge sharp enough to read as a shape.
-  float wash = smoothstep(-0.55, 0.75, v) * 0.72 + smoothstep(0.1, 0.95, v) * 0.28;
+  float b1 = smoothstep(-0.62, 0.70, v1);
+  float b2 = smoothstep(-0.45, 0.80, v2);
+
+  // Weighted toward the layer the flow follows, so the drift always runs along
+  // the grain of the strongest structure rather than across it.
+  float body = b1 * 0.66 + b2 * 0.34;
+  // A gentle S-curve. It deepens the darks and lifts the lights without ever
+  // producing an edge hard enough to read as a shape.
+  body = smoothstep(0.02, 0.98, body);
+
+  // Colour moves with the field rather than sitting at one tint, which is most
+  // of what makes it look like a print rather than a gradient.
+  vec3 col = mix(u_tintA, u_tintB, clamp(b1 * 0.55 + b2 * 0.45, 0.0, 1.0));
 
   // Grain, animated. Its real job is dithering: at these alphas a smooth
   // gradient bands badly on an 8-bit display, and grain breaks the bands up.
-  float grain = (hash(gl_FragCoord.xy + fract(u_time) * 431.7) - 0.5) * 0.035;
+  float grain = (hash(gl_FragCoord.xy + fract(u_time) * 431.7) - 0.5) * 0.03;
 
-  float vignette = 1.0 - smoothstep(0.32, 0.92, length(uv * vec2(1.0, 1.15)));
+  // Soft and wide, so the corners fall away without a visible ring.
+  float vignette = 1.0 - smoothstep(0.42, 1.15, length(uv * vec2(1.0, 1.18)));
 
   float reveal = smoothstep(-0.4, 1.0, u_reveal * 2.2 - (uv.x + uv.y + 1.0) * 0.5);
 
-  float a = clamp((wash + grain) * u_alpha * vignette * reveal, 0.0, 1.0);
-  outColor = vec4(u_tint, a);
+  float a = clamp((body + grain) * u_alpha * vignette * reveal, 0.0, 1.0);
+  outColor = vec4(col, a);
 }
 `
 
@@ -295,22 +312,41 @@ export default function Wash({
 
     const variantIndex = VARIANT_INDEX[variant]
 
-    // Tint comes from --wash, so the backdrop stays inside the palette.
+    const isDark = document.documentElement.classList.contains('dark')
+
+    // Tint comes from --wash, so the backdrop stays inside the palette. The two
+    // ends are derived from it rather than hardcoded: a deep end pushed toward
+    // the paper colour and a light end pushed away from it, which is what a
+    // cyanotype actually looks like where the exposure varied.
     const washVar = getComputedStyle(document.documentElement).getPropertyValue('--wash').trim()
     const parsed = washVar.split(/\s+/).map(Number)
-    const tint: [number, number, number] =
+    const base: [number, number, number] =
       parsed.length === 3 && parsed.every(n => !Number.isNaN(n))
         ? [parsed[0] / 255, parsed[1] / 255, parsed[2] / 255]
         : [0.5, 0.6, 0.7]
 
-    // Dark needs roughly double. A pale mark gaining on a near-black field is a
-    // much smaller perceptual step than a dark one losing against paper.
-    const isDark = document.documentElement.classList.contains('dark')
-    const baseAlpha = alpha ?? (isDark ? 0.62 : 0.4)
+    const mix = (
+      c: [number, number, number],
+      t: [number, number, number],
+      k: number,
+    ): [number, number, number] => [
+      c[0] + (t[0] - c[0]) * k,
+      c[1] + (t[1] - c[1]) * k,
+      c[2] + (t[2] - c[2]) * k,
+    ]
+
+    const tintA = isDark ? mix(base, [0.02, 0.06, 0.13], 0.62) : mix(base, [1, 1, 1], 0.34)
+    const tintB = isDark ? mix(base, [0.86, 0.95, 1.0], 0.5) : mix(base, [0.04, 0.14, 0.28], 0.4)
+
+    // Dark needs more. A pale mark gaining on a near-black field is a much
+    // smaller perceptual step than a dark one losing against paper.
+    const baseAlpha = alpha ?? (isDark ? 1.0 : 0.62)
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const narrow = window.matchMedia('(max-width: 768px)').matches
-    const COUNT = narrow ? 220 : 620
+    // Fewer particles with longer trails. Many short ones read as dust; a few
+    // long ones read as a current.
+    const COUNT = narrow ? 150 : 360
     /** line segments per trail */
     const SEGS = TRAIL - 1
 
@@ -421,7 +457,8 @@ export default function Wash({
       res: gl.getUniformLocation(washProg, 'u_res'),
       time: gl.getUniformLocation(washProg, 'u_time'),
       reveal: gl.getUniformLocation(washProg, 'u_reveal'),
-      tint: gl.getUniformLocation(washProg, 'u_tint'),
+      tintA: gl.getUniformLocation(washProg, 'u_tintA'),
+      tintB: gl.getUniformLocation(washProg, 'u_tintB'),
       alpha: gl.getUniformLocation(washProg, 'u_alpha'),
       variant: gl.getUniformLocation(washProg, 'u_variant'),
     }
@@ -454,8 +491,9 @@ export default function Wash({
       gl.uniform2f(uWash.res, canvas.width, canvas.height)
       gl.uniform1f(uWash.time, state.time)
       gl.uniform1f(uWash.reveal, state.reveal)
-      gl.uniform3f(uWash.tint, tint[0], tint[1], tint[2])
-      gl.uniform1f(uWash.alpha, baseAlpha * 0.62)
+      gl.uniform3f(uWash.tintA, tintA[0], tintA[1], tintA[2])
+      gl.uniform3f(uWash.tintB, tintB[0], tintB[1], tintB[2])
+      gl.uniform1f(uWash.alpha, baseAlpha * 0.8)
       gl.uniform1i(uWash.variant, variantIndex)
       gl.drawArrays(gl.TRIANGLES, 0, 3)
 
@@ -522,8 +560,8 @@ export default function Wash({
       gl.bindBuffer(gl.ARRAY_BUFFER, alphaBuf)
       gl.bufferSubData(gl.ARRAY_BUFFER, 0, alphas)
       gl.uniform2f(uFlow.res, canvas.width, canvas.height)
-      gl.uniform3f(uFlow.tint, tint[0], tint[1], tint[2])
-      gl.uniform1f(uFlow.alpha, baseAlpha * state.reveal * 1.55)
+      gl.uniform3f(uFlow.tint, tintB[0], tintB[1], tintB[2])
+      gl.uniform1f(uFlow.alpha, baseAlpha * state.reveal * 0.5)
       gl.drawArrays(gl.LINES, 0, COUNT * SEGS * 2)
 
       gl.bindVertexArray(null)

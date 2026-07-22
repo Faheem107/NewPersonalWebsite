@@ -5,10 +5,13 @@ import { gsap } from 'gsap'
 import { SplitText } from 'gsap/SplitText'
 import CircularMenu from '@/components/circular-menu'
 import Magnetic from '@/components/magnetic'
-import RotatingWord from '@/components/rotating-word'
+import { TypeOnce, TypeCycle } from '@/components/typewriter'
 import { useStick } from '@/lib/motion/pointer'
 
 const DISCIPLINES = ['Physics.', 'Film.', 'Mathematics.']
+
+/** Roughly when the name finishes typing, so the disciplines follow it. */
+const NAME_DONE = 200 + 'Faheem'.length * 105
 
 export default function Home() {
   const [open, setOpen] = useState(false)
@@ -25,19 +28,14 @@ export default function Home() {
     // One timeline for the whole entrance. The page this replaces ran six
     // independent transitions with hand-tuned delays, which is why nothing
     // quite landed together.
+    // The name and the disciplines type themselves now, so the timeline no
+    // longer touches them: animating opacity underneath a typewriter fights it.
     const ctx = gsap.context(() => {
-      const name = new SplitText('[data-name]', { type: 'chars', charsClass: 'inline-block' })
-
       gsap
         .timeline({ defaults: { ease: 'power4.out' } })
-        .from('[data-torus]', { opacity: 0, scale: 0.94, duration: 1.2 })
-        .from(name.chars, { yPercent: 110, opacity: 0, duration: 0.85, stagger: 0.045 }, 0.15)
-        .from('[data-discipline]', { opacity: 0, y: 12, duration: 0.6 }, '-=0.35')
-        .from('[data-role]', { opacity: 0, y: 10, duration: 0.6 }, '-=0.4')
+        .from('[data-torus]', { opacity: 0, scale: 0.9, duration: 1.4 })
+        .from('[data-role]', { opacity: 0, y: 10, duration: 0.6 }, NAME_DONE / 1000 + 0.4)
         .from('[data-explore]', { opacity: 0, duration: 0.6 }, '-=0.3')
-        .from('[data-footnote]', { opacity: 0, duration: 0.6 }, '-=0.35')
-
-      return () => name.revert()
     }, el)
 
     return () => ctx.revert()
@@ -60,16 +58,16 @@ export default function Home() {
             {/* The one place Inter is used. Everything else is Lexend. */}
             <h1
               data-name
-              className="name overflow-hidden pb-2 text-[length:var(--text-display)] leading-[0.94]"
+              className="name pb-2 text-[length:var(--text-display)] leading-[0.94]"
             >
-              Faheem
+              <TypeOnce text="Faheem" />
             </h1>
 
             <p
               data-discipline
               className="mt-1 font-display text-[clamp(1.5rem,3.6vw,2.75rem)] leading-none text-muted-foreground"
             >
-              <RotatingWord words={DISCIPLINES} />
+              <TypeCycle words={DISCIPLINES} startDelay={NAME_DONE + 320} />
             </p>
 
             <p data-role className="caption mt-7">
@@ -90,10 +88,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-
-      <footer data-footnote className="pb-10 text-center">
-        <p className="caption opacity-60">Last updated July 2026</p>
-      </footer>
     </main>
   )
 }

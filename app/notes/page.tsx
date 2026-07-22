@@ -13,17 +13,21 @@ export default function NotesPage() {
   const subjects = getSubjects()
 
   return (
-    <>
+    <main className="min-h-screen">
       <Wash variant="vortex" />
 
-      <PageHeader
-        title="Notes"
-        lede="Physics and mathematics from my coursework, written out properly. These are the derivations I wanted to see when I was first taught them."
-      />
+      {/* No sidebar here. The index is the way in; the sidebar appears once
+          you are inside a subject. */}
+      <div className="mx-auto w-full max-w-6xl px-6 pb-32 pt-36 md:px-8 md:pt-44">
+        <PageHeader
+          title="Notes"
+          lede="Physics and mathematics from my coursework, written out properly. These are the derivations I wanted to see when I was first taught them."
+        />
 
-      <div className="mt-16">
-        <NotesMenu subjects={subjects} />
+        <div className="mt-16">
+          <NotesMenu subjects={subjects} />
+        </div>
       </div>
-    </>
+    </main>
   )
 }

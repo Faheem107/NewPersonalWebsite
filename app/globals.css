@@ -227,6 +227,13 @@
     background: rgb(var(--wash) / 0.28);
     color: var(--foreground);
   }
+
+  /* The typewriter caret. CSS so it blinks without a React render per frame. */
+  @keyframes caret {
+    0%, 45%   { opacity: 1; }
+    50%, 95%  { opacity: 0; }
+    100%      { opacity: 1; }
+  }
 }
 
 /* --------------------------------------------------------------------------
