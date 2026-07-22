@@ -4,12 +4,13 @@ import { useRef, useMemo, useState, useEffect } from "react"
 import { useFrame, useThree } from "@react-three/fiber"
 import { useTheme } from "next-themes"
 import * as THREE from "three"
+import { SPHERE_RADIUS, TORUS_RADIUS, TUBE_RADIUS } from "@/lib/torus-geometry"
 
 export function TorusShader({ explode = false }: { explode?: boolean }) {
   const pointsRef = useRef<THREE.Points>(null)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
   const [mouse3D, setMouse3D] = useState(new THREE.Vector3(0, 0, -10))
-  const { camera } = useThree()
+  const { camera, gl } = useThree()
   
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme !== "light"
@@ -19,7 +20,7 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
   // appearing whole. Both are computed once and uploaded as attributes; doing
   // it from a hash in the shader would be cheaper but far less controllable.
   const { positions, scatter, seed } = useMemo(() => {
-    const torusGeometry = new THREE.TorusGeometry(1.8, 0.6, 80, 160)
+    const torusGeometry = new THREE.TorusGeometry(TORUS_RADIUS, TUBE_RADIUS, 80, 160)
     const positions = torusGeometry.attributes.position.array as Float32Array
     const count = positions.length / 3
 
@@ -58,6 +59,11 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
           uExpand: { value: 0.0 },
           uIsDark: { value: 1.0 },
           uIntro: { value: 0.0 },
+          // From lib/torus-geometry, so the DOM and the shader cannot drift
+          // apart on what size the shape is.
+          uRadius: { value: TORUS_RADIUS },
+          uTube: { value: TUBE_RADIUS },
+          uSphereRadius: { value: SPHERE_RADIUS },
         },
         vertexShader: `
           uniform float uTime;
@@ -65,6 +71,9 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
           uniform float uMagnetStrength;
           uniform float uExpand;
           uniform float uIntro;
+          uniform float uRadius;
+          uniform float uTube;
+          uniform float uSphereRadius;
           attribute vec3 scatter;
           attribute float seed;
           varying float vDistanceFromCenter;
@@ -86,11 +95,9 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
             float ripple = sin(atan(pos.y, pos.x) * 3.0 - uTime * 0.9) * 0.035;
             pos *= breathe + ripple;
 
-            float radius = 1.8;
-            float tubeRadius = 0.6;
-            vec2 center = normalize(pos.xy) * radius;
+            vec2 center = normalize(pos.xy) * uRadius;
             float distFromTube = length(pos.xy - center);
-            vDistanceFromCenter = 1.0 - (distFromTube / tubeRadius);
+            vDistanceFromCenter = 1.0 - (distFromTube / uTube);
             
             vec3 worldPos = (modelMatrix * vec4(pos, 1.0)).xyz;
             vWorldPosition = worldPos;
@@ -107,15 +114,17 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
             pos += perpendicular * magneticInfluence * 0.4 * sin(uTime * 2.0 + length(worldPos) * 3.0);
 
             float angleXY = atan(position.y, position.x);
-            float angleTube = atan(position.z, length(position.xy) - radius);
+            float angleTube = atan(position.z, length(position.xy) - uRadius);
 
-            float targetRadius = 3.6;
             vec3 spherePos;
-            spherePos.x = cos(angleXY) * cos(angleTube) * targetRadius;
-            spherePos.y = sin(angleXY) * cos(angleTube) * targetRadius;
-            spherePos.z = sin(angleTube) * targetRadius;
+            spherePos.x = cos(angleXY) * cos(angleTube) * uSphereRadius;
+            spherePos.y = sin(angleXY) * cos(angleTube) * uSphereRadius;
+            spherePos.z = sin(angleTube) * uSphereRadius;
             
-            spherePos += normalize(spherePos) * sin(uTime * 1.2 + angleXY * 4.0) * 0.15;
+            // Proportional to the radius rather than a fixed 0.15, which at the
+            // smaller ball was 6% of it and made the silhouette read as a
+            // rounded cube instead of a wobble on a sphere.
+            spherePos += normalize(spherePos) * sin(uTime * 1.2 + angleXY * 4.0) * (uSphereRadius * 0.042);
 
             pos = mix(pos, spherePos, smoothstep(0.0, 1.0, uExpand));
 
@@ -144,7 +153,10 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
 
             // Arriving points are briefly larger, which reads as them settling.
             float introSize = 1.0 + (1.0 - ease) * 1.8;
-            gl_PointSize = mix(2.2 + magneticInfluence * 1.0, 1.5, uExpand) * introSize * (30.0 / -mvPosition.z);
+            // The expanded end is smaller than it was: the ball shrank from 3.6
+            // to 2.4, which puts the same point count into 44% of the area, and
+            // at the old size that read as a solid disc rather than a shell.
+            gl_PointSize = mix(2.2 + magneticInfluence * 1.0, 1.25, uExpand) * introSize * (30.0 / -mvPosition.z);
           }
         `,
         fragmentShader: `
@@ -220,21 +232,27 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth) * 2 - 1
-      const y = -(e.clientY / window.innerHeight) * 2 + 1
-      
+      // Normalised against the canvas, not the window. It used to divide by
+      // window.innerWidth while unprojecting through a camera whose aspect is
+      // the canvas's, so the magnet target landed nowhere near the cursor: a
+      // pointer parked at the right of the page pulled a whole side of the
+      // form out sideways, and the ball sat visibly off its own centre.
+      const rect = gl.domElement.getBoundingClientRect()
+      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1
+      const y = -((e.clientY - rect.top) / rect.height) * 2 + 1
+
       const vector = new THREE.Vector3(x, y, 0.5)
       vector.unproject(camera)
       const dir = vector.sub(camera.position).normalize()
       const distance = -camera.position.z / dir.z
       const pos = camera.position.clone().add(dir.multiplyScalar(distance))
-      
+
       setMouse3D(pos)
     }
 
     window.addEventListener("mousemove", handleMouseMove)
     return () => window.removeEventListener("mousemove", handleMouseMove)
-  }, [camera])
+  }, [camera, gl])
 
   useFrame((state, delta) => {
     if (!pointsRef.current || !materialRef.current) return
@@ -268,6 +286,17 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
     materialRef.current.blending = isDark ? THREE.AdditiveBlending : THREE.NormalBlending
 
     u.uExpand.value = THREE.MathUtils.lerp(u.uExpand.value, explode ? 1.0 : 0.0, 0.05)
+
+    // The magnet all but switches off once the menu is open. It is a full unit
+    // of pull over a four-unit radius against a ball of radius 2.4, and the
+    // pointer is necessarily inside the form whenever the icons are showing,
+    // since that is what opens it. Left at full strength it dragged one side of
+    // the ball out into a lobe, and no ring of icons is concentric with that.
+    u.uMagnetStrength.value = THREE.MathUtils.lerp(
+      u.uMagnetStrength.value,
+      explode ? 0.12 : 1.0,
+      0.06,
+    )
   })
 
   return (

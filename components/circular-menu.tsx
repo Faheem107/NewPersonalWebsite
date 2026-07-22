@@ -9,6 +9,7 @@ import Image from "next/image"
 import { Canvas } from "@react-three/fiber"
 import { TorusShader } from "@/components/torus-shader"
 import { useScrollLock } from "@/lib/motion/scroll-lock"
+import { CAMERA_FOV, CAMERA_Z, SPHERE_RADIUS, TORUS_RADIUS, pxPerUnit } from "@/lib/torus-geometry"
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -530,10 +531,20 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
 
   const N         = MENU_ITEMS.length
   const angleStep = (2 * Math.PI) / N
-  
-  // ─── Dynamic Math for Responsiveness ───
-  const RADIUS        = isMobile ? 112 : 150 
-  const containerSize = isMobile ? 330 : 420
+
+  // ─── Geometry ───
+  // The canvas is deliberately much larger than the form: the intro scatter
+  // streams in from up to 60 units out, and a tight canvas clips that.
+  //
+  // Everything else is derived from the shape rather than chosen. RADIUS was a
+  // flat 150px, which had no relationship to anything the shader draws, so the
+  // ring of icons was never concentric with the torus. It sits on the torus's
+  // own ring line now, and the container is sized to the ball the torus becomes
+  // when the menu opens, so the silhouette closes just outside the icons.
+  const canvasSize    = isMobile ? 600 : 800
+  const scale         = pxPerUnit(canvasSize)
+  const RADIUS        = TORUS_RADIUS * scale                             // 134px / 100px
+  const containerSize = Math.round(SPHERE_RADIUS * scale * 2 + 24)       // 380px / 290px
   const itemScale     = isMobile ? 0.85 : 1
 
   return (
@@ -569,11 +580,19 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
 
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ width: isMobile ? 600 : 800, height: isMobile ? 600 : 800 }}
+          style={{ width: canvasSize, height: canvasSize }}
         >
           <Canvas
-            camera={{ position: [0, 0, 13], fov: 45 }}
+            camera={{ position: [0, 0, CAMERA_Z], fov: CAMERA_FOV }}
             gl={{ antialias: true, alpha: true }}
+            // Measure with offsetWidth/offsetHeight rather than a bounding rect.
+            // The hero's GSAP entrance scales [data-torus] from 0.9, and a
+            // bounding rect includes an ancestor's transform, so r3f sized the
+            // canvas mid-animation: it came out 736px inside an 800px box and
+            // then sat anchored to the top left of it. The torus rendered 32px
+            // up and left of the icons, which is why the ring never looked
+            // concentric with it. offsetSize ignores transforms.
+            resize={{ offsetSize: true }}
             style={{ background: "transparent", width: "100%", height: "100%" }}
           >
             <TorusShader explode={isExpanded} />
