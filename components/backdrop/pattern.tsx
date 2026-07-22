@@ -57,6 +57,35 @@ const COUNT: Record<Pattern, number> = {
   lattice: 4200,
 }
 
+/** The aspect these counts are tuned for. */
+const BASE_REACH = Math.hypot(16 / 9, 1)
+
+/**
+ * How each construction's budget grows with the field.
+ *
+ * The two grids span the viewport by construction: their rows and columns
+ * stretch, so the count is already right at any aspect. The other three are
+ * sized against `reach`, and holding their counts fixed there would just spread
+ * the same points more thinly the wider the display gets. Stars and phyllotaxis
+ * fill an area, so they follow reach²; the orbits gain rings rather than
+ * density, so they follow reach.
+ */
+const GROWTH: Record<Pattern, number> = {
+  stars: 2,
+  orbits: 1,
+  interference: 0,
+  phyllotaxis: 2,
+  lattice: 0,
+}
+
+/** Budget for the aspect actually on screen, capped so an odd window cannot run away with it. */
+function countFor(pattern: Pattern, reach: number) {
+  const exponent = GROWTH[pattern]
+  if (!exponent) return COUNT[pattern]
+  const factor = Math.min((reach / BASE_REACH) ** exponent, 2.5)
+  return Math.round(COUNT[pattern] * factor)
+}
+
 const VERT = `#version 300 es
 precision highp float;
 
@@ -323,7 +352,8 @@ export default function Backdrop({
     const vao = gl.createVertexArray()!
     gl.bindVertexArray(vao)
 
-    const count = COUNT[pattern]
+    // Resolved per frame from the aspect, since the window can be resized.
+    let count = COUNT[pattern]
     const patternIndex = PATTERN_INDEX[pattern]
 
     // Tint from --wash, so the backdrop stays inside the palette.
@@ -406,6 +436,7 @@ export default function Backdrop({
       // directly and scroll position never enters into it.
       const cursor = getCursorState()
       const asp = canvas.clientWidth / canvas.clientHeight
+      count = countFor(pattern, Math.hypot(asp, 1))
       const tx = ((cursor.x / canvas.clientWidth) * 2 - 1) * asp
       const ty = -((cursor.y / canvas.clientHeight) * 2 - 1)
 
