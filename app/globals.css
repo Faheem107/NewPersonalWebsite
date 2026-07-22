@@ -17,10 +17,10 @@
   --background: #f4f6f7;
   --foreground: #101416;
 
-  /* A plate is a framed field, not a card: no shadow, no lift. It has to be
-     opaque enough that the backdrop blur actually frosts the field lines behind
-     it. A near-transparent plate leaves them cutting through the text. */
-  --plate: rgb(252 253 253 / 0.74);
+  /* A plate is a framed field, not a card: no shadow, no lift. Transparent
+     enough that the backdrop pattern reads through it, opaque enough that the
+     text on top still holds its contrast. */
+  --plate: rgb(252 253 253 / 0.52);
   --plate-border: rgb(16 20 22 / 0.1);
   --plate-hover: rgb(252 253 253 / 0.86);
 
@@ -64,7 +64,7 @@
   --background: #0a0c0e;
   --foreground: #e9edee;
 
-  --plate: rgb(19 23 26 / 0.74);
+  --plate: rgb(19 23 26 / 0.5);
   --plate-border: rgb(233 237 238 / 0.11);
   --plate-hover: rgb(23 28 31 / 0.86);
 
@@ -299,13 +299,26 @@
     line-height: 1.4;
   }
 
-  /* A plate: framed field, hairline edge, no shadow. */
+  /* A plate: framed field, hairline edge, no shadow.
+
+     The blur used to be 10px over a 74% opaque fill, which is glassmorphism:
+     it frosted the backdrop into a smear and was most of why the pattern
+     behind it could not be read. A plate should sit ON the backdrop, not
+     dissolve it. */
   .plate {
     background: var(--plate);
     border: 1px solid var(--plate-border);
     border-radius: var(--radius-xl);
-    backdrop-filter: blur(10px) saturate(1.1);
-    -webkit-backdrop-filter: blur(10px) saturate(1.1);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  /* Dialogs are the exception. They sit over the whole page rather than over
+     the backdrop, and there the text does need something opaque behind it. */
+  .plate-solid {
+    background: var(--popover);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
   }
 
   /* Underline that draws from the leading edge. */

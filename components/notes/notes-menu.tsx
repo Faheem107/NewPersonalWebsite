@@ -119,9 +119,6 @@ function SubjectPlate({
         </p>
 
         <div className="mt-6 border-t border-border pt-5">
-          <p className="caption mb-3">
-            {subject.topics.length} {subject.topics.length === 1 ? 'note' : 'notes'}
-          </p>
           <div className="flex flex-col">
             {subject.topics.map(topic => (
               <TopicLink

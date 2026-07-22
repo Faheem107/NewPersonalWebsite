@@ -1,0 +1,370 @@
+'use client'
+
+import { useEffect, useRef } from 'react'
+import { useTheme } from 'next-themes'
+
+/**
+ * The backdrop: one construction per section, drawn as points.
+ *
+ * Each pattern is a real thing rather than decoration. Interference is two
+ * sources and a path difference; phyllotaxis is the golden angle that actually
+ * packs seeds in a sunflower head; the orbits obey a Kepler-ish period so the
+ * inner rings lead. That is the whole reason the site can carry a moving
+ * backdrop without it feeling arbitrary.
+ *
+ * There is no cloud layer. An earlier version put a soft noise wash behind
+ * these and it read as fog: it hid the pattern and made the page look glassy.
+ * The pattern is the backdrop now.
+ *
+ * Every point's position comes from gl_VertexID in the vertex shader, so there
+ * are no attribute buffers, nothing is uploaded per frame, and the CPU does no
+ * work at all between frames.
+ */
+
+export type Pattern = 'stars' | 'orbits' | 'interference' | 'phyllotaxis' | 'lattice'
+
+const PATTERN_INDEX: Record<Pattern, number> = {
+  stars: 0,
+  orbits: 1,
+  interference: 2,
+  phyllotaxis: 3,
+  lattice: 4,
+}
+
+/** Point budget per pattern. The grids need far more than the curves. */
+const COUNT: Record<Pattern, number> = {
+  stars: 900,
+  orbits: 3400,
+  interference: 15600,
+  phyllotaxis: 1600,
+  lattice: 4200,
+}
+
+const VERT = `#version 300 es
+precision highp float;
+
+uniform vec2  u_res;
+uniform float u_time;
+uniform float u_reveal;
+uniform int   u_pattern;
+uniform float u_dpr;
+
+out float v_alpha;
+
+const float TAU = 6.28318530718;
+const float GOLDEN = 2.39996322973;
+
+float hash11(float p) {
+  p = fract(p * 0.1031);
+  p *= p + 33.33;
+  p *= p + p;
+  return fract(p);
+}
+
+vec2 hash21(float p) {
+  vec3 p3 = fract(vec3(p) * vec3(0.1031, 0.1030, 0.0973));
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.xx + p3.yz) * p3.zy);
+}
+
+void main() {
+  float i = float(gl_VertexID);
+  float asp = u_res.x / u_res.y;
+
+  // Working space: y in [-1, 1], x in [-asp, asp]. Converted to clip at the end,
+  // so every pattern below can be written in a square-ish space and stay
+  // circular on a wide screen.
+  vec2 pos = vec2(0.0);
+  float a = 1.0;
+  float size = 2.6;
+
+  if (u_pattern == 0) {
+    // ── stars ────────────────────────────────────────────────────────────────
+    // Three depths drifting at different rates. The parallax is what stops a
+    // random scatter of dots from reading as noise.
+    vec2 r = hash21(i);
+    float depth = hash11(i * 7.7);
+
+    float x = (r.x * 2.0 - 1.0) * asp + u_time * 0.008 * (0.25 + depth);
+    pos = vec2(mod(x + asp, 2.0 * asp) - asp, r.y * 2.0 - 1.0);
+
+    float twinkle = 0.62 + 0.38 * sin(u_time * 0.6 + i * 1.7);
+    a = (0.22 + depth * 0.78) * twinkle;
+    size = 1.6 + depth * 2.6;
+
+  } else if (u_pattern == 1) {
+    // ── orbits ───────────────────────────────────────────────────────────────
+    // Nested ellipses, each rotated from the last by the golden angle so no two
+    // line up. Inner rings travel faster, which is the one detail that makes it
+    // read as orbits rather than as rings.
+    float per = 200.0;
+    float ring = floor(i / per);
+    float k = mod(i, per);
+
+    float rr = 0.1 + ring * 0.055;
+    float ecc = 0.55 + 0.18 * sin(ring * 0.9);
+    float tilt = ring * GOLDEN;
+    float speed = 0.22 / pow(rr + 0.28, 1.5);
+
+    float th = (k / per) * TAU + u_time * speed;
+    vec2 e = vec2(cos(th) * rr, sin(th) * rr * ecc);
+    pos = vec2(e.x * cos(tilt) - e.y * sin(tilt), e.x * sin(tilt) + e.y * cos(tilt));
+
+    // Brighter along one limb, so each ring has a leading edge.
+    a = 0.18 + 0.82 * pow(0.5 + 0.5 * sin(th), 2.2);
+    a *= smoothstep(1.35, 0.5, rr);
+    size = 2.3;
+
+  } else if (u_pattern == 2) {
+    // ── interference ─────────────────────────────────────────────────────────
+    // Two sources, one path difference. Points sit on a grid and only light up
+    // where the two arrive in phase, so the hyperbolic fringes draw themselves.
+    float cols = 156.0;
+    float gx = mod(i, cols);
+    float gy = floor(i / cols);
+    float rows = 100.0;
+
+    pos = vec2(
+      (gx / (cols - 1.0) * 2.0 - 1.0) * asp,
+      gy / (rows - 1.0) * 2.0 - 1.0
+    );
+
+    // The sources ease apart and back, which walks the fringes outward.
+    float sep = 0.34 + 0.1 * sin(u_time * 0.06);
+    float d = length(pos - vec2(-sep, 0.0)) - length(pos - vec2(sep, 0.0));
+
+    float f = cos(d * 26.0 - u_time * 0.55);
+    a = smoothstep(0.2, 0.95, f);
+    a *= smoothstep(1.5, 0.35, length(pos));
+    size = 2.2;
+
+  } else if (u_pattern == 3) {
+    // ── phyllotaxis ──────────────────────────────────────────────────────────
+    // The golden angle, which is how a sunflower head packs seeds: it is the
+    // one rotation that never repeats, so no seed ever shadows another.
+    float th = i * GOLDEN + u_time * 0.045;
+    float rr = 0.0235 * sqrt(i);
+
+    pos = vec2(cos(th) * rr, sin(th) * rr);
+
+    a = smoothstep(1.25, 0.15, rr) * (0.45 + 0.55 * sin(i * 0.05 + u_time * 0.3) * 0.5 + 0.275);
+    size = 1.9 + 1.6 * smoothstep(1.2, 0.0, rr);
+
+  } else {
+    // ── lattice ──────────────────────────────────────────────────────────────
+    // A hexagonal close packing with a wave running through it, so the grid is
+    // never quite still.
+    float cols = 84.0;
+    float gx = mod(i, cols);
+    float gy = floor(i / cols);
+    float rows = 50.0;
+
+    // Offsetting alternate rows by half a step is what makes it hexagonal
+    // rather than square.
+    float odd = mod(gy, 2.0) * 0.5;
+    pos = vec2(
+      ((gx + odd) / (cols - 1.0) * 2.0 - 1.0) * asp,
+      (gy / (rows - 1.0) * 2.0 - 1.0)
+    );
+
+    float w = sin(pos.x * 2.4 + pos.y * 1.5 - u_time * 0.42);
+    a = 0.12 + 0.88 * smoothstep(0.1, 1.0, w);
+    a *= smoothstep(1.5, 0.3, length(pos * vec2(0.75, 1.0)));
+    size = 2.2;
+  }
+
+  // Reveal sweeps diagonally on mount.
+  float sweep = smoothstep(-0.5, 1.0, u_reveal * 2.4 - (pos.x / max(asp, 1.0) + pos.y + 2.0) * 0.4);
+
+  v_alpha = a * sweep;
+  gl_Position = vec4(pos.x / asp, pos.y, 0.0, 1.0);
+  gl_PointSize = size * u_dpr;
+}
+`
+
+const FRAG = `#version 300 es
+precision highp float;
+
+in float v_alpha;
+uniform vec3  u_tint;
+uniform float u_alpha;
+
+out vec4 outColor;
+
+void main() {
+  // Round, with a soft edge. A square point at this size reads as dirt.
+  vec2 d = gl_PointCoord - 0.5;
+  float r = length(d);
+  float mask = smoothstep(0.5, 0.24, r);
+
+  outColor = vec4(u_tint, v_alpha * u_alpha * mask);
+}
+`
+
+function compile(gl: WebGL2RenderingContext, type: number, src: string) {
+  const s = gl.createShader(type)!
+  gl.shaderSource(s, src)
+  gl.compileShader(s)
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    console.error(gl.getShaderInfoLog(s))
+    gl.deleteShader(s)
+    return null
+  }
+  return s
+}
+
+export default function Backdrop({
+  pattern = 'stars',
+  alpha,
+  className = '',
+}: {
+  pattern?: Pattern
+  /** overall opacity; pages that carry long prose pass this down */
+  alpha?: number
+  className?: string
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const { resolvedTheme } = useTheme()
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const gl = canvas.getContext('webgl2', {
+      alpha: true,
+      antialias: true,
+      premultipliedAlpha: false,
+      powerPreference: 'low-power',
+    })
+    // No WebGL2 means no backdrop. It is decoration; nothing depends on it.
+    if (!gl) return
+
+    const vs = compile(gl, gl.VERTEX_SHADER, VERT)
+    const fs = compile(gl, gl.FRAGMENT_SHADER, FRAG)
+    if (!vs || !fs) return
+
+    const prog = gl.createProgram()!
+    gl.attachShader(prog, vs)
+    gl.attachShader(prog, fs)
+    gl.linkProgram(prog)
+    gl.deleteShader(vs)
+    gl.deleteShader(fs)
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+      console.error(gl.getProgramInfoLog(prog))
+      return
+    }
+    gl.useProgram(prog)
+
+    // Nothing is uploaded: every position comes from gl_VertexID. The VAO
+    // exists only because a draw call needs one bound.
+    const vao = gl.createVertexArray()!
+    gl.bindVertexArray(vao)
+
+    const count = COUNT[pattern]
+    const patternIndex = PATTERN_INDEX[pattern]
+
+    // Tint from --wash, so the backdrop stays inside the palette.
+    const washVar = getComputedStyle(document.documentElement).getPropertyValue('--wash').trim()
+    const parsed = washVar.split(/\s+/).map(Number)
+    const tint: [number, number, number] =
+      parsed.length === 3 && parsed.every(n => !Number.isNaN(n))
+        ? [parsed[0] / 255, parsed[1] / 255, parsed[2] / 255]
+        : [0.5, 0.6, 0.7]
+
+    // Dark needs more. A pale mark gaining on a near-black field is a much
+    // smaller perceptual step than a dark one losing against paper.
+    const isDark = document.documentElement.classList.contains('dark')
+    const baseAlpha = alpha ?? (isDark ? 0.9 : 0.62)
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    const u = (n: string) => gl.getUniformLocation(prog, n)
+    const uRes = u('u_res')
+    const uTime = u('u_time')
+    const uReveal = u('u_reveal')
+    const uPattern = u('u_pattern')
+    const uDpr = u('u_dpr')
+    const uTint = u('u_tint')
+    const uAlpha = u('u_alpha')
+
+    gl.enable(gl.BLEND)
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
+    let dpr = 1
+    const resize = () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const w = Math.floor(canvas.clientWidth * dpr)
+      const h = Math.floor(canvas.clientHeight * dpr)
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w
+        canvas.height = h
+        gl.viewport(0, 0, w, h)
+      }
+    }
+
+    let visible = true
+    const io = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting
+    })
+    io.observe(canvas)
+    const onVisibility = () => {
+      visible = !document.hidden
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('resize', resize)
+
+    const state = { time: 0, reveal: reduced ? 1 : 0 }
+
+    let raf = 0
+    let last = performance.now()
+
+    const draw = (now: number) => {
+      raf = requestAnimationFrame(draw)
+      const dt = Math.min((now - last) / 1000, 0.05)
+      last = now
+      if (!visible) return
+
+      state.time += dt
+      if (state.reveal < 1) state.reveal = Math.min(1, state.reveal + dt / 1.6)
+
+      resize()
+
+      gl.clearColor(0, 0, 0, 0)
+      gl.clear(gl.COLOR_BUFFER_BIT)
+
+      gl.uniform2f(uRes, canvas.width, canvas.height)
+      gl.uniform1f(uTime, state.time)
+      gl.uniform1f(uReveal, state.reveal)
+      gl.uniform1i(uPattern, patternIndex)
+      gl.uniform1f(uDpr, dpr)
+      gl.uniform3f(uTint, tint[0], tint[1], tint[2])
+      gl.uniform1f(uAlpha, baseAlpha)
+
+      gl.drawArrays(gl.POINTS, 0, count)
+
+      // Reduced motion gets one frame, then the loop stops entirely.
+      if (reduced) cancelAnimationFrame(raf)
+    }
+
+    resize()
+    raf = requestAnimationFrame(draw)
+
+    return () => {
+      cancelAnimationFrame(raf)
+      io.disconnect()
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('resize', resize)
+      gl.deleteProgram(prog)
+      gl.deleteVertexArray(vao)
+    }
+    // Re-created on theme change so the tint is re-read from the palette.
+  }, [pattern, alpha, resolvedTheme])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden
+      className={`pointer-events-none fixed inset-0 -z-10 h-full w-full ${className}`}
+    />
+  )
+}

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Wash from '@/components/backdrop/wash'
+import Backdrop from '@/components/backdrop/pattern'
 import PageHeader from '@/components/page-header'
 
 export const metadata: Metadata = {
@@ -24,7 +24,7 @@ const LINKS = [
 export default function AboutPage() {
   return (
     <main className="min-h-screen">
-      <Wash variant="saddle" />
+      <Backdrop pattern="lattice" />
 
       <div className="mx-auto w-full max-w-3xl px-6 pb-32 pt-36 md:px-8 md:pt-44">
         <PageHeader title="About" />

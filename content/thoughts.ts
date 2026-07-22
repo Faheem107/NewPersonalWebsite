@@ -3,6 +3,11 @@
  *
  * Same arrangement as the research entries: the page and the search index read
  * this one file. Newest first.
+ *
+ * House style, since it is easy to drift: open on something concrete, follow
+ * one thread, name the effect or the study where there is one, and stop before
+ * the moral. Where a well-known story turns out to be shakier than its
+ * retelling, say so. No em dashes.
  */
 
 export type Thought = {
@@ -15,114 +20,102 @@ export type Thought = {
 
 export const THOUGHTS: Thought[] = [
   {
-    id: 'nothing-arrives-on-time',
-    date: 'July 14, 2026',
-    title: 'Nothing arrives on time',
+    id: 'the-machine-wants-things',
+    date: 'July 18, 2026',
+    title: 'We keep saying the machine wants things',
     body: [
-      'A polymerase transcribing a gene is not alone on the strand. Others are ahead of it and behind it, on the same track, and they interfere. So the thing I spend my days modelling is a queue.',
-      'What surprised me is how little the average tells you. Two queues can move the same number of molecules per hour and feel completely different from the inside, because one of them clears steadily and the other stalls and then rushes. The mean is identical. The waiting times are not.',
-      'I think this is why models built on rates so often disappoint. A rate is what is left after you throw the distribution away, and the distribution was the part that was doing the explaining.',
+      'We see faces in wall sockets, in the fronts of cars, in two dots and a line. The brain has a detector for faces and it would rather fire when there is nothing there than miss one when there is. So it over-fires, constantly, and we barely notice.',
+      'In 1966 Joseph Weizenbaum wrote a program called ELIZA that did almost nothing. It took your sentence, turned it around, and handed it back as a question. He watched people confide in it. His own secretary, who knew exactly how it worked because she had watched him build it, asked him to leave the room so she could talk to it in private.',
+      'Sixty years later the programs are enormously better at producing sentences, and we have started saying that they want things, that they are trying, that they know. I catch myself doing it several times a day.',
+      'I am not sure the reverse claim is any safer. Saying it is only predicting the next word sounds decisive, but I could describe a person that way too, and it would not settle what is going on inside them either.',
+      'What I am fairly confident about is narrower. The same detector that finds a face in a plug socket is running when I read a fluent paragraph, and it was never built to tell me what is on the other side.',
     ],
   },
   {
-    id: 'phase-portrait-photograph',
-    date: 'June 30, 2026',
-    title: 'A phase portrait and a photograph are the same kind of object',
+    id: 'how-fast-are-you-moving',
+    date: 'July 5, 2026',
+    title: 'How fast are you moving, sitting still?',
     body: [
-      'A photograph takes three dimensions and a stretch of time and flattens all of it onto a plane. A phase portrait takes an entire family of possible histories and does the same. Both work by discarding things.',
-      'I had assumed the film minor and the physics were two separate interests that happened to belong to the same person. They meet here. In both cases what makes the image legible is the choice of what to leave out, and in both cases that choice is the whole craft.',
-      'A badly chosen projection tells you nothing. A well chosen one looks obvious afterwards, which I suspect is why nobody credits it.',
+      'If you are near the equator, the ground under you is turning at about 1,600 kilometres an hour. The Earth is going around the Sun at roughly 107,000. The Sun is going around the centre of the galaxy at something like 800,000, and the galaxy itself is falling toward a concentration of mass we cannot see directly and named the Great Attractor.',
+      'None of that is felt, because there is nothing to feel. You only notice acceleration, and all of this is steady.',
+      'The part I keep returning to is that there is no number to add up. Speed is not a property you have, it is a relationship between you and something you picked. Change what you measure against and the answer changes with it.',
+      'So the honest answer to how fast you are moving is another question, which is: compared to what?',
     ],
   },
   {
-    id: 'the-cell-is-crowded',
-    date: 'June 12, 2026',
-    title: 'The cell is a packed train, not an empty room',
+    id: 'every-generation-thinks-the-next-is-worse',
+    date: 'June 21, 2026',
+    title: 'Every generation thinks the next one is worse',
     body: [
-      'Every textbook diagram shows a protein drifting through clear fluid. The inside of a cell holds something like three hundred milligrams of macromolecules per millilitre. It is closer to rush hour than to open water.',
-      'Nothing should be able to find anything in there. Diffusion slows down badly under that much crowding. And yet the reactions happen, on time, reliably, all day.',
-      'Part of the answer is that the crowding is not only an obstacle. Excluded volume pushes molecules together as well as getting in their way, so the thing that should ruin the search is partly what makes it work.',
-      'I keep running into this shape of problem, where the difficulty turns out to be load-bearing. I still do not have a good name for it.',
+      'There is a quote that goes around, attributed to Socrates, about how the children now love luxury and have bad manners and contradict their parents. It is a good quote. Socrates did not say it. It comes from a Cambridge dissertation written in 1907, where it was a student paraphrasing several ancient sources at once.',
+      'What is funny is that the misattribution proves the point better than the quote would have. We wanted so badly for this complaint to be ancient that we invented an ancient source for it.',
+      'The pattern has a name, juvenoia, and the usual explanation is that we compare our memory of being young against our observation of the young. Those are not the same kind of evidence. One is edited and the other is not.',
+      'I am about the age where I should start being suspicious of my own opinions on this.',
     ],
   },
   {
-    id: 'what-colour-is-a-mirror',
-    date: 'May 26, 2026',
-    title: 'What colour is a mirror?',
+    id: 'the-micromort',
+    date: 'June 8, 2026',
+    title: 'A unit for one in a million',
     body: [
-      'Most people say silver. A perfect mirror has no colour of its own at all. It only shows you what is around it, which is a different thing from being a colour. Put two perfect mirrors face to face and the space between them would be black, since no light could ever leave.',
-      'Real mirrors are faintly green. The glass absorbs slightly more red and blue than green, so photograph a mirror tunnel and the reflections drift greener the further back you look.',
-      'We look at mirrors every day of our lives and still cannot say what colour they are. I am not sure whether that is a fact about mirrors or about the way we attend to ordinary things.',
+      'Ronald Howard proposed a unit for small risks, because we are hopeless at comparing them in words. One micromort is a one in a million chance of dying. It lets you put things next to each other.',
+      'Driving a couple of hundred miles is roughly one micromort. A general anaesthetic is somewhere around five. A single skydive is about eight. Living a day as an ordinary adult, with no particular risk taken, costs you something in the region of one anyway, just from existing.',
+      'The numbers are estimates and they move around depending on who is counting. But the ordering is stable, and the ordering is the interesting part, because it is not the ordering of our fears.',
+      'Knowing this has not made me any calmer on a plane. I am not sure that is a failure of the number so much as a fact about what fear is for.',
     ],
   },
   {
-    id: 'mostly-empty-space',
-    date: 'May 21, 2026',
-    title: 'You are mostly empty space and have never fallen through a floor',
+    id: 'the-great-silence',
+    date: 'May 24, 2026',
+    title: 'The silence is the data',
     body: [
-      'An atom is almost entirely gap. Take every proton, neutron and electron in every person who has ever lived, remove the space between them, and what remains would fit inside a sugar cube.',
-      'You stay on your chair because of the electromagnetic force rather than because of matter. The electrons at your surface push against the electrons at its surface, and that push is the whole of what you feel. Touch is repulsion. You have never made contact with anything.',
-      'I have known this for years and it has not changed how a handshake feels, which is either a failure of imagination on my part or a reasonable division of labour between physics and living.',
+      'There are a few hundred billion stars in this galaxy and the galaxy has been here for a very long time. Even at speeds we can already imagine, something patient could have crossed it many times over. Enrico Fermi is supposed to have asked, over lunch, where everybody is.',
+      'Every answer I have read is uncomfortable in a different way. Perhaps life of our kind is far rarer than it looks. Perhaps it is common and does not last. Perhaps it is common and lasts and has decided, for reasons we would need to be much older to understand, to be quiet.',
+      'What I find hard is that the silence is genuine evidence. It is not the absence of a result. We have looked at a small part of the sky for a short time in a narrow band, which is close to nothing, and yet it is not literally nothing, and it points somewhere.',
+      'I do not have a favourite answer. I notice that the ones I dislike most are the ones I find hardest to argue against.',
     ],
   },
   {
-    id: 'fold-a-piece-of-paper',
-    date: 'May 17, 2026',
-    title: 'Fold a piece of paper a hundred and three times',
+    id: 'a-brain-built-for-a-village',
+    date: 'May 11, 2026',
+    title: 'A brain built for a village',
     body: [
-      'Paper is about a tenth of a millimetre thick, and each fold doubles it. Seven folds gets you the thickness of a notebook. Twenty-three reaches a kilometre. Forty-two takes you to the Moon, fifty-one to the Sun. At a hundred and three you have passed the width of the observable universe.',
-      'You cannot fold a sheet more than seven or eight times in practice. The arithmetic has no opinion about that.',
-      'I want to say something here about how bad we are at exponential growth, but the honest version is narrower: I was bad at this one, and I had the numbers in front of me the whole time.',
+      'Robin Dunbar noticed that in primates, the size of the neocortex tracks the size of the group, and extrapolated to us. The number that came out was about 150: roughly how many people you can hold a real relationship with, meaning you know who they are and how they stand to each other.',
+      'It has been widely repeated and it is genuinely contested. A 2021 reanalysis argued the statistics do not support a precise figure at all. So take 150 as a rough shape rather than a measurement.',
+      'The shape still seems worth sitting with. Whatever the true number, it is not in the millions, and we now live in arrangements of millions, and read the opinions of strangers all day as though they were neighbours.',
+      'I do not think that is a catastrophe. I do think it is an odd thing to have done to ourselves without ever quite deciding to.',
     ],
   },
   {
-    id: 'more-chess-games-than-atoms',
-    date: 'May 13, 2026',
-    title: 'There are more chess games than atoms',
+    id: 'the-planes-that-came-back',
+    date: 'April 27, 2026',
+    title: 'The planes that came back',
     body: [
-      'There are around 10⁸⁰ atoms in the observable universe and something like 10¹²⁰ possible chess games, which is Shannon’s estimate. The ways of playing one game outnumber the contents of everything we can see.',
-      'The practical consequence is that almost any long game you play leaves the known positions early. After a dozen moves or so you are somewhere nobody has been and very likely nobody will be again.',
-      'A small set of rules generates a space that the physical universe cannot fit inside. I find that unsettling more than impressive, and I have not managed to talk myself out of the feeling.',
+      'During the war the American military looked at bombers returning from raids and mapped where they were most often hit. The wings and the fuselage, mostly. The obvious move was to armour those places.',
+      'Abraham Wald, working with a group of statisticians in New York, pointed out that they were looking at the wrong aeroplanes. The ones in front of them were the ones that had come back. Damage to the wings was survivable, which is exactly why they were seeing it. The armour belonged where the returning planes had no holes at all, because aircraft hit there were not in the sample.',
+      'I like it as a story because the error is not a failure of intelligence. Everyone involved was clever. The data was accurate. The sample had simply been assembled by the thing being measured.',
+      'It is a hard habit to build, asking what would be missing from the evidence if the effect were real. I forget to do it most of the time.',
     ],
   },
   {
-    id: 'the-sun-is-white',
-    date: 'May 9, 2026',
-    title: 'The Sun is white',
+    id: 'everyone-is-at-the-centre',
+    date: 'April 12, 2026',
+    title: 'Everyone is at the centre',
     body: [
-      'Its output peaks around five hundred nanometres, a blue-green, but spread broadly enough across the visible range that the sum of it is white. Not yellow.',
-      'We see yellow because the atmosphere scatters the short wavelengths sideways, which is the same reason the sky is blue. Near sunrise the light crosses more air, loses more of the blue and green, and what reaches us is red. Astronauts above the atmosphere see the white version.',
-      'Every drawing I made as a child had a yellow circle in the corner. So did everyone else’s. We built a shared visual convention on top of a colour that only exists at the bottom of an ocean of air.',
+      'The universe is about 13.8 billion years old, so it would be reasonable to expect that we can see 13.8 billion light years in any direction. The actual figure is closer to 46. Space expanded while the light was in transit, so the objects that emitted the oldest light we receive are now much further away than the light has travelled.',
+      'That radius defines an observable universe, and it is centred on you. Not on Earth in any grand sense, just on whoever is doing the looking. Someone far away has their own sphere, overlapping ours, extending into regions we will never receive anything from.',
+      'There is no edge out there. The edge is a fact about how long we have been able to look, which is a fact about us.',
     ],
   },
   {
-    id: 'a-day-on-venus',
-    date: 'May 4, 2026',
-    title: 'A day on Venus is longer than its year',
+    id: 'thirty-eight-witnesses',
+    date: 'March 29, 2026',
+    title: 'The story about the thirty-eight witnesses',
     body: [
-      'Venus turns so slowly that one rotation takes about 243 Earth days, while a full orbit takes 225. You would finish the trip around the Sun before the Sun had finished rising and setting once.',
-      'It also spins backwards relative to most of the solar system, so if the clouds ever cleared, the Sun would come up in the west.',
-      'Which makes me think east and west are not really directions. They are names for the way one particular planet happens to turn, and we have been using them as though they meant something larger.',
-    ],
-  },
-  {
-    id: 'benfords-law',
-    date: 'April 29, 2026',
-    title: 'The digit 1 goes first more often than it should',
-    body: [
-      'Gather real-world numbers, city populations or river lengths or physical constants, and roughly thirty per cent of them begin with 1. Only about five per cent begin with 9. This is Benford’s law and it holds across a startling range of data.',
-      'The reason is that getting from 1 to 2 takes a doubling while getting from 8 to 9 takes an eighth. Anything growing by percentages spends more of its life with a small leading digit, so that is where you find it when you look.',
-      'Forensic accountants use this to catch fabricated figures, which come out too evenly spread. We invent numbers the way we imagine numbers behave, and we imagine them behaving linearly.',
-    ],
-  },
-  {
-    id: 'star-stuff',
-    date: 'April 24, 2026',
-    title: 'Older than the solar system',
-    body: [
-      'The carbon, oxygen, nitrogen and iron in your body were made inside stars that died before the Sun existed. That part is well known enough to be a cliché.',
-      'The hydrogen is older. It is about sixty per cent of your atoms by count and it was made in the first few minutes after the Big Bang. The protons in the water you drank this morning have been around for 13.8 billion years, passing through stars and clouds and oceans and other living things on the way to being briefly part of you.',
-      'They will scatter again. We are an arrangement rather than a thing, and not a very long-lived one.',
+      'In 1964 Kitty Genovese was murdered in Queens, and the New York Times reported that thirty-eight people had watched and none had called the police. It became one of the most repeated stories in psychology.',
+      'Most of it does not hold up. Later work showed the number was inflated, that few had any clear view of what was happening, and that some did call. The paper had a compelling shape and the shape survived better than the facts did.',
+      'The awkward part is that the underlying effect is real anyway. Darley and Latané ran controlled experiments afterwards and found it repeatedly: the more people present, the less likely any one of them acts, because responsibility divides.',
+      'So we have a true finding that got famous through a story that was largely wrong. I am not sure what to do with that except hold both halves at once, which I find I am not very good at.',
     ],
   },
 ]

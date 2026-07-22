@@ -27,11 +27,17 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
     const seed = new Float32Array(count)
 
     for (let i = 0; i < count; i++) {
-      // Uniform on a sphere, then pushed out to a random shell radius.
+      // Uniform direction on a sphere.
       const u = Math.random() * 2 - 1
       const theta = Math.random() * Math.PI * 2
       const r = Math.sqrt(1 - u * u)
-      const dist = 6.5 + Math.random() * 5.5
+
+      // Heavy-tailed radius rather than a narrow shell. A shell has an edge,
+      // and on a dark page that edge is plainly visible: the intro read as a
+      // hollow ball collapsing. Raising a uniform to a small power puts most
+      // points close and a long tail far off past the viewport, so the cloud
+      // has no boundary to see.
+      const dist = 5 + Math.pow(Math.random(), 0.28) * 55
 
       scatter[i * 3] = Math.cos(theta) * r * dist
       scatter[i * 3 + 1] = Math.sin(theta) * r * dist
@@ -118,8 +124,11 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
             // every point landing at once. Applied last, so it overrides the
             // magnet and the expand: nothing should tug at a point that has not
             // arrived yet.
-            float t = clamp((uIntro - seed * 0.4) / 0.6, 0.0, 1.0);
-            float ease = t * t * (3.0 - 2.0 * t);
+            // Arrivals are spread across most of the intro rather than bunched,
+            // so points keep streaming in instead of landing as one front.
+            float t = clamp((uIntro - seed * 0.72) / 0.28, 0.0, 1.0);
+            // Eased out hard: fast while distant, slow as it settles.
+            float ease = 1.0 - pow(1.0 - t, 3.0);
             vIntro = ease;
 
             // A little spin on the way in, so points arc rather than travelling

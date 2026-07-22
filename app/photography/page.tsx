@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'motion/react'
-import Wash from '@/components/backdrop/wash'
+import Backdrop from '@/components/backdrop/pattern'
 import PageHeader from '@/components/page-header'
 import { useHighlight, useStick } from '@/lib/motion/pointer'
 import { useScrollLock } from '@/lib/motion/scroll-lock'
@@ -252,7 +252,7 @@ export default function PhotographyPage() {
 
   return (
     <main className="min-h-screen">
-      <Wash variant="vortex" />
+      <Backdrop pattern="orbits" />
 
       <div className="mx-auto w-full max-w-6xl px-6 pb-32 pt-36 md:px-8 md:pt-44">
         <PageHeader

@@ -1,6 +1,5 @@
 {
   "title": "Differential Equations",
-  "blurb": "Analytical and numerical methods for the linear and non-linear systems physics keeps producing.",
-  "order": 4,
-  "field": "saddle"
+  "blurb": "Methods for the equations physics keeps producing, and what the boundary conditions decide on their own.",
+  "order": 4
 }

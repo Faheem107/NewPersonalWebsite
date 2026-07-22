@@ -1,6 +1,5 @@
 {
   "title": "Thermodynamics",
-  "blurb": "Energy, entropy, and the only law in physics that tells time which way to run.",
-  "order": 2,
-  "field": "laminar"
+  "blurb": "Energy and entropy, and why one direction in time is different from the other.",
+  "order": 2
 }

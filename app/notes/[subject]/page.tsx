@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import Wash from '@/components/backdrop/wash'
+import Backdrop from '@/components/backdrop/pattern'
 import PageHeader from '@/components/page-header'
 import { getSubject, getSubjects } from '@/lib/notes'
 
@@ -25,7 +25,7 @@ export default async function SubjectPage({ params }: Params) {
 
   return (
     <>
-      <Wash variant={s.field} />
+      <Backdrop pattern="interference" />
 
       <div className="mx-auto max-w-3xl">
         {/* The sidebar carries the way back to everything else, so there is no

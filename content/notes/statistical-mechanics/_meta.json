@@ -1,6 +1,5 @@
 {
   "title": "Statistical Mechanics",
-  "blurb": "How the certainty of thermodynamics emerges from counting microstates you cannot see.",
-  "order": 1,
-  "field": "vortex"
+  "blurb": "Where the certainty of thermodynamics comes from, given that it is built out of things nobody can see.",
+  "order": 1
 }

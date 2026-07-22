@@ -2,7 +2,6 @@ import fs from 'node:fs'
 import path from 'node:path'
 import matter from 'gray-matter'
 import { slugify } from '@/lib/slug'
-import type { Field } from '@/components/backdrop/wash'
 
 /**
  * The notes tree is derived from the filesystem, not from a hand-maintained
@@ -32,8 +31,6 @@ export type Subject = {
   title: string
   blurb: string
   order: number
-  /** which backdrop this subject reads best against */
-  field: Field
   topics: Topic[]
 }
 
@@ -41,7 +38,6 @@ type SubjectMeta = {
   title?: string
   blurb?: string
   order?: number
-  field?: Field
 }
 
 /** "greens-functions" -> "Greens Functions", used when a title is missing. */
@@ -121,7 +117,6 @@ function readSubject(slug: string): Subject | null {
     title: meta.title ?? titleFromSlug(slug),
     blurb: meta.blurb ?? '',
     order: meta.order ?? 999,
-    field: meta.field ?? 'laminar',
     topics,
   }
 }

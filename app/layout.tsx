@@ -53,11 +53,12 @@ export const metadata: Metadata = {
     title: 'Faheem · Physics at NYU Abu Dhabi',
     description: 'Research notes, biophysics work, photography and film.',
   },
+  // The Voyager golden record. Masked to a circle, so the tab icon sits the
+  // same way on light and dark browser chrome instead of being a dark square.
   icons: {
     icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
-      { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
+      { url: '/icon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
     ],
     apple: '/apple-icon.png',
   },

@@ -91,8 +91,8 @@ export function buildSearchIndex(): SearchDoc[] {
       href: '/thoughts',
       section: 'Pages',
       title: 'Some thoughts!',
-      context: 'Short pieces',
-      body: 'essays writing physics curiosity',
+      context: 'Space, groups, and risk',
+      body: 'essays writing space sociology risk anthropomorphism fermi micromort dunbar survivorship bias',
     },
     {
       href: '/notes',
@@ -105,7 +105,7 @@ export function buildSearchIndex(): SearchDoc[] {
       href: '/about',
       section: 'Pages',
       title: 'About',
-      context: 'Who I am',
+      context: 'Where I am and what I am working on',
       body: 'mohammed faheem nyu abu dhabi physics film new media contact email linkedin github instagram',
     },
   )

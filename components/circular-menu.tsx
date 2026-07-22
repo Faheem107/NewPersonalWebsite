@@ -445,7 +445,7 @@ function ContentModal({
       : MOVIES.map((m) => ({ main: m.title, sub: `${m.director} · ${m.year}` }))
 
   return (
-    <ModalShell label={title} onClose={onClose} panelClassName="plate w-full max-w-sm p-6">
+    <ModalShell label={title} onClose={onClose} panelClassName="plate-solid w-full max-w-sm p-6">
       <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
         <h3 className="caption">{title}</h3>
         <button

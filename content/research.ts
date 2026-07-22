@@ -29,14 +29,14 @@ export const RESEARCH: ResearchEntry[] = [
     title: 'Research Scholar',
     where: 'Laidlaw Foundation',
     when: 'Mar 2026 to present',
-    body: 'Part of the first cohort of Laidlaw Scholars from NYU, with a grant to work independently on the queueing dynamics of mRNA transcription. I am building stochastic models to test for non-monotonic activation signatures in single-molecule data, which is a careful way of saying I am trying to find out whether an effect is real.',
+    body: 'Part of the first cohort of Laidlaw Scholars from NYU, with a grant to work independently on the queueing dynamics of mRNA transcription. I am building stochastic models to test for non-monotonic activation signatures in single-molecule data, which is a long way of saying I am trying to work out whether an effect is really there.',
   },
   {
     id: 'ebrain-lab',
     title: 'Research Assistant, eBrain Lab',
     where: 'NYU Abu Dhabi',
     when: 'Jan 2026 to present',
-    body: 'Fine-tuning pretrained language models for quantum chemistry, and building chemoinformatics pipelines that predict molecular states before anything is synthesised. The interesting part is where the models fail, since that is usually where the chemistry is.',
+    body: 'Fine-tuning pretrained language models for quantum chemistry, and building pipelines that predict molecular states before anything is synthesised. Most of my time goes on the cases the models get wrong, which is where there is anything to learn.',
   },
   {
     id: 'igem-nyuad',
@@ -64,7 +64,7 @@ export const RESEARCH: ResearchEntry[] = [
     title: 'Research Intern, Image Processing',
     where: 'Institute of Molecular Genetics, Czech Academy of Sciences',
     when: 'Jun to Jul 2025',
-    body: 'Designed a Fiji and ilastik pipeline to plot phase portraits of protein dynamics during actomyosin cortex activation, with segmentation and track analysis across more than fifty live-cell datasets. Watching a phase portrait assemble itself out of microscopy footage is the closest I have come to seeing a piece of mathematics happen.',
+    body: 'Designed a Fiji and ilastik pipeline to plot phase portraits of protein dynamics during actomyosin cortex activation, with segmentation and track analysis across more than fifty live-cell datasets. It was the first time I had watched a piece of mathematics turn up in footage of something alive.',
   },
   {
     id: 'nyuad-biophysics',

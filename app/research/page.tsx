@@ -1,6 +1,6 @@
 'use client'
 
-import Wash from '@/components/backdrop/wash'
+import Backdrop from '@/components/backdrop/pattern'
 import PageHeader from '@/components/page-header'
 import { useReveal } from '@/lib/motion/use-reveal'
 import { RESEARCH } from '@/content/research'
@@ -11,7 +11,7 @@ export default function ResearchPage() {
   return (
     <main className="min-h-screen">
       {/* flow past a body, the figure a fluid-dynamics paper opens with */}
-      <Wash variant="dipole" />
+      <Backdrop pattern="phyllotaxis" />
 
       <div ref={scope} className="mx-auto w-full max-w-3xl px-6 pb-32 pt-36 md:px-8 md:pt-44">
         <PageHeader

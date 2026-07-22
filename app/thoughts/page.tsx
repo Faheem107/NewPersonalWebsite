@@ -1,6 +1,6 @@
 'use client'
 
-import Wash from '@/components/backdrop/wash'
+import Backdrop from '@/components/backdrop/pattern'
 import PageHeader from '@/components/page-header'
 import { useReveal } from '@/lib/motion/use-reveal'
 import { THOUGHTS } from '@/content/thoughts'
@@ -10,12 +10,12 @@ export default function ThoughtsPage() {
 
   return (
     <main className="min-h-screen">
-      <Wash variant="laminar" />
+      <Backdrop pattern="stars" />
 
       <div ref={scope} className="mx-auto w-full max-w-2xl px-6 pb-32 pt-36 md:px-8 md:pt-44">
         <PageHeader
           title="Some thoughts!"
-          lede="Short pieces about things I found out and could not quite put down afterwards."
+          lede="Short pieces on space, on how people behave in groups, and on how badly we judge risk. Mostly things I looked up and could not put down afterwards."
         />
 
         <div className="mt-20">

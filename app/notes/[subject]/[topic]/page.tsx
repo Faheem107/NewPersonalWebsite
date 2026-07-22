@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import Wash from '@/components/backdrop/wash'
+import Backdrop from '@/components/backdrop/pattern'
 import ReadingProgress from '@/components/notes/reading-progress'
 import { getAdjacent, getAllTopicParams, getSubject, getTopic } from '@/lib/notes'
 
@@ -32,7 +32,7 @@ export default async function TopicPage({ params }: Params) {
 
   return (
     <>
-      <Wash variant={s.field} alpha={0.22} />
+      <Backdrop pattern="interference" alpha={0.3} />
       <ReadingProgress />
 
       {/* Centred in the space the sidebar leaves, not pinned to its edge. */}

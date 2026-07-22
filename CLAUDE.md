@@ -70,20 +70,51 @@ to the wrong page.
 
 **No em dashes anywhere.** Use a comma, colon or full stop, or restructure.
 
-Voice is humble and philosophical. Avoid the generic-AI tells: "Here is the
-strange part", rhetorical questions as transitions, triads for rhythm, a closing
-aphorism on every piece, "genuinely beautiful", "worth thinking about". Vary
-sentence and paragraph length; uniform three-paragraph blocks are themselves a
-tell.
+Voice is humble and philosophical, and plain enough to follow first time. Avoid
+the generic-AI tells: "Here is the strange part", rhetorical questions as
+transitions, triads for rhythm, a closing aphorism on every piece, "genuinely
+beautiful", "worth thinking about". Vary sentence and paragraph length; uniform
+three-paragraph blocks are themselves a tell.
+
+Watch the last clause of a sentence in particular. That is where a flourish gets
+smuggled in ("the only law that tells time which way to run", "the language
+everything else is written in"), and it is usually doing the job the description
+should have done.
+
+`content/thoughts.ts` follows Vsauce's shape: open on something concrete, follow
+one thread, name the effect or study where there is one, stop before the moral.
+Where a well-known story turns out to be shakier than its retelling, say so in
+the piece.
 
 ## Backdrop
 
-`components/backdrop/wash.tsx` draws both layers from one stream function, so the
-particle trails run along the grain of the wash instead of across it. Keep the
-guards: DPR capped at 1.5, `IntersectionObserver` plus `visibilitychange` to
-pause offscreen, reduced motion draws one frame then cancels, no WebGL2 means no
-backdrop. Trails are polylines over a fixed timestep, not per-frame segments,
-which would be sub-pixel and frame-rate dependent.
+`components/backdrop/pattern.tsx` draws one construction per section: stars,
+orbits, interference, phyllotaxis, lattice. Every point's position comes from
+`gl_VertexID` in the vertex shader, so there are no attribute buffers and the CPU
+does nothing between frames.
+
+Each pattern is a real construction rather than decoration, and should stay that
+way: interference is an actual path difference between two sources, phyllotaxis
+is the golden angle that packs a sunflower head, the orbits use a Kepler-ish
+period so inner rings lead.
+
+**No haze layer.** An earlier version put a soft noise wash behind these and it
+read as fog: it hid the pattern and made the whole site look glassy. If the
+backdrop needs to be quieter on a given page, pass `alpha`, do not add
+atmosphere.
+
+Keep the guards: DPR capped at 2, `IntersectionObserver` plus `visibilitychange`
+to pause offscreen, reduced motion draws one frame then cancels, no WebGL2 means
+no backdrop.
+
+## Glass
+
+`.plate` is a framed field, not frosted glass. The blur is 2px and the fill is
+about half opaque, so the backdrop reads through it. It was 10px over a 74% fill
+and that was the single biggest reason the patterns behind it could not be seen.
+
+Dialogs and modals use `.plate-solid` instead: they sit over the whole page
+rather than over the backdrop, and there the text does need something opaque.
 
 ## Git
 

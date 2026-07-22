@@ -1,10 +1,10 @@
 import Link from 'next/link'
-import Wash from '@/components/backdrop/wash'
+import Backdrop from '@/components/backdrop/pattern'
 
 export default function NotFound() {
   return (
     <main className="grid min-h-screen place-items-center px-6">
-      <Wash variant="saddle" />
+      <Backdrop pattern="stars" />
       <div className="text-center">
         <p className="caption">404</p>
         <h1 className="mt-4 font-display text-[length:var(--text-h1)]">
