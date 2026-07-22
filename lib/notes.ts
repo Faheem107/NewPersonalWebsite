@@ -2,14 +2,14 @@ import fs from 'node:fs'
 import path from 'node:path'
 import matter from 'gray-matter'
 import { slugify } from '@/lib/slug'
-import type { Field } from '@/components/backdrop/field-lines'
+import type { Field } from '@/components/backdrop/wash'
 
 /**
  * The notes tree is derived from the filesystem, not from a hand-maintained
  * array: adding content/notes/<subject>/<topic>.mdx creates the route, the menu
  * entry and the prev/next links with no code change.
  *
- * Server-only — every export here touches fs.
+ * Server-only: every export here touches fs.
  */
 
 const ROOT = path.join(process.cwd(), 'content', 'notes')
@@ -61,7 +61,7 @@ function clean(text: string) {
  * Builds the searchable anchors for a note, in document order.
  *
  * Covers both `##`/`###` headings and the `title` of a Statement, Theorem,
- * Definition or Proof. The named results are the point of a physics note —
+ * Definition or Proof. The named results are the point of a physics note,
  * indexing only the headings would miss Brewster's angle, Eckart–Young and
  * every other thing someone would actually search for.
  *

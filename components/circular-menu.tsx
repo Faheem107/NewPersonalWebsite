@@ -1,12 +1,14 @@
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef } from "react"
+import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "motion/react"
 import { Linkedin, Instagram, Github, Mail } from "lucide-react"
 import { BookOpen, Disc3, Clapperboard } from "lucide-react"
 import Image from "next/image"
 import { Canvas } from "@react-three/fiber"
 import { TorusShader } from "@/components/torus-shader"
+import { useScrollLock } from "@/lib/motion/scroll-lock"
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -55,6 +57,108 @@ const MENU_ITEMS: MenuItem[] = [
   { id: "github",   label: "GitHub",   kind: "icon", icon: <Github size={22} strokeWidth={1.5} />,       href: "https://github.com/Faheem107" },
   { id: "email",    label: "Email",    kind: "icon", icon: <Mail size={22} strokeWidth={1.5} />,         href: "mailto:mj3398@nyu.edu" },
 ]
+
+// ─── Modal shell ──────────────────────────────────────────────────────────────
+
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
+
+/**
+ * Backdrop, centring, focus and scroll behaviour for both modals.
+ *
+ * The portal is the point. These used to render where they sit in the tree,
+ * which is inside [data-torus] on the home page, and the GSAP entrance timeline
+ * puts a transform on that element. A transformed ancestor becomes the
+ * containing block for position: fixed, so `inset-0` resolved to the torus box
+ * and the modal opened above the torus instead of centred in the viewport.
+ * Nothing was wrong with the modal's own CSS.
+ */
+function ModalShell({
+  label,
+  onClose,
+  panelClassName = '',
+  panelStyle,
+  children,
+}: {
+  label: string
+  onClose: () => void
+  panelClassName?: string
+  panelStyle?: React.CSSProperties
+  children: React.ReactNode
+}) {
+  const panelRef = useRef<HTMLDivElement>(null)
+  const restoreFocus = useRef<HTMLElement | null>(null)
+
+  useScrollLock(true)
+
+  useEffect(() => {
+    restoreFocus.current = document.activeElement as HTMLElement | null
+    panelRef.current?.focus()
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onClose()
+        return
+      }
+      if (e.key !== 'Tab') return
+
+      const panel = panelRef.current
+      if (!panel) return
+      const items = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE))
+      if (!items.length) {
+        e.preventDefault()
+        return
+      }
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      restoreFocus.current?.focus?.()
+    }
+  }, [onClose])
+
+  if (typeof document === 'undefined') return null
+
+  return createPortal(
+    <motion.div
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.24, ease: 'easeOut' }}
+    >
+      <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
+
+      <motion.div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={label}
+        tabIndex={-1}
+        className={`relative outline-none will-change-transform ${panelClassName}`}
+        style={panelStyle}
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.97, y: 8 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+      >
+        {children}
+      </motion.div>
+    </motion.div>,
+    document.body,
+  )
+}
 
 // ─── Windows 95 vinyl modal ───────────────────────────────────────────────────
 
@@ -139,37 +243,26 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <motion.div
-      className="fixed inset-0 z-[200] flex items-center justify-center"
-      style={{ background: "rgba(0,0,0,0.45)", touchAction: "none" }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
+    <ModalShell
+      label="Music player"
+      onClose={onClose}
+      panelStyle={{
+        background:  "#c0c0c0",
+        border:      "2px solid",
+        borderColor: "#ffffff #808080 #808080 #ffffff",
+        boxShadow:   "inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #707070",
+        fontFamily:  '"MS Sans Serif", "Pixelated MS Sans Serif", Arial, sans-serif',
+        width:       "100%",
+        maxWidth:    380,
+      }}
     >
-      <audio 
-        ref={audioRef} 
-        src={SONGS[currentTrack].audioSrc} 
+      <audio
+        ref={audioRef}
+        src={SONGS[currentTrack].audioSrc}
         autoPlay={isPlaying}
       />
 
-      <motion.div
-        initial={{ scale: 0.94, opacity: 0, y: 10 }}
-        animate={{ scale: 1,    opacity: 1, y: 0 }}
-        exit={{   scale: 0.94, opacity: 0, y: 10 }}
-        transition={{ type: "spring", stiffness: 420, damping: 28 }}
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          background:  "#c0c0c0",
-          border:      "2px solid",
-          borderColor: "#ffffff #808080 #808080 #ffffff",
-          boxShadow:   "inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #707070",
-          fontFamily:  '"MS Sans Serif", "Pixelated MS Sans Serif", Arial, sans-serif',
-          minWidth:    320,
-          maxWidth:    380,
-          margin:      "0 16px" 
-        }}
-      >
+      <div>
         {/* Title bar */}
         <div
           style={{
@@ -184,7 +277,7 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
             letterSpacing: 0.3,
           }}
         >
-          <span>Winamp — Now Playing</span>
+          <span>Winamp · Now Playing</span>
           <div style={{ display: "flex", gap: 2 }}>
             <button
               onClick={onClose}
@@ -320,8 +413,8 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </ModalShell>
   )
 }
 
@@ -352,49 +445,38 @@ function ContentModal({
       : MOVIES.map((m) => ({ main: m.title, sub: `${m.director} · ${m.year}` }))
 
   return (
-    <motion.div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-    >
-      <motion.div
-        className="bg-background border border-border rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl"
-        initial={{ scale: 0.96, opacity: 0, y: 8 }}
-        animate={{ scale: 1,    opacity: 1, y: 0 }}
-        exit={{   scale: 0.96, opacity: 0, y: 8 }}
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
-          <h3 className="text-sm font-sans font-bold tracking-tight">{title}</h3>
-          <button
-            className="text-muted-foreground hover:text-foreground transition-colors text-base leading-none"
-            onClick={onClose}
+    <ModalShell label={title} onClose={onClose} panelClassName="plate w-full max-w-sm p-6">
+      <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
+        <h3 className="caption">{title}</h3>
+        <button
+          className="leading-none text-muted-foreground transition-colors hover:text-foreground"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="space-y-0.5">
+        {items.map((item, i) => (
+          <motion.div
+            key={i}
+            className="flex items-center gap-3 rounded-lg px-2 py-2"
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            // Behind the panel's own spring, so the list arrives after the
+            // thing containing it rather than alongside it.
+            transition={{ delay: 0.06 + i * 0.035, duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
           >
-            ×
-          </button>
-        </div>
-        <div className="space-y-0.5">
-          {items.map((item, i) => (
-            <motion.div
-              key={i}
-              className="flex items-center gap-3 px-2 py-2 hover:bg-muted/40 rounded-lg"
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.04 }}
-            >
-              <span className="text-xs text-muted-foreground/50 font-mono w-4">{i + 1}</span>
-              <div>
-                <p className="text-sm font-sans font-bold leading-tight">{item.main}</p>
-                <p className="text-xs text-muted-foreground">{item.sub}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-    </motion.div>
+            <span className="w-4 font-mono text-xs text-muted-foreground/50">{i + 1}</span>
+            <div>
+              <p className="text-[0.9375rem] leading-tight">{item.main}</p>
+              <p className="text-[0.8125rem] text-muted-foreground">{item.sub}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </ModalShell>
   )
 }
 
@@ -430,12 +512,7 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
     return () => clearInterval(id)
   }, [isExpanded])
 
-  // Handle escape key to close modals
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setModal(null) }
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
-  }, [])
+  // Escape is handled by ModalShell, which only listens while a modal is open.
 
   // Handle click on individual menu items
   const handleClick = useCallback((item: MenuItem, e: React.MouseEvent) => {
@@ -514,6 +591,9 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
               return (
                 <motion.button
                   key={item.id}
+                  // The visible label only appears on hover, so without this
+                  // the orbit is seven unnamed buttons to a screen reader.
+                  aria-label={item.label}
                   className="absolute flex flex-col items-center gap-0.5 cursor-pointer z-[50]"
                   style={{ x: ox, y: oy }}
                   initial={{ opacity: 0, scale: 0.3 }}

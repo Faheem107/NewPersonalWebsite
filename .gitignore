@@ -26,8 +26,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# source photography originals (555MB) — optimised copies live in public/
+# source photography originals (555MB); optimised copies live in public/
 /Pictures for Website/
 
 # local agent settings
 /.claude/
+
+# macOS
+.DS_Store
+
+# playwright mcp scratch output
+/.playwright-mcp/

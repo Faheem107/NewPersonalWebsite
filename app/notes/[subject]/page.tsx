@@ -1,9 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import FieldLines from '@/components/backdrop/field-lines'
+import Wash from '@/components/backdrop/wash'
 import PageHeader from '@/components/page-header'
-import BackLink from '@/components/notes/back-link'
 import { getSubject, getSubjects } from '@/lib/notes'
 
 type Params = { params: Promise<{ subject: string }> }
@@ -25,15 +24,13 @@ export default async function SubjectPage({ params }: Params) {
   if (!s) notFound()
 
   return (
-    <main className="min-h-screen">
-      <FieldLines field={s.field} />
+    <>
+      <Wash variant={s.field} />
 
-      <div className="mx-auto w-full max-w-3xl px-6 pb-32 pt-36 md:px-8 md:pt-44">
-        <BackLink href="/notes" label="All notes" />
-
-        <div className="mt-8">
-          <PageHeader title={s.title} lede={s.blurb} />
-        </div>
+      <div className="mx-auto max-w-3xl">
+        {/* The sidebar carries the way back to everything else, so there is no
+            back link here any more. */}
+        <PageHeader title={s.title} lede={s.blurb} />
 
         <ol className="mt-16">
           {s.topics.map((topic, i) => (
@@ -63,6 +60,6 @@ export default async function SubjectPage({ params }: Params) {
           ))}
         </ol>
       </div>
-    </main>
+    </>
   )
 }

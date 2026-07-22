@@ -1,10 +1,10 @@
 import Link from 'next/link'
-import FieldLines from '@/components/backdrop/field-lines'
+import Wash from '@/components/backdrop/wash'
 
 export default function NotFound() {
   return (
     <main className="grid min-h-screen place-items-center px-6">
-      <FieldLines field="saddle" />
+      <Wash variant="saddle" />
       <div className="text-center">
         <p className="caption">404</p>
         <h1 className="mt-4 font-display text-[length:var(--text-h1)]">

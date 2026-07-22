@@ -11,14 +11,14 @@ $$
 A\mathbf{v} = \lambda \mathbf{v}
 $$
 
-Find enough of them and the transformation becomes trivial — in that basis it is a
+Find enough of them and the transformation becomes trivial. In that basis it is a
 diagonal matrix, and applying it a thousand times is raising numbers to the thousandth
 power.
 
 <Plot src="notes/linear-algebra/eigen.svg" n="1">
   A symmetric matrix acting on vectors around the circle. Each faint segment joins a
   vector to its image. Only along the two eigen-directions does a vector come back
-  pointing the same way — everywhere else it is rotated as well as stretched.
+  pointing the same way. Everywhere else it is rotated as well as stretched.
 </Plot>
 
 ## The theorem
@@ -37,7 +37,7 @@ measurable numbers, orthogonality makes outcomes distinguishable, and completene
 means the basis can express any state.
 
 <Aside>
-Symmetric real matrices are the real special case. Rotations are *not* symmetric — a
+Symmetric real matrices are the real special case. Rotations are *not* symmetric. A
 rotation in the plane has no real eigenvectors at all, which is just the statement
 that it leaves no direction fixed.
 </Aside>
@@ -50,13 +50,13 @@ $$
 f(A) = U f(\Lambda) U^\dagger
 $$
 
-So $e^{At}$ — the solution operator of every linear ODE system — is computable. The
+So $e^{At}$, the solution operator of every linear ODE system, is computable. The
 eigenvalues determine the behaviour entirely: negative real parts decay, positive
 grow, imaginary parts oscillate. Stability analysis is eigenvalue analysis.
 
 <Statement kind="Application" title="Normal modes">
 Coupled oscillators give $M\ddot{\mathbf{x}} = -K\mathbf{x}$. Diagonalising $K$
-relative to $M$ decouples the system into independent oscillators — the normal modes.
+relative to $M$ decouples the system into independent oscillators, the normal modes.
 A molecule's vibrational spectrum, a bridge's resonances, and the phonons in a crystal
 are all this computation.
 </Statement>
@@ -68,14 +68,14 @@ of it will do.
 
 Physically, degeneracy almost always signals a symmetry: hydrogen's $\ell$ levels are
 degenerate because the Coulomb potential has a hidden $SO(4)$ symmetry beyond the
-obvious rotational one. Break the symmetry — apply a field — and the degeneracy lifts,
+obvious rotational one. Break the symmetry by applying a field, and the degeneracy lifts,
 splitting the spectral line. Reading which lines split, and by how much, is how the
 symmetry gets identified in the first place.
 
 ## Non-Hermitian matrices misbehave
 
 Without the symmetry, guarantees evaporate. Eigenvalues may be complex, eigenvectors
-need not be orthogonal, and a matrix may not be diagonalisable at all — the Jordan
+need not be orthogonal, and a matrix may not be diagonalisable at all, and the Jordan
 form is what remains.
 
 Worse, non-orthogonal eigenvectors make the spectrum a poor guide to behaviour. A

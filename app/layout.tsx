@@ -1,30 +1,31 @@
 import type { Metadata, Viewport } from 'next'
-import { Newsreader, Archivo } from 'next/font/google'
+import { Inter, Lexend } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { ThemeProvider } from '@/components/theme-provider'
 import { PointerProvider } from '@/lib/motion/pointer'
 import CustomCursor from '@/components/custom-cursor'
 import SmoothScroll from '@/components/smooth-scroll'
 import SiteChrome from '@/components/site-chrome'
-import NoteSearch from '@/components/notes/note-search'
-import { getSubjects } from '@/lib/notes'
+import SiteSearch from '@/components/search/site-search'
+import { buildSearchIndex } from '@/lib/search'
 import './globals.css'
 import 'katex/dist/katex.min.css'
 
-// Both faces are variable, which the weight-on-hover interaction depends on.
-// opsz lets Newsreader tighten as it scales up; wdth gives Archivo a condensed
-// cut for captions without loading a second family.
-const newsreader = Newsreader({
+// Inter carries the name and nothing else: a Helvetica-class grotesque, but
+// self-hosted by next/font so it renders identically on every platform rather
+// than falling back to Arial off Apple devices, which real Helvetica does.
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-newsreader',
-  axes: ['opsz'],
+  variable: '--font-inter',
   display: 'swap',
 })
 
-const archivo = Archivo({
+// Lexend does all the rest. Both faces are variable, which the weight-on-hover
+// interaction depends on; Lexend has no width axis, so captions get their
+// condensed register from weight and tracking instead.
+const lexend = Lexend({
   subsets: ['latin'],
-  variable: '--font-archivo',
-  axes: ['wdth'],
+  variable: '--font-lexend',
   display: 'swap',
 })
 
@@ -33,8 +34,8 @@ const SITE = 'https://faheem.wiki'
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: 'Faheem — Physics at NYU Abu Dhabi',
-    template: '%s — Faheem',
+    default: 'Faheem · Physics at NYU Abu Dhabi',
+    template: '%s · Faheem',
   },
   description:
     'Mohammed Faheem. Physics major, Film & New Media minor at NYU Abu Dhabi. Research notes, biophysics work, photography and film.',
@@ -44,12 +45,12 @@ export const metadata: Metadata = {
     type: 'website',
     url: SITE,
     siteName: 'Faheem',
-    title: 'Faheem — Physics at NYU Abu Dhabi',
+    title: 'Faheem · Physics at NYU Abu Dhabi',
     description: 'Research notes, biophysics work, photography and film.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Faheem — Physics at NYU Abu Dhabi',
+    title: 'Faheem · Physics at NYU Abu Dhabi',
     description: 'Research notes, biophysics work, photography and film.',
   },
   icons: {
@@ -70,31 +71,19 @@ export const viewport: Viewport = {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  // Built at build time and serialised once — the palette needs no data fetching.
-  const searchIndex = getSubjects().flatMap(subject =>
-    subject.topics.map(topic => ({
-      subject: subject.slug,
-      subjectTitle: subject.title,
-      topic: topic.slug,
-      title: topic.title,
-      summary: topic.summary,
-      headings: topic.headings,
-    })),
-  )
+  // Built once at build time and serialised into the page. Every source it
+  // reads is static, so search needs no runtime data fetching.
+  const searchIndex = buildSearchIndex()
 
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${newsreader.variable} ${archivo.variable}`}
-    >
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${lexend.variable}`}>
       <body suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <PointerProvider>
             <SmoothScroll />
             <CustomCursor />
             <SiteChrome />
-            <NoteSearch entries={searchIndex} />
+            <SiteSearch docs={searchIndex} />
             {children}
           </PointerProvider>
         </ThemeProvider>

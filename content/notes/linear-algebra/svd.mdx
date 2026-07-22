@@ -66,8 +66,8 @@ the output. A large $\kappa$ means the ellipsoid is a long thin sliver and the i
 is dominated by whichever direction was squashed most.
 
 <Statement kind="Practice" title="The pseudoinverse">
-When $A$ is singular or rectangular, $A^+ = V\Sigma^+U^\dagger$ — inverting the
-non-zero singular values and transposing — gives the least-squares solution of minimum
+When $A$ is singular or rectangular, $A^+ = V\Sigma^+U^\dagger$, inverting the
+non-zero singular values and transposing, gives the least-squares solution of minimum
 norm. Truncating small $\sigma_i$ before inverting is regularisation, and it is the
 standard fix for an ill-posed inverse problem such as deconvolving a microscope image.
 </Statement>
@@ -76,7 +76,7 @@ standard fix for an ill-posed inverse problem such as deconvolving a microscope 
 
 Eigenvectors of a non-symmetric matrix can be nearly parallel, which makes the change
 of basis numerically hostile. The SVD's bases are orthonormal by construction, so the
-decomposition is backward stable — the computed answer is the exact answer to a
+decomposition is backward stable: the computed answer is the exact answer to a
 slightly perturbed problem.
 
 For anything involving measured data, that stability is worth more than the extra

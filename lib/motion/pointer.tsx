@@ -1,69 +1,95 @@
 'use client'
 
-import React, {
-  createContext,
-  useContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
-import { useMotionValue, useSpring, type MotionValue } from 'motion/react'
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
-export type CursorVariant = 'default' | 'highlight' | 'stuck'
+export type CursorVariant = 'default' | 'highlight' | 'stuck' | 'text'
 
-export type StickTarget = {
-  left: number
-  top: number
-  width: number
-  height: number
-  radius: number
-}
+/**
+ * Pointer state for the custom cursor.
+ *
+ * Deliberately NOT React state. The previous version kept the variant and the
+ * stuck target in useState inside the provider, and every element using
+ * useStick consumed that context, so hovering one link in a dense list
+ * re-rendered the whole subtree. In the notes, where the sidebar is a column of
+ * links a few pixels apart, that was most of the glitchiness.
+ *
+ * So: a module-level store, a subscribe function, and a context value that
+ * never changes identity. Nothing here re-renders anything. The cursor reads it
+ * from a single rAF loop.
+ */
 
-type PointerContextValue = {
-  /** Raw pointer position, updated every mousemove. */
-  x: MotionValue<number>
-  y: MotionValue<number>
-  /** Spring-smoothed pointer. Everything decorative should read these instead
-   *  of the raw values — unsmoothed coordinates are what make a mouse-follow
-   *  effect feel mechanical. */
-  smoothX: MotionValue<number>
-  smoothY: MotionValue<number>
+type Store = {
+  /** raw pointer position, written on every pointermove */
+  x: number
+  y: number
   variant: CursorVariant
-  setVariant: (v: CursorVariant) => void
-  stickTarget: StickTarget | null
-  stick: (el: Element | null) => void
-  unstick: () => void
-  hasPointer: boolean
+  /** the element to snap to, kept as an element rather than a rect */
+  target: HTMLElement | null
+  /** false while the pointer is outside the window */
+  inside: boolean
 }
+
+const store: Store = { x: -100, y: -100, variant: 'default', target: null, inside: false }
+
+/**
+ * The cursor reads this from its own rAF loop, so there is no subscription and
+ * nothing to notify. Writers just mutate.
+ */
+export function getCursorState(): Readonly<Store> {
+  return store
+}
+
+export function setCursorPosition(x: number, y: number) {
+  store.x = x
+  store.y = y
+  store.inside = true
+}
+
+export function setCursorInside(inside: boolean) {
+  store.inside = inside
+}
+
+export function setCursorVariant(variant: CursorVariant) {
+  if (store.variant === variant) return
+  store.variant = variant
+  if (variant !== 'stuck') store.target = null
+}
+
+export function setCursorTarget(el: HTMLElement | null) {
+  store.target = el
+  store.variant = el ? 'stuck' : 'default'
+}
+
+/**
+ * Corner radius of a stick target.
+ *
+ * getComputedStyle forces a style recalc, and the old code called it on every
+ * single mouseenter. Elements can declare the value up front with
+ * data-cursor-radius; otherwise it is measured once and cached.
+ */
+const radiusCache = new WeakMap<HTMLElement, number>()
+
+export function targetRadius(el: HTMLElement): number {
+  const declared = el.dataset.cursorRadius
+  if (declared) return Number(declared) || 8
+
+  const cached = radiusCache.get(el)
+  if (cached !== undefined) return cached
+
+  const measured = parseFloat(getComputedStyle(el).borderRadius) || 8
+  radiusCache.set(el, measured)
+  return measured
+}
+
+/** Whether the pointer is over something that should read as text. */
+const TEXT_SELECTOR = 'p, li, blockquote, h1, h2, h3, h4, .notes-prose, [data-cursor="text"]'
+
+type PointerContextValue = { hasPointer: boolean }
 
 const PointerContext = createContext<PointerContextValue | null>(null)
 
 export function PointerProvider({ children }: { children: React.ReactNode }) {
-  const x = useMotionValue(-100)
-  const y = useMotionValue(-100)
-
-  const spring = { stiffness: 380, damping: 32, mass: 0.45 }
-  const smoothX = useSpring(x, spring)
-  const smoothY = useSpring(y, spring)
-
-  const [variant, setVariant] = useState<CursorVariant>('default')
-  const [stickTarget, setStickTarget] = useState<StickTarget | null>(null)
   const [hasPointer, setHasPointer] = useState(false)
-
-  const stick = useCallback((el: Element | null) => {
-    if (!el) return
-    const r = el.getBoundingClientRect()
-    const radius = parseFloat(getComputedStyle(el).borderRadius) || 8
-    setStickTarget({ left: r.left, top: r.top, width: r.width, height: r.height, radius })
-    setVariant('stuck')
-  }, [])
-
-  const unstick = useCallback(() => {
-    setStickTarget(null)
-    setVariant('default')
-  }, [])
 
   useEffect(() => {
     // A fine pointer that also reports hover is the only case where replacing
@@ -88,31 +114,37 @@ export function PointerProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!hasPointer) return
-    const onMove = (e: PointerEvent) => {
-      x.set(e.clientX)
-      y.set(e.clientY)
+
+    const onMove = (e: PointerEvent) => setCursorPosition(e.clientX, e.clientY)
+
+    // Losing the pointer out of the window used to leave the cursor stranded
+    // wherever it was last seen.
+    const onLeave = (e: PointerEvent) => {
+      if (e.relatedTarget) return
+      setCursorInside(false)
     }
+
+    // The text variant is resolved on pointerover, which fires once per element
+    // crossed, rather than per frame. Anything already stuck or highlighted
+    // keeps its variant: those are explicit and this is the fallback.
+    const onOver = (e: Event) => {
+      if (store.variant === 'stuck' || store.variant === 'highlight') return
+      const target = e.target as HTMLElement | null
+      const isText = target?.closest?.(TEXT_SELECTOR) != null
+      setCursorVariant(isText ? 'text' : 'default')
+    }
+
     window.addEventListener('pointermove', onMove, { passive: true })
-    return () => window.removeEventListener('pointermove', onMove)
-  }, [hasPointer, x, y])
-
-  // A stuck target is stored in viewport coordinates, so it goes stale the
-  // moment the page scrolls or resizes underneath it.
-  useEffect(() => {
-    if (!stickTarget) return
-    const drop = () => unstick()
-    window.addEventListener('scroll', drop, { passive: true })
-    window.addEventListener('resize', drop)
+    document.addEventListener('pointerout', onLeave)
+    document.addEventListener('pointerover', onOver, { passive: true })
     return () => {
-      window.removeEventListener('scroll', drop)
-      window.removeEventListener('resize', drop)
+      window.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerout', onLeave)
+      document.removeEventListener('pointerover', onOver)
     }
-  }, [stickTarget, unstick])
+  }, [hasPointer])
 
-  const value = useMemo(
-    () => ({ x, y, smoothX, smoothY, variant, setVariant, stickTarget, stick, unstick, hasPointer }),
-    [x, y, smoothX, smoothY, variant, stickTarget, stick, unstick, hasPointer],
-  )
+  const value = useMemo(() => ({ hasPointer }), [hasPointer])
 
   return <PointerContext.Provider value={value}>{children}</PointerContext.Provider>
 }
@@ -124,36 +156,28 @@ export function usePointer() {
 }
 
 /**
- * Handlers that make an element a cursor target: the cursor snaps to its bounds
- * on enter and releases on leave. Spread onto the element.
+ * Makes an element a snap target: the cursor takes its shape on enter and
+ * releases on leave. For isolated controls only. A dense list of links wants
+ * useHighlight instead, since snapping between neighbours a few pixels apart
+ * is jitter by construction.
  */
 export function useStick() {
-  const { stick, unstick } = usePointer()
-  const ref = useRef<HTMLElement | null>(null)
-
   return useMemo(
     () => ({
-      onMouseEnter: (e: React.MouseEvent) => {
-        ref.current = e.currentTarget as HTMLElement
-        stick(e.currentTarget)
-      },
-      onMouseLeave: () => {
-        ref.current = null
-        unstick()
-      },
+      onMouseEnter: (e: React.MouseEvent) => setCursorTarget(e.currentTarget as HTMLElement),
+      onMouseLeave: () => setCursorTarget(null),
     }),
-    [stick, unstick],
+    [],
   )
 }
 
-/** Marks an element as merely interactive — the cursor grows but does not snap. */
+/** Marks an element as merely interactive: the cursor grows but does not snap. */
 export function useHighlight() {
-  const { setVariant } = usePointer()
   return useMemo(
     () => ({
-      onMouseEnter: () => setVariant('highlight'),
-      onMouseLeave: () => setVariant('default'),
+      onMouseEnter: () => setCursorVariant('highlight'),
+      onMouseLeave: () => setCursorVariant('default'),
     }),
-    [setVariant],
+    [],
   )
 }

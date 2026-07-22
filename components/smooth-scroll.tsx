@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import Lenis from 'lenis'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { registerLenis } from '@/lib/motion/scroll-lock'
 
 /**
  * Lenis drives scrolling; GSAP reads from it. Registering ScrollTrigger and
@@ -24,12 +25,17 @@ export default function SmoothScroll() {
 
     lenis.on('scroll', ScrollTrigger.update)
 
+    // Overlays need to stop Lenis as well as the body, or the page keeps
+    // moving behind them.
+    registerLenis(lenis)
+
     const raf = (time: number) => lenis.raf(time * 1000)
     gsap.ticker.add(raf)
     gsap.ticker.lagSmoothing(0)
 
     return () => {
       gsap.ticker.remove(raf)
+      registerLenis(null)
       lenis.destroy()
     }
   }, [])

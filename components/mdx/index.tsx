@@ -7,7 +7,7 @@ import Plot from '@/components/mdx/plot'
 export { default as Plot } from '@/components/mdx/plot'
 
 /**
- * The note vocabulary. One set, shared by every note — the pages this replaces
+ * The note vocabulary. One set, shared by every note. The pages this replaces
  * redefined Section, Eq and Diagram inside all five subject files.
  *
  * Everything here uses the same device as the rest of the site: a condensed-caps
@@ -63,7 +63,7 @@ export function Aside({ children }: { children: ReactNode }) {
  * Scientific plots arrive with white backgrounds, which glare on a dark page.
  * `tone="invert"` flips luminance and rotates hue back, so a line plot reads as
  * light-on-dark with its curve colours roughly intact. `tone="keep"` is for
- * images where that would be wrong — photographs, colour-mapped renders — and
+ * images where that would be wrong, such as photographs and colour-mapped renders, and
  * just takes the brightness down so the plate reads as a print on a dark wall.
  */
 export function Figure({

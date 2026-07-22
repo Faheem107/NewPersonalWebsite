@@ -9,7 +9,7 @@ import type { ReactNode } from 'react'
  * CSS variables, so one file renders correctly in both themes. An <img> would
  * isolate it from the cascade and need a light and a dark copy.
  *
- * Server component — reads from disk at build time.
+ * Server component, reading from disk at build time.
  */
 export default function Plot({
   src,

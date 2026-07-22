@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from 'motion/react'
  * Cycles a short list of words in place.
  *
  * Replaces a character-by-character typewriter that drove a React state update
- * per keystroke — roughly forty re-renders of the hero per word. This animates
+ * per keystroke, roughly forty re-renders of the hero per word. This animates
  * on the compositor and re-renders once per word.
  */
 export default function RotatingWord({ words, hold = 2200 }: { words: string[]; hold?: number }) {

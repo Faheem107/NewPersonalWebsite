@@ -1,6 +1,6 @@
 {
   "title": "Linear Algebra",
-  "blurb": "Inner product spaces, matrix decompositions and spectral theory — the language everything else is written in.",
+  "blurb": "Inner product spaces, matrix decompositions and spectral theory, the language everything else is written in.",
   "order": 5,
   "field": "laminar"
 }

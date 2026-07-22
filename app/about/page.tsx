@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
-import FieldLines from '@/components/backdrop/field-lines'
+import Wash from '@/components/backdrop/wash'
 import PageHeader from '@/components/page-header'
 
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'Mohammed Faheem — second-year Physics major with a Film & New Media minor at NYU Abu Dhabi.',
+    'Mohammed Faheem, Physics major with a Film & New Media minor at NYU Abu Dhabi.',
 }
 
 const FACTS = [
@@ -24,24 +24,29 @@ const LINKS = [
 export default function AboutPage() {
   return (
     <main className="min-h-screen">
-      <FieldLines field="saddle" />
+      <Wash variant="saddle" />
 
       <div className="mx-auto w-full max-w-3xl px-6 pb-32 pt-36 md:px-8 md:pt-44">
         <PageHeader title="About" />
 
         <div className="mt-14 max-w-prose space-y-6 text-lg leading-relaxed text-muted-foreground">
           <p>
-            I am Mohammed Faheem, a second-year student at NYU Abu Dhabi majoring in Physics with a
-            minor in Film &amp; New Media. My academic work is mostly about using mathematical and
-            computational tools to understand biological systems — currently the stochastic
-            behaviour of transcription.
+            I am Mohammed Faheem, a student at NYU Abu Dhabi majoring in Physics with a minor in
+            Film &amp; New Media. Most of my work is an attempt to use mathematics and computation
+            to understand biological systems, at the moment the stochastic behaviour of
+            transcription.
           </p>
           <p>
-            Alongside coursework and lab research I spend a lot of time on science communication and
-            visual arts. I think scientific education is worth most when it is shared across more
-            than one medium, and that the philosophy behind what we study matters as much as the
-            results: science should end up benefiting people. That is what I am aiming at — to make
-            progress, and to pass it on.
+            Alongside the coursework and the lab I spend a good deal of time on science
+            communication and on visual work. I have come to think that an idea is not really
+            understood until it can survive being explained in more than one medium, and that the
+            question of what a piece of research is for matters at least as much as whether it is
+            correct.
+          </p>
+          <p>
+            I am not sure I have settled either question. What I am fairly sure of is that the
+            answer is not something you arrive at once and then keep. It is closer to something you
+            have to keep asking, and the asking is most of the work.
           </p>
           <p>Outside of all that, football and reading.</p>
         </div>

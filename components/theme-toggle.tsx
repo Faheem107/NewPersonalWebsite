@@ -7,7 +7,7 @@ import { useStick } from '@/lib/motion/pointer'
 
 /**
  * Light and dark are drawn as a single disc that fills and empties, rather than
- * a sun swapping for a moon — closer to an exposure than an icon set.
+ * a sun swapping for a moon, closer to an exposure than an icon set.
  */
 export default function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()

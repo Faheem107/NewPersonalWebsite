@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import FieldLines from '@/components/backdrop/field-lines'
-import BackLink from '@/components/notes/back-link'
+import Wash from '@/components/backdrop/wash'
 import ReadingProgress from '@/components/notes/reading-progress'
 import { getAdjacent, getAllTopicParams, getSubject, getTopic } from '@/lib/notes'
 
@@ -32,14 +31,14 @@ export default async function TopicPage({ params }: Params) {
   const { prev, next } = getAdjacent(subject, topic)
 
   return (
-    <main className="min-h-screen">
-      <FieldLines field={s.field} alpha={0.28} />
+    <>
+      <Wash variant={s.field} alpha={0.22} />
       <ReadingProgress />
 
-      <article className="relative mx-auto w-full max-w-[42rem] px-6 pb-28 pt-32 md:px-8 md:pt-40">
-        <BackLink href={`/notes/${s.slug}`} label={s.title} />
-
-        <header className="mb-12 mt-8">
+      {/* Centred in the space the sidebar leaves, not pinned to its edge. */}
+      <article className="relative mx-auto max-w-[42rem]">
+        <header className="mb-12">
+          <p className="caption mb-4">{s.title}</p>
           <h1 className="font-display text-[length:var(--text-h1)] leading-[1.08]">{t.title}</h1>
           {t.summary && (
             <p className="mt-4 text-[length:var(--text-lede)] text-muted-foreground">{t.summary}</p>
@@ -75,6 +74,6 @@ export default async function TopicPage({ params }: Params) {
           )}
         </nav>
       </article>
-    </main>
+    </>
   )
 }

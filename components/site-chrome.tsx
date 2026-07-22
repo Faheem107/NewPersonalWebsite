@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'motion/react'
 import ThemeToggle from '@/components/theme-toggle'
 import { useStick } from '@/lib/motion/pointer'
+import { useScrollLock } from '@/lib/motion/scroll-lock'
 
 const NAV = [
   { label: 'research', href: '/research' },
@@ -35,7 +36,11 @@ function NavLink({ href, label, onClick }: { href: string; label: string; onClic
   )
 }
 
-/** Shows the shortcut rather than a magnifier, so the key combination is learnable. */
+/**
+ * Says what it does. The shortcut used to be the label, which was learnable but
+ * only once you already knew it was a search box; the hint sits inside the
+ * dialog now instead.
+ */
 function SearchButton() {
   const [mac, setMac] = useState(true)
   const stick = useStick()
@@ -47,11 +52,15 @@ function SearchButton() {
   return (
     <button
       {...stick}
-      onClick={() => window.dispatchEvent(new Event('open-note-search'))}
-      aria-label="Search notes"
-      className="caption rounded-full border border-border px-2.5 py-1 transition-colors hover:border-foreground/40 hover:text-foreground"
+      onClick={() => window.dispatchEvent(new Event('open-site-search'))}
+      aria-label="Search the site"
+      aria-keyshortcuts="Meta+K Control+K"
+      className="caption flex items-center gap-2 rounded-full border border-border px-3 py-1 transition-colors hover:border-foreground/40 hover:text-foreground"
     >
-      {mac ? '⌘' : 'Ctrl '}K
+      Search
+      <span aria-hidden className="opacity-50">
+        {mac ? '⌘K' : 'Ctrl K'}
+      </span>
     </button>
   )
 }
@@ -70,15 +79,14 @@ export default function SiteChrome() {
   })
 
   // A full-screen overlay has to trap the page behind it and answer Escape.
+  // Locking the body alone is not enough while Lenis is driving the scroll.
+  useScrollLock(open)
+
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
     document.addEventListener('keydown', onKey)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
-    }
+    return () => document.removeEventListener('keydown', onKey)
   }, [open])
 
   return (
@@ -88,11 +96,7 @@ export default function SiteChrome() {
         animate={{ y: visible ? 0 : -96, opacity: visible ? 1 : 0 }}
         transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
       >
-        <Link
-          href="/"
-          className="font-display text-lg leading-none tracking-tight wght-head"
-          style={{ fontVariationSettings: "'wght' 600" }}
-        >
+        <Link href="/" className="name text-lg leading-none">
           faheem.
         </Link>
 

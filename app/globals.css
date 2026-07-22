@@ -19,7 +19,7 @@
 
   /* A plate is a framed field, not a card: no shadow, no lift. It has to be
      opaque enough that the backdrop blur actually frosts the field lines behind
-     it — a near-transparent plate leaves them cutting through the text. */
+     it. A near-transparent plate leaves them cutting through the text. */
   --plate: rgb(252 253 253 / 0.74);
   --plate-border: rgb(16 20 22 / 0.1);
   --plate-hover: rgb(252 253 253 / 0.86);
@@ -39,8 +39,13 @@
   /* Prussian blue, dark enough to pass AA as text on paper */
   --accent: #1b4f77;
   --accent-foreground: #ffffff;
-  /* the wash a cyanotype leaves where light fell — used for plate hover */
+  /* the wash a cyanotype leaves where light fell, used for plate hover */
   --wash: 27 79 119;
+
+  /* The cursor and the hairline that keeps it visible over photographs. Kept
+     as bare triples so the cursor can set its own alpha per frame. */
+  --cursor: 16 20 22;
+  --cursor-contrast: 244 246 247;
 
   --destructive: #a02c2c;
   --destructive-foreground: #ffffff;
@@ -80,6 +85,9 @@
   --accent-foreground: #0a0c0e;
   --wash: 134 182 220;
 
+  --cursor: 233 237 238;
+  --cursor-contrast: 10 12 14;
+
   --destructive: #d97070;
   --destructive-foreground: #0a0c0e;
 
@@ -89,12 +97,14 @@
 }
 
 @theme inline {
-  /* Newsreader carries the voice; Archivo does the work. Both are variable —
-     the weight-on-hover behaviour below depends on that. */
-  --font-display: var(--font-newsreader), Georgia, 'Times New Roman', serif;
-  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  /* Inter is reserved for the name and the wordmark. Lexend does everything
+     else, display sizes included. Both are variable, which the weight-on-hover
+     behaviour below depends on. */
+  --font-name: var(--font-inter), 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-display: var(--font-lexend), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-lexend), ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
-  /* nothing loads a separate serif; --font-serif aliases the display face */
+  /* nothing loads a serif any more; the alias survives for older call sites */
   --font-serif: var(--font-display);
 
   --color-background: var(--background);
@@ -124,7 +134,7 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 6px);
 
-  /* fluid scale — no step needs a breakpoint to stay readable */
+  /* fluid scale, no step needs a breakpoint to stay readable */
   --text-caption: 0.6875rem;
   --text-micro: 0.8125rem;
   --text-body: 1.0625rem;
@@ -133,6 +143,26 @@
   --text-h2: clamp(1.5rem, 2.6vw, 2rem);
   --text-h1: clamp(2rem, 4.6vw, 3.25rem);
   --text-display: clamp(2.75rem, 8vw, 6rem);
+
+  /* Weight is a function of size, not one flat body setting. Lexend sets
+     optically heavier and wider than most grotesques, so body sits lighter
+     than it would elsewhere and the display steps need negative tracking to
+     stop large headings reading loose. Paired values: never change a weight
+     here without checking its tracking. */
+  --wght-name: 700;
+  --wght-h1: 640;
+  --wght-h2: 600;
+  --wght-h3: 560;
+  --wght-lede: 320;
+  --wght-body: 340;
+  --wght-caption: 520;
+  --wght-strong: 620;
+
+  --track-name: -0.03em;
+  --track-h1: -0.02em;
+  --track-h2: -0.015em;
+  --track-h3: -0.01em;
+  --track-caption: 0.14em;
 }
 
 @layer base {
@@ -148,7 +178,9 @@
     @apply bg-background text-foreground font-sans;
     font-size: var(--text-body);
     line-height: 1.65;
-    font-variation-settings: 'wght' 380;
+    font-variation-settings: 'wght' var(--wght-body);
+    /* Both faces are variable and cover the whole range, so a synthesised
+       bold would only ever be a distortion of a weight we already have. */
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -157,15 +189,33 @@
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     line-height: 1.1;
-    letter-spacing: -0.015em;
     text-wrap: balance;
+  }
+
+  h1 {
+    font-variation-settings: 'wght' var(--wght-h1);
+    letter-spacing: var(--track-h1);
+  }
+
+  h2 {
+    font-variation-settings: 'wght' var(--wght-h2);
+    letter-spacing: var(--track-h2);
+  }
+
+  h3, h4 {
+    font-variation-settings: 'wght' var(--wght-h3);
+    letter-spacing: var(--track-h3);
+  }
+
+  strong, b {
+    font-variation-settings: 'wght' var(--wght-strong);
   }
 
   p {
     text-wrap: pretty;
   }
 
-  /* Keyboard focus was entirely absent before, and the site hides the cursor —
+  /* Keyboard focus was entirely absent before, and the site hides the cursor,
      so this is the only affordance a keyboard user has. */
   :focus-visible {
     outline: 2px solid var(--ring);
@@ -186,8 +236,17 @@
    faces are variable.
    -------------------------------------------------------------------------- */
 @layer components {
+  /* The name, and only the name. Inter is here to be Helvetica; everything
+     else on the page is Lexend, and the contrast between the two is the
+     point of loading a second family at all. */
+  .name {
+    font-family: var(--font-name);
+    font-variation-settings: 'wght' var(--wght-name);
+    letter-spacing: var(--track-name);
+  }
+
   .wght-link {
-    font-variation-settings: 'wght' 380;
+    font-variation-settings: 'wght' var(--wght-body);
     color: var(--muted-foreground);
     transition: font-variation-settings 0.25s ease, color 0.25s ease;
   }
@@ -195,26 +254,39 @@
   .wght-link:hover,
   .wght-link:focus-visible,
   .wght-link[data-active='true'] {
-    font-variation-settings: 'wght' 700;
+    font-variation-settings: 'wght' 620;
     color: var(--foreground);
   }
 
+  /* Sits on headings, which already carry a weight from the base layer, so it
+     only names the hover end. Each heading level thickens by about the same
+     perceptual step rather than all landing on one fixed weight. */
   .wght-head {
-    font-variation-settings: 'wght' 600;
     transition: font-variation-settings 0.25s ease;
   }
 
-  .wght-head:hover {
-    font-variation-settings: 'wght' 800;
+  h1.wght-head:hover { font-variation-settings: 'wght' 760; }
+  h2.wght-head:hover { font-variation-settings: 'wght' 720; }
+  h3.wght-head:hover,
+  h4.wght-head:hover { font-variation-settings: 'wght' 680; }
+
+  /* .wght-head also lands on spans and links that are not headings. */
+  .wght-head:not(h1):not(h2):not(h3):not(h4) {
+    font-variation-settings: 'wght' var(--wght-h3);
+  }
+
+  .wght-head:not(h1):not(h2):not(h3):not(h4):hover {
+    font-variation-settings: 'wght' 680;
   }
 
   /* The utility register: a plate caption, a film slate, a figure number.
-     Archivo's width axis does this — one family covering two jobs. */
+     Archivo's width axis used to do this; Lexend has no width axis, so the
+     condensed feel comes from weight and tracking instead. */
   .caption {
     font-family: var(--font-sans);
     font-size: var(--text-caption);
-    font-variation-settings: 'wght' 500, 'wdth' 84;
-    letter-spacing: 0.14em;
+    font-variation-settings: 'wght' var(--wght-caption);
+    letter-spacing: var(--track-caption);
     text-transform: uppercase;
     color: var(--muted-foreground);
     line-height: 1.4;
@@ -253,9 +325,10 @@
 
 /* --------------------------------------------------------------------------
    Cursor
-   The custom cursor uses mix-blend-mode: difference, so it inverts whatever is
-   under it and needs no theme-aware colour. Only hide the system cursor where
-   a real pointer exists and the replacement will actually be rendered.
+   Only hide the system cursor where a real pointer exists and the replacement
+   will actually be rendered. Over prose the custom cursor takes a bar shape,
+   since hiding the system cursor otherwise removes the I-beam and there is no
+   longer anything to tell you the text is selectable.
    -------------------------------------------------------------------------- */
 @media (pointer: fine) {
   html.has-custom-cursor,
@@ -284,20 +357,28 @@
   }
 }
 
-/* cmdk owns the group heading element, so it is styled here rather than inline. */
-[cmdk-group-heading] {
-  font-family: var(--font-sans);
-  font-size: var(--text-caption);
-  font-variation-settings: 'wght' 500, 'wdth' 84;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted-foreground);
-  padding: 0.75rem 0.75rem 0.25rem;
+/* --------------------------------------------------------------------------
+   Note prose.
+   The topic page has referenced .notes-prose since it was written, but the
+   class was never actually defined anywhere, so the notes had no measure and
+   no rhythm of their own. It also marks the region where the cursor becomes a
+   text bar, which is why it is a class on the wrapper rather than a set of
+   utilities on each element.
+   -------------------------------------------------------------------------- */
+.notes-prose {
+  max-width: 42rem;
+  /* Notes carry maths and figures, both of which want more air than body copy. */
+  line-height: 1.75;
 }
 
-/* Collapse the spacing of groups the filter has emptied. */
-[cmdk-group]:not([hidden]) + [cmdk-group] [cmdk-group-heading] {
-  padding-top: 0.5rem;
+/* Anchors land under the fixed header otherwise, which search deep-links hit
+   constantly. */
+.notes-prose :is(h2, h3, h4, [id]) {
+  scroll-margin-top: 7rem;
+}
+
+.notes-prose > :first-child {
+  margin-top: 0;
 }
 
 /* KaTeX renders at build time; these keep it on our type scale. */

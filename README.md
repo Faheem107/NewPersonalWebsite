@@ -1,6 +1,6 @@
 # faheem.
 
-Personal site — research, notes, photography and film.
+Personal site: research, notes, photography and film.
 
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4
 
@@ -44,7 +44,7 @@ updated: May 2026
 The route, the entry in the notes menu, the prev/next links and the sitemap all
 follow from the file being there. Nothing else needs editing.
 
-Subject-level metadata lives in `content/notes/<subject>/_meta.json` — title,
+Subject-level metadata lives in `content/notes/<subject>/_meta.json`: title,
 blurb, sort order, and which backdrop field the subject uses.
 
 Maths is written as `$inline$` and `$$display$$`, rendered to HTML at build time by
@@ -55,7 +55,7 @@ Components available inside a note: `<Figure>`, `<Diagram>`, `<Aside>`,
 
 ## Notes on the design
 
-The palette and type are built around the cyanotype — the one process that is both a
+The palette and type are built around the cyanotype, the one process that is both a
 photographic print and the origin of the word blueprint. Cold paper, Prussian blue,
 and content presented on "plates" (a framed field with a caption rail) rather than
 cards.
@@ -64,5 +64,5 @@ Newsreader and Archivo are both variable fonts, and several interactions depend 
 that: links and headings shift weight rather than colour on hover, and captions use
 Archivo's width axis for a condensed cut instead of loading a second family.
 
-`prefers-reduced-motion` is honoured throughout — the backdrop renders a single static
+`prefers-reduced-motion` is honoured throughout. The backdrop renders a single static
 frame, smooth scrolling is not installed, and the custom cursor is disabled.

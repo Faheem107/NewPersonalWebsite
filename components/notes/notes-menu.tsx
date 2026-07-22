@@ -1,14 +1,9 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import {
-  motion,
-  useMotionTemplate,
-  useMotionValue,
-  useMotionValueEvent,
-} from 'motion/react'
-import { usePointer, useStick } from '@/lib/motion/pointer'
+import { motion } from 'motion/react'
+import { getCursorState, useHighlight } from '@/lib/motion/pointer'
 import type { Subject } from '@/lib/notes'
 
 const container = {
@@ -26,10 +21,12 @@ const plateIn = {
 }
 
 function TopicLink({ subject, slug, title }: { subject: string; slug: string; title: string }) {
-  const stick = useStick()
+  // Highlight rather than stick. These sit a few pixels apart, and a cursor
+  // that snaps to each one's bounds spends the whole time in transit.
+  const highlight = useHighlight()
   return (
     <Link
-      {...stick}
+      {...highlight}
       href={`/notes/${subject}/${slug}`}
       prefetch
       className="wght-link block py-[3px] text-[0.9375rem] leading-snug"
@@ -49,38 +46,47 @@ function SubjectPlate({
   onHover: (slug: string | null) => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const rect = useRef<DOMRect | null>(null)
-  const { smoothX, smoothY } = usePointer()
   const [active, setActive] = useState(false)
 
-  // Local coordinates for the wash. Seeded off-plate so nothing shows until the
-  // pointer actually arrives.
-  const lx = useMotionValue(-600)
-  const ly = useMotionValue(-600)
+  // The wash follows the pointer with a lag, which is the whole effect. It is
+  // written straight to CSS custom properties from one rAF loop that only runs
+  // while the plate is hovered, so tracking costs no renders and no layout.
+  useEffect(() => {
+    if (!active) return
+    const el = ref.current
+    if (!el) return
 
-  // Reads the shared spring, not the raw pointer — the lag is the whole effect.
-  // The rect is captured once on enter rather than measured per frame, so this
-  // costs no layout work while tracking.
-  useMotionValueEvent(smoothX, 'change', v => {
-    if (rect.current) lx.set(v - rect.current.left)
-  })
-  useMotionValueEvent(smoothY, 'change', v => {
-    if (rect.current) ly.set(v - rect.current.top)
-  })
+    const rect = el.getBoundingClientRect()
+    const state = getCursorState()
+    let x = state.x - rect.left
+    let y = state.y - rect.top
+    let raf = 0
+    let last = performance.now()
 
-  const wash = useMotionTemplate`radial-gradient(340px circle at ${lx}px ${ly}px, rgb(var(--wash) / 0.17), transparent 68%)`
+    const frame = (now: number) => {
+      raf = requestAnimationFrame(frame)
+      const dt = Math.min((now - last) / 1000, 0.05)
+      last = now
+      const k = 1 - Math.exp(-dt * 12)
+      x += (state.x - rect.left - x) * k
+      y += (state.y - rect.top - y) * k
+      el.style.setProperty('--wash-x', `${x}px`)
+      el.style.setProperty('--wash-y', `${y}px`)
+    }
+
+    raf = requestAnimationFrame(frame)
+    return () => cancelAnimationFrame(raf)
+  }, [active])
 
   return (
     <motion.div
       ref={ref}
       variants={plateIn}
       onMouseEnter={() => {
-        rect.current = ref.current?.getBoundingClientRect() ?? null
         setActive(true)
         onHover(subject.slug)
       }}
       onMouseLeave={() => {
-        rect.current = null
         setActive(false)
         onHover(null)
       }}
@@ -96,7 +102,10 @@ function SubjectPlate({
       <motion.div
         aria-hidden
         className="pointer-events-none absolute inset-0"
-        style={{ background: wash }}
+        style={{
+          background:
+            'radial-gradient(340px circle at var(--wash-x, -600px) var(--wash-y, -600px), rgb(var(--wash) / 0.17), transparent 68%)',
+        }}
         animate={{ opacity: active ? 1 : 0 }}
         transition={{ duration: 0.3 }}
       />

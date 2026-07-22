@@ -46,7 +46,7 @@ export default function Home() {
   return (
     <main ref={root} className="flex min-h-screen flex-col">
       <div className="flex flex-1 items-center px-6 pb-16 pt-28 md:px-12 md:pb-0 md:pt-0 lg:px-20">
-        {/* Stacks below md — the previous hero was a hard grid-cols-2 with no
+        {/* Stacks below md. The previous hero was a hard grid-cols-2 with no
             breakpoint, so the torus ran off the left edge of every phone. */}
         <div className="grid w-full grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-8">
           <div
@@ -57,9 +57,10 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col items-center text-center md:items-end md:text-right">
+            {/* The one place Inter is used. Everything else is Lexend. */}
             <h1
               data-name
-              className="overflow-hidden pb-2 font-display text-[length:var(--text-display)] leading-[0.94] tracking-tight"
+              className="name overflow-hidden pb-2 text-[length:var(--text-display)] leading-[0.94]"
             >
               Faheem
             </h1>
@@ -91,7 +92,7 @@ export default function Home() {
       </div>
 
       <footer data-footnote className="pb-10 text-center">
-        <p className="caption opacity-60">Last updated May 2026</p>
+        <p className="caption opacity-60">Last updated July 2026</p>
       </footer>
     </main>
   )
