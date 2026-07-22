@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useTheme } from 'next-themes'
+import { getCursorState } from '@/lib/motion/pointer'
 
 /**
  * The backdrop: one construction per section, drawn as points.
@@ -16,9 +17,18 @@ import { useTheme } from 'next-themes'
  * these and it read as fog: it hid the pattern and made the page look glassy.
  * The pattern is the backdrop now.
  *
+ * Every construction is written against `reach`, the distance from the centre
+ * to the corner of the viewport, so each one fills the whole screen rather than
+ * sitting as a disc in the middle of it. The radial patterns used to top out
+ * around 1.0 in a space where the corner is at 2.04, and were then vignetted
+ * well inside even that, which left the outer third of a wide display empty.
+ *
+ * The field also leans very slightly toward the pointer. That is two uniforms
+ * and an ease; there is no per-point work on the CPU for it.
+ *
  * Every point's position comes from gl_VertexID in the vertex shader, so there
- * are no attribute buffers, nothing is uploaded per frame, and the CPU does no
- * work at all between frames.
+ * are no attribute buffers and nothing is uploaded per frame beyond a handful
+ * of uniforms.
  */
 
 export type Pattern = 'stars' | 'orbits' | 'interference' | 'phyllotaxis' | 'lattice'
@@ -31,12 +41,19 @@ const PATTERN_INDEX: Record<Pattern, number> = {
   lattice: 4,
 }
 
-/** Point budget per pattern. The grids need far more than the curves. */
+/**
+ * Point budget per pattern. The grids need far more than the curves.
+ *
+ * Orbits and phyllotaxis went up when the constructions grew to fill the
+ * screen. Neither was stretched to get there: the sunflower head has more
+ * seeds at the same packing, and the orbits have more rings at the same
+ * spacing. Scaling the old counts up instead would have thinned both out.
+ */
 const COUNT: Record<Pattern, number> = {
   stars: 900,
-  orbits: 3400,
+  orbits: 7000,
   interference: 15600,
-  phyllotaxis: 1600,
+  phyllotaxis: 7600,
   lattice: 4200,
 }
 
@@ -48,6 +65,11 @@ uniform float u_time;
 uniform float u_reveal;
 uniform int   u_pattern;
 uniform float u_dpr;
+/** point budget, so a construction can size itself to the field it has to fill */
+uniform float u_count;
+/** pointer in working space, and how much of it to apply */
+uniform vec2  u_pointer;
+uniform float u_pointer_amt;
 
 out float v_alpha;
 
@@ -74,6 +96,12 @@ void main() {
   // Working space: y in [-1, 1], x in [-asp, asp]. Converted to clip at the end,
   // so every pattern below can be written in a square-ish space and stay
   // circular on a wide screen.
+  //
+  // reach is the distance from the centre to the corner: 2.04 at 16:9, 2.55 at
+  // 21:9. Every radial construction is sized against it, which is what makes
+  // them fill the screen instead of sitting as a disc in the middle of it.
+  float reach = length(vec2(asp, 1.0));
+
   vec2 pos = vec2(0.0);
   float a = 1.0;
   float size = 2.6;
@@ -101,10 +129,17 @@ void main() {
     float ring = floor(i / per);
     float k = mod(i, per);
 
-    float rr = 0.1 + ring * 0.055;
+    // The outermost ring lands on the corner, and the spacing between rings
+    // falls out of how many there are. On a 16:9 display this comes to 0.057,
+    // which is where the fixed 0.055 used to sit: the system covers the screen
+    // now without changing how the rings read.
+    float rings = u_count / per;
+    float rr = 0.1 + ring * ((reach - 0.1) / (rings - 1.0));
+    float rn = rr / reach;
+
     float ecc = 0.55 + 0.18 * sin(ring * 0.9);
     float tilt = ring * GOLDEN;
-    float speed = 0.22 / pow(rr + 0.28, 1.5);
+    float speed = 0.22 / pow(rn + 0.28, 1.5);
 
     float th = (k / per) * TAU + u_time * speed;
     vec2 e = vec2(cos(th) * rr, sin(th) * rr * ecc);
@@ -112,7 +147,9 @@ void main() {
 
     // Brighter along one limb, so each ring has a leading edge.
     a = 0.18 + 0.82 * pow(0.5 + 0.5 * sin(th), 2.2);
-    a *= smoothstep(1.35, 0.5, rr);
+    // Outer rings sit back a little rather than fading out. The old curve was
+    // steep enough to erase them, which is why the field stopped short.
+    a *= smoothstep(1.9, 0.4, rn);
     size = 2.3;
 
   } else if (u_pattern == 2) {
@@ -135,20 +172,31 @@ void main() {
 
     float f = cos(d * 26.0 - u_time * 0.55);
     a = smoothstep(0.2, 0.95, f);
-    a *= smoothstep(1.5, 0.35, length(pos));
+    // The fringes are hyperbolas and run off the edges on their own, so there
+    // is nothing to vignette. The old falloff was a circle of radius 1.5 in a
+    // field whose corner is at 2.04, which cut off both sides of the screen.
+    // What is left only takes the very corners down a little.
+    a *= smoothstep(reach * 1.35, reach * 0.9, length(pos));
     size = 2.2;
 
   } else if (u_pattern == 3) {
     // ── phyllotaxis ──────────────────────────────────────────────────────────
     // The golden angle, which is how a sunflower head packs seeds: it is the
     // one rotation that never repeats, so no seed ever shadows another.
+    //
+    // The head grew rather than stretched. Seed n sits at sqrt(n), so setting
+    // the spacing to reach/sqrt(count) puts the last seed exactly on the corner
+    // and leaves the packing alone. It comes to 0.0234 at 16:9, which is where
+    // the fixed 0.0235 was; the difference is that there are now enough seeds
+    // to get there.
     float th = i * GOLDEN + u_time * 0.045;
-    float rr = 0.0235 * sqrt(i);
+    float rr = (reach / sqrt(u_count)) * sqrt(i);
+    float rn = rr / reach;
 
     pos = vec2(cos(th) * rr, sin(th) * rr);
 
-    a = smoothstep(1.25, 0.15, rr) * (0.45 + 0.55 * sin(i * 0.05 + u_time * 0.3) * 0.5 + 0.275);
-    size = 1.9 + 1.6 * smoothstep(1.2, 0.0, rr);
+    a = smoothstep(1.02, 0.12, rn) * (0.45 + 0.55 * sin(i * 0.05 + u_time * 0.3) * 0.5 + 0.275);
+    size = 1.9 + 1.6 * smoothstep(0.98, 0.0, rn);
 
   } else {
     // ── lattice ──────────────────────────────────────────────────────────────
@@ -169,9 +217,24 @@ void main() {
 
     float w = sin(pos.x * 2.4 + pos.y * 1.5 - u_time * 0.42);
     a = 0.12 + 0.88 * smoothstep(0.1, 1.0, w);
-    a *= smoothstep(1.5, 0.3, length(pos * vec2(0.75, 1.0)));
+    // Same story as the interference grid: the lattice already spans the
+    // viewport and it was the falloff that stopped it at the edges.
+    a *= smoothstep(reach * 1.3, reach * 0.85, length(pos));
     size = 2.2;
   }
+
+  // The field leans toward the pointer.
+  //
+  // The displacement is the offset itself times a falloff, so it goes to zero
+  // both far away and at the pointer: points gather slightly rather than
+  // collapsing onto it. It peaks around ten pixels, which is meant to be
+  // noticed only if you are looking for it. The brightness term is deliberately
+  // tiny; this is a lean, not a light.
+  vec2 toP = u_pointer - pos;
+  float fall = smoothstep(0.55, 0.0, length(toP));
+  fall *= fall;
+  pos += toP * fall * 0.22 * u_pointer_amt;
+  a *= 1.0 + 0.12 * fall * u_pointer_amt;
 
   // Reveal sweeps diagonally on mount.
   float sweep = smoothstep(-0.5, 1.0, u_reveal * 2.4 - (pos.x / max(asp, 1.0) + pos.y + 2.0) * 0.4);
@@ -286,6 +349,9 @@ export default function Backdrop({
     const uDpr = u('u_dpr')
     const uTint = u('u_tint')
     const uAlpha = u('u_alpha')
+    const uCount = u('u_count')
+    const uPointer = u('u_pointer')
+    const uPointerAmt = u('u_pointer_amt')
 
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -315,6 +381,13 @@ export default function Backdrop({
 
     const state = { time: 0, reveal: reduced ? 1 : 0 }
 
+    // Pointer, eased. The store is the same module-level one the cursor reads,
+    // so there is no subscription and no render involved; PointerProvider only
+    // writes to it for a fine pointer with no reduced-motion preference, which
+    // is exactly when this effect should exist at all. `amt` is what fades the
+    // whole thing in and out as the pointer enters and leaves the window.
+    const ptr = { x: 0, y: 0, amt: 0 }
+
     let raf = 0
     let last = performance.now()
 
@@ -329,6 +402,24 @@ export default function Backdrop({
 
       resize()
 
+      // The canvas is fixed to the viewport, so client coordinates map onto it
+      // directly and scroll position never enters into it.
+      const cursor = getCursorState()
+      const asp = canvas.clientWidth / canvas.clientHeight
+      const tx = ((cursor.x / canvas.clientWidth) * 2 - 1) * asp
+      const ty = -((cursor.y / canvas.clientHeight) * 2 - 1)
+
+      if (ptr.amt < 0.01) {
+        // Snap while the effect is off, so easing in does not drag the field
+        // across from wherever the pointer was last seen.
+        ptr.x = tx
+        ptr.y = ty
+      } else {
+        ptr.x += (tx - ptr.x) * 0.1
+        ptr.y += (ty - ptr.y) * 0.1
+      }
+      ptr.amt += ((cursor.inside ? 1 : 0) - ptr.amt) * 0.05
+
       gl.clearColor(0, 0, 0, 0)
       gl.clear(gl.COLOR_BUFFER_BIT)
 
@@ -339,6 +430,9 @@ export default function Backdrop({
       gl.uniform1f(uDpr, dpr)
       gl.uniform3f(uTint, tint[0], tint[1], tint[2])
       gl.uniform1f(uAlpha, baseAlpha)
+      gl.uniform1f(uCount, count)
+      gl.uniform2f(uPointer, ptr.x, ptr.y)
+      gl.uniform1f(uPointerAmt, ptr.amt)
 
       gl.drawArrays(gl.POINTS, 0, count)
 
