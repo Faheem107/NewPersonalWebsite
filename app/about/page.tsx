@@ -32,24 +32,23 @@ export default function AboutPage() {
         <div className="mt-14 max-w-prose space-y-6 text-lg leading-relaxed text-muted-foreground">
           <p>
             I am Mohammed Faheem, a second-year student at NYU Abu Dhabi, studying Physics with a
-            minor in Film &amp; New Media. Most of what I do is trying to use a bit of maths and
-            computation to make slightly more sense of biological systems. Right now that means the
-            stochastic side of transcription, which I am still very much finding my way around.
+            minor in Film &amp; New Media. Most of my work uses mathematical and computational tools
+            to understand biological systems. Right now that means the stochastic side of
+            transcription.
           </p>
           <p>
             Alongside classes and lab work I spend a lot of time explaining things, in writing and
-            in pictures. I mostly do it for selfish reasons: putting an idea into a second form is
-            the quickest way I know to catch the parts I only thought I had understood. I get those
-            parts wrong often enough that it has stopped surprising me.
+            in pictures. Putting an idea into a second form is the clearest way I have found to
+            understand it properly, which is most of why I keep doing it.
           </p>
           <p>
-            I also keep coming back to the question of what a given piece of research is actually
-            for, which the results never seem to answer on their own. I do not have a good answer to
-            that yet, and I would rather sit with the question than pretend I do.
+            I also keep coming back to the question of what a piece of research is for, which the
+            results do not settle on their own. I would rather hold that question open than answer
+            it too quickly.
           </p>
           <p>
-            Away from all that I play football and read more than is probably good for me. If any of
-            this lines up with something you are working on, I would be really glad to hear from you.
+            Away from all that, I play football and read a good deal. If any of this overlaps with
+            what you are working on, I would be glad to hear from you.
           </p>
         </div>
 

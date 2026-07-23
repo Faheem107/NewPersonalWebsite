@@ -94,7 +94,7 @@ export const THOUGHTS: Thought[] = [
       'During the war the American military looked at bombers returning from raids and mapped where they were most often hit. The wings and the fuselage, mostly. The obvious move was to armour those places.',
       'Abraham Wald, working with a group of statisticians in New York, pointed out that they were looking at the wrong aeroplanes. The ones in front of them were the ones that had come back. Damage to the wings was survivable, which is exactly why they were seeing it. The armour belonged where the returning planes had no holes at all, because aircraft hit there were not in the sample.',
       'I like it as a story because the error is not a failure of intelligence. Everyone involved was clever. The data was accurate. The sample had simply been assembled by the thing being measured.',
-      'It is a hard habit to build, asking what would be missing from the evidence if the effect were real. I forget to do it most of the time.',
+      'It is a hard habit to build, asking what would be missing from the evidence if the effect were real, and an easy one to let slide.',
     ],
   },
   {
@@ -115,7 +115,7 @@ export const THOUGHTS: Thought[] = [
       'In 1964 Kitty Genovese was murdered in Queens, and the New York Times reported that thirty-eight people had watched and none had called the police. It became one of the most repeated stories in psychology.',
       'Most of it does not hold up. Later work showed the number was inflated, that few had any clear view of what was happening, and that some did call. The paper had a compelling shape and the shape survived better than the facts did.',
       'The awkward part is that the underlying effect is real anyway. Darley and Latané ran controlled experiments afterwards and found it repeatedly: the more people present, the less likely any one of them acts, because responsibility divides.',
-      'So we have a true finding that got famous through a story that was largely wrong. I am not sure what to do with that except hold both halves at once, which I find I am not very good at.',
+      'So we have a true finding that got famous through a story that was largely wrong. What that leaves you with is the odd task of holding both halves at once, the real effect and the unreliable story.',
     ],
   },
 ]
