@@ -1,0 +1,81 @@
+---
+title: Stability and Response Functions
+summary: Why heat capacities and compressibilities come out positive, read off the curvature of the potentials.
+order: 5
+updated: July 2026
+---
+
+Push on a gas and it pushes back. Warm it and it takes up heat rather than running away
+to a different temperature on its own. These sound like separate facts about matter, but
+they are the same statement seen twice, and it is a statement about curvature.
+
+A system in equilibrium sits at a minimum of the relevant potential. A minimum is not
+just a place where the first derivative vanishes; it also curves upward. That upward
+curvature, written out, is exactly the requirement that the response functions are
+positive.
+
+## Response functions
+
+A response function measures how much one quantity moves when you nudge another. The two
+that matter here are the heat capacity and the compressibility:
+
+$$
+C_V = T\left(\frac{\partial S}{\partial T}\right)_V, \qquad
+\kappa_T = -\frac{1}{V}\left(\frac{\partial V}{\partial P}\right)_T.
+$$
+
+$C_V$ is how much heat it costs to raise the temperature by a degree at fixed volume.
+$\kappa_T$ is how much the volume shrinks per unit of pressure applied. Both are things
+you can measure without ever mentioning entropy.
+
+## Stability forces their sign
+
+Take the entropy as a function of energy and expand a small subsystem against the rest.
+For the total entropy to be at a maximum, $S$ must be concave in its extensive variables.
+Translated into the energy picture, $U$ is convex, and convexity of $U$ in $S$ and $V$ is
+the pair of inequalities
+
+$$
+C_V \geq 0, \qquad \kappa_T \geq 0.
+$$
+
+<Statement kind="Consequence" title="What a negative sign would mean">
+Suppose $C_V$ were negative. A patch of the system that happened to fluctuate warmer
+would, on absorbing heat, get colder still, and the fluctuation would run away instead of
+relaxing. Positive $C_V$ is precisely the condition that such a fluctuation is restored.
+The same argument on volume gives positive $\kappa_T$: a region that compressed slightly
+would otherwise keep collapsing.
+</Statement>
+
+This is Le Chatelier's principle in its exact form. A stable system responds to a
+disturbance in the direction that opposes it, and the response functions are positive
+because that is what opposing the disturbance means.
+
+## The two heat capacities
+
+Heat capacity depends on what you hold fixed while heating. At fixed pressure the system
+is free to expand and do work, so it takes more heat to warm. The difference has a clean
+form:
+
+$$
+C_P - C_V = \frac{T V \alpha^2}{\kappa_T},
+$$
+
+where $\alpha$ is the thermal expansion coefficient. Every factor on the right is a
+square or a positive quantity, so
+
+$$
+C_P \geq C_V,
+$$
+
+always, for any substance. The gap vanishes only when $\alpha = 0$, that is, when the
+material does not expand on heating and there is no work to be done.
+
+<Aside>
+Water near $4^\circ$C is the tidy example: its density peaks there, so $\alpha$ passes
+through zero and $C_P$ and $C_V$ momentarily coincide.
+</Aside>
+
+The whole subject has this shape. The laws fix what is conserved and which way things
+run; stability fixes the signs of how they respond, and it does it not by adding a
+principle but by insisting that equilibrium really is a minimum and not a saddle.

@@ -133,16 +133,19 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
             // every point landing at once. Applied last, so it overrides the
             // magnet and the expand: nothing should tug at a point that has not
             // arrived yet.
-            // Arrivals are spread across most of the intro rather than bunched,
-            // so points keep streaming in instead of landing as one front.
-            float t = clamp((uIntro - seed * 0.72) / 0.28, 0.0, 1.0);
+            // The start times spread across 0.6 of the intro and each point
+            // takes 0.4 to settle, so the two windows overlap heavily: at any
+            // instant a wide band of points is mid-flight. That overlap is what
+            // stops the form solidifying early and then collecting stragglers on
+            // top of itself, which is what the landing-on-top reading was.
+            float t = clamp((uIntro - seed * 0.6) / 0.4, 0.0, 1.0);
             // Eased out hard: fast while distant, slow as it settles.
             float ease = 1.0 - pow(1.0 - t, 3.0);
             vIntro = ease;
 
             // A little spin on the way in, so points arc rather than travelling
-            // in straight lines.
-            float swirl = (1.0 - ease) * 1.6;
+            // in straight lines. Gentler than it was, so the arc reads as drift.
+            float swirl = (1.0 - ease) * 1.2;
             float cs = cos(swirl), sn = sin(swirl);
             vec3 from = vec3(scatter.x * cs - scatter.y * sn, scatter.x * sn + scatter.y * cs, scatter.z);
 
@@ -151,8 +154,10 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
             vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
             gl_Position = projectionMatrix * mvPosition;
 
-            // Arriving points are briefly larger, which reads as them settling.
-            float introSize = 1.0 + (1.0 - ease) * 1.8;
+            // Arriving points are only slightly larger now. The old 1.8 made
+            // late arrivals read as fat blobs dropping onto the surface; at 0.7
+            // they resolve as the cloud tightening rather than grains landing.
+            float introSize = 1.0 + (1.0 - ease) * 0.7;
             // The expanded end is smaller than it was: the ball shrank from 3.6
             // to 2.4, which puts the same point count into 44% of the area, and
             // at the old size that read as a solid disc rather than a shell.
@@ -215,9 +220,11 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
                 alpha *= mix(0.34, 0.26, vExpand);
             }
 
-            // Points fade up as they arrive, and run hotter while in flight,
-            // so the assembly reads as light resolving into a form.
-            finalColor += vec3(0.20, 0.38, 0.58) * (1.0 - vIntro) * 0.5;
+            // Points fade up as they arrive, and run a little hotter while in
+            // flight, so the assembly reads as light resolving into a form.
+            // Softened from 0.5: the brighter in-flight tint was part of what
+            // made late arrivals pop against the settled surface.
+            finalColor += vec3(0.20, 0.38, 0.58) * (1.0 - vIntro) * 0.3;
             alpha *= vIntro;
 
             gl_FragColor = vec4(finalColor, alpha);
@@ -260,17 +267,21 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
     const u = materialRef.current.uniforms
     const t = state.clock.elapsedTime
 
-    // Intro runs once, over about two and a half seconds.
+    // Intro runs once, over about three and a quarter seconds. Longer than the
+    // old 2.5, which gives the overlapping arrivals room to drift in rather than
+    // hurry, and reads as settling rather than dropping.
     if (u.uIntro.value < 1) {
-      u.uIntro.value = Math.min(1, u.uIntro.value + delta / 2.5)
+      u.uIntro.value = Math.min(1, u.uIntro.value + delta / 3.25)
     }
     const intro = u.uIntro.value
 
     // Spin about the ring's own axis. This is the one rotation that always
-    // looks right, so it is the only one allowed to accumulate. It runs fast
-    // as the points arrive and settles into its resting speed, which is most
-    // of what makes the entrance feel like motion rather than a fade.
-    pointsRef.current.rotation.y += 0.004 + (1 - intro) * (1 - intro) * 0.02
+    // looks right, so it is the only one allowed to accumulate. It runs a little
+    // fast as the points arrive and settles into its resting speed, which is
+    // most of what makes the entrance feel like motion rather than a fade. The
+    // spin-up is gentler than it was so the surface is not whipping round while
+    // the last points are still finding it.
+    pointsRef.current.rotation.y += 0.004 + (1 - intro) * (1 - intro) * 0.012
 
     // Tilt and roll oscillate around a fixed pose rather than accumulating.
     // Left to accumulate, the torus drifts edge-on, where the tube stacks on

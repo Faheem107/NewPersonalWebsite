@@ -1,0 +1,79 @@
+---
+title: Bosons and Fermions
+summary: Grand canonical occupation numbers, and the single sign that separates two behaviours.
+order: 5
+updated: July 2026
+---
+
+Identical particles in quantum mechanics are not merely alike, they are
+indistinguishable, and swapping two of them cannot change anything measurable. That
+forces the many-particle state to be either symmetric or antisymmetric under the swap.
+The symmetric ones are bosons, the antisymmetric ones fermions, and almost everything
+about how matter behaves in bulk follows from which of the two it is made of.
+
+The cleanest way to see the consequence is to stop counting particles and start counting
+occupations of single-particle states, which is what the grand canonical ensemble is for.
+
+## Count states, not particles
+
+Let the system exchange both energy and particles with a reservoir, fixed at temperature
+$T$ and chemical potential $\mu$. Each single-particle level of energy $\varepsilon$ can
+be filled independently, and the average number of particles in it is
+
+$$
+\langle n \rangle = \frac{1}{e^{\beta(\varepsilon - \mu)} \mp 1},
+$$
+
+the upper sign for bosons, the lower for fermions. One sign. That is the whole difference
+between the two families of matter, and it comes from whether the sum over occupations of
+a level runs over all non-negative integers or stops at one.
+
+<Statement kind="Definition" title="The two distributions">
+With the minus sign this is the Bose-Einstein distribution; with the plus sign, the
+Fermi-Dirac. The plus sign keeps $\langle n \rangle$ between $0$ and $1$, which is the
+Pauli exclusion principle appearing not as an extra rule but as a property of the
+counting.
+</Statement>
+
+## What the sign does
+
+For fermions, no level ever holds more than one particle on average. As the temperature
+drops, particles fill the lowest levels up to $\mu$, which at $T=0$ is called the Fermi
+energy, and stack no higher. This filled sea is why metals conduct, why white dwarfs do
+not collapse, and why the periodic table has the shape it does.
+
+For bosons, there is no such limit, and at low temperature they do the opposite: a
+macroscopic fraction of them piles into the single lowest state. That is
+Bose-Einstein condensation, a phase transition driven by statistics alone, with no
+interaction needed.
+
+<Aside>
+The chemical potential of a boson gas cannot exceed the ground-state energy, or an
+occupation would go negative. Condensation is what happens when $\mu$ runs into that
+ceiling and the surplus particles have nowhere to go but the ground state.
+</Aside>
+
+## The classical limit
+
+When the gas is dilute and hot, $e^{\beta(\varepsilon-\mu)} \gg 1$, the $\mp 1$ is
+negligible against it, and both distributions collapse to the same thing:
+
+$$
+\langle n \rangle \approx e^{-\beta(\varepsilon - \mu)},
+$$
+
+the Maxwell-Boltzmann result. The two quantum statistics agree with the classical one and
+with each other exactly when the levels are so sparsely filled that whether two particles
+could share a state never comes up.
+
+<Statement kind="Consequence" title="When statistics matters">
+The quantum effects turn on when the thermal de Broglie wavelength becomes comparable to
+the spacing between particles, so the wavefunctions overlap and the symmetry of the swap
+starts to bite. Cold and dense pushes you into the quantum regime; hot and dilute pulls
+you back to the classical one. Room-temperature air is firmly classical; the electrons in
+a metal, at the same temperature, are not.
+</Statement>
+
+So bosons and fermions are the same theory with one sign flipped, and that flip is enough
+to separate the matter that condenses from the matter that resists compression to the
+end.

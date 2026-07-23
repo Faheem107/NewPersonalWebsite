@@ -1,0 +1,77 @@
+---
+title: The Multipole Expansion
+summary: Expanding the potential far from a charge distribution, and why the first surviving term is the one that matters.
+order: 4
+updated: July 2026
+---
+
+Stand far enough from any lump of charge and you stop being able to see its details. A
+complicated arrangement of positive and negative charge, viewed from across the room,
+produces a field that depends on only a few numbers: the total charge, then how lopsided
+it is, then how stretched. The multipole expansion is the statement of exactly which few
+numbers, in order of how quickly they fade with distance.
+
+## Expanding the distance
+
+The potential of a distribution $\rho(\mathbf{r}')$ is an integral of $1/|\mathbf{r} -
+\mathbf{r}'|$. For a field point far outside the charge, $r \gg r'$, that denominator
+expands in Legendre polynomials of the angle $\gamma$ between $\mathbf{r}$ and
+$\mathbf{r}'$:
+
+$$
+\frac{1}{|\mathbf{r} - \mathbf{r}'|} = \frac{1}{r}\sum_{\ell=0}^{\infty}
+\left(\frac{r'}{r}\right)^{\ell} P_\ell(\cos\gamma).
+$$
+
+Each power of $r'/r$ is smaller than the last, so the series is ordered by how fast each
+term dies off with distance. Feeding it into the potential gives
+
+$$
+V(\mathbf{r}) = \frac{1}{4\pi\varepsilon_0}\left[\frac{Q}{r}
++ \frac{\mathbf{p}\cdot\hat{\mathbf{r}}}{r^2}
++ \cdots\right].
+$$
+
+## The terms have names
+
+The first term is the monopole: the total charge $Q$, its field falling as $1/r^2$ like a
+point charge sitting at the origin. The second is the dipole,
+
+$$
+\mathbf{p} = \int \mathbf{r}'\,\rho(\mathbf{r}')\,d^3r',
+$$
+
+with a field that falls faster, as $1/r^3$. Then the quadrupole at $1/r^4$, and so on. A
+distribution with no net charge still has a dipole field; one with no dipole moment still
+has a quadrupole. You only ever see the leading term that does not vanish, because it
+dominates everything below it far away.
+
+<Statement kind="Consequence" title="Why the leading term is origin-independent">
+The dipole moment of a distribution generally depends on where you put the origin, since
+shifting the origin by $\mathbf{a}$ changes $\mathbf{p}$ by $-Q\mathbf{a}$. But if the net
+charge $Q$ is zero, that change vanishes and $\mathbf{p}$ is a genuine property of the
+distribution. In general the first non-zero multipole moment is the one that does not
+depend on the choice of origin, which is exactly why it is the one worth quoting.
+</Statement>
+
+## Why it is useful
+
+The point of the expansion is not really the far field of a known charge. It is the
+reverse: a neutral molecule, seen from outside, acts to leading order as a dipole, and
+that single vector $\mathbf{p}$ captures how it interacts with fields and with other
+molecules.
+
+<Aside>
+A water molecule carries a permanent dipole moment of about $6.2\times10^{-30}$ coulomb
+metres. Nearly all of water's chemistry, from why it dissolves salt to why it beads on
+wax, is that one number acting through the dipole field.
+</Aside>
+
+The energy of a dipole in an external field is $U = -\mathbf{p}\cdot\mathbf{E}$, so it
+wants to line up with the field, and the torque $\mathbf{p}\times\mathbf{E}$ is what turns
+it. This is the whole basis of how dielectrics respond and how a microwave oven heats
+water: the field grabs the dipoles and the details of the molecule never enter.
+
+So the multipole expansion is a way of forgetting, on purpose. It keeps precisely the few
+numbers that survive being seen from far off, and it tells you the order in which to keep
+them.

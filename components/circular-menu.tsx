@@ -543,8 +543,8 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
   // when the menu opens, so the silhouette closes just outside the icons.
   const canvasSize    = isMobile ? 600 : 800
   const scale         = pxPerUnit(canvasSize)
-  const RADIUS        = TORUS_RADIUS * scale                             // 134px / 100px
-  const containerSize = Math.round(SPHERE_RADIUS * scale * 2 + 24)       // 380px / 290px
+  const RADIUS        = TORUS_RADIUS * scale                             // 171px / 128px
+  const containerSize = Math.round(SPHERE_RADIUS * scale * 2 + 24)       // 477px / 364px
   const itemScale     = isMobile ? 0.85 : 1
 
   return (

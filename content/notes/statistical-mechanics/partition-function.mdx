@@ -1,0 +1,84 @@
+---
+title: The Partition Function
+summary: One sum over states, and how every thermodynamic quantity falls out of differentiating it.
+order: 4
+updated: July 2026
+---
+
+Put a system in contact with a large reservoir at temperature $T$ and ask how likely you
+are to find it in a particular microstate of energy $E_i$. The answer, worked from
+counting the reservoir's states, is the Boltzmann factor $e^{-\beta E_i}$ with $\beta =
+1/k_B T$. Higher-energy states are less likely, and the temperature sets how steeply.
+
+To turn a set of relative weights into probabilities you have to normalise them. The sum
+that does the normalising turns out to carry, on its own, everything thermodynamics wants
+to know about the system.
+
+## One sum
+
+$$
+Z = \sum_i e^{-\beta E_i}, \qquad p_i = \frac{e^{-\beta E_i}}{Z}.
+$$
+
+$Z$ is the partition function. The name is a translation of the German *Zustandssumme*,
+sum over states, which says exactly what it is. It looks like a bookkeeping device, a
+denominator you carry around to keep the probabilities adding to one.
+
+It is much more than that, because the energies $E_i$ depend on the volume, the field,
+the particle number, and $Z$ depends on temperature through $\beta$. Differentiating it
+therefore reaches every thermodynamic quantity at once.
+
+## Everything by differentiation
+
+The mean energy is a derivative of $\ln Z$ in $\beta$:
+
+$$
+\langle E \rangle = -\frac{\partial \ln Z}{\partial \beta}.
+$$
+
+The bridge to thermodynamics is a single further identification, the Helmholtz free
+energy:
+
+<Statement kind="Definition" title="The bridge equation">
+$$
+F = -k_B T \ln Z.
+$$
+Every equilibrium property follows by differentiating $F$: entropy as $-\partial F/\partial
+T$, pressure as $-\partial F/\partial V$, and so on. The partition function is the point
+where the microscopic sum meets the classical potential of the last set of notes.
+</Statement>
+
+The variance of the energy is a second derivative, and it is not just a curiosity:
+
+$$
+\langle E^2 \rangle - \langle E \rangle^2 = \frac{\partial^2 \ln Z}{\partial \beta^2}
+= k_B T^2 C_V.
+$$
+
+The size of the energy fluctuations is fixed by the heat capacity. A system that stores
+heat easily is one whose energy wanders, which is the fluctuation-dissipation idea in its
+simplest dress.
+
+## Independence makes it multiply
+
+If a system splits into parts that do not interact, its energy is a sum and its partition
+function is a product:
+
+$$
+Z = Z_1 Z_2 \cdots, \qquad \ln Z = \sum_k \ln Z_k.
+$$
+
+Because $F$ is a logarithm of $Z$, the free energies then simply add, which is what lets
+you build a gas of $N$ non-interacting particles out of one-particle sums.
+
+<Statement kind="Consequence" title="The two-level system">
+For a single object with just two states, energies $0$ and $\varepsilon$, $Z = 1 +
+e^{-\beta\varepsilon}$. The mean energy $\varepsilon/(e^{\beta\varepsilon}+1)$ rises from
+zero at low temperature toward $\varepsilon/2$ at high, and its derivative, the heat
+capacity, peaks at a temperature of order $\varepsilon/k_B$. That peak, the Schottky
+anomaly, is a real signature of a gap in a material's spectrum.
+</Statement>
+
+So the recipe for a system in the canonical ensemble is short. Write down its energies,
+sum the Boltzmann factors, take the log, and differentiate. The physics is in the first
+step; the rest is calculus.

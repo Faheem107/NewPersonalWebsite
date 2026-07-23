@@ -1,0 +1,90 @@
+---
+title: The Thermodynamic Potentials
+summary: Legendre transforms of the energy, and how each one picks out the variables you can actually hold fixed.
+order: 4
+updated: July 2026
+---
+
+The internal energy is a natural quantity to start from, and an awkward one to use. Its
+differential
+
+$$
+dU = T\,dS - P\,dV
+$$
+
+tells you that $U$ is really a function of entropy and volume. Those are its natural
+variables, the ones it wants to be written in. The trouble is that entropy is not
+something you can set on a dial. Volume you can fix with a piston, temperature with a
+bath, pressure with the weight of the atmosphere, but not entropy.
+
+So the energy, in the variables it prefers, is written in terms of a quantity no
+experiment controls directly. The thermodynamic potentials are the fix. Each one trades
+an inconvenient variable for a convenient one, and the trade has a name.
+
+## Trading a variable is a Legendre transform
+
+The move is the same each time. To swap $S$ for its conjugate $T = (\partial U/\partial
+S)_V$, subtract the product of the two:
+
+$$
+F = U - TS, \qquad dF = -S\,dT - P\,dV.
+$$
+
+The $T\,dS$ term has been cancelled and replaced by a $-S\,dT$, so $F$ is now a function
+of $T$ and $V$. This is the Helmholtz free energy. Do the same to volume, or to both:
+
+$$
+H = U + PV, \qquad G = U - TS + PV.
+$$
+
+$H$ is the enthalpy, a function of $S$ and $P$; $G$ is the Gibbs free energy, a function
+of $T$ and $P$, the two variables you can hold fixed most easily in a lab.
+
+<Aside>
+There is nothing thermodynamic about the Legendre transform itself. It is the same
+operation that turns a Lagrangian into a Hamiltonian, swapping velocities for momenta.
+Both times it exchanges a variable for the slope of the graph in that variable.
+</Aside>
+
+## Each potential is minimised under its own constraints
+
+The second law says the entropy of the universe increases. Rewriting that in terms of a
+system and a reservoir turns each potential into the thing that is extremised at
+equilibrium under a particular set of held-fixed variables.
+
+<Statement kind="Consequence" title="Which potential to watch">
+At fixed $T$ and $V$, a system settles to the minimum of $F$. At fixed $T$ and $P$, it
+settles to the minimum of $G$. The internal energy is minimised at fixed $S$ and $V$.
+The rule is always the same: hold a potential's natural variables fixed, and that
+potential is what the system minimises.
+</Statement>
+
+This is why $G$ does so much work in chemistry. Reactions on a bench happen at the
+temperature of the room and the pressure of the air, so it is the Gibbs energy that
+decides which way they run.
+
+## Maxwell relations
+
+Because each $dU$, $dF$, $dH$, $dG$ is an exact differential, its second mixed partials
+are equal regardless of the order of differentiation. Applied to $dF = -S\,dT - P\,dV$,
+
+$$
+\left(\frac{\partial S}{\partial V}\right)_T = \left(\frac{\partial P}{\partial T}\right)_V.
+$$
+
+The left side asks how entropy changes when you expand at fixed temperature, which is
+hard to measure. The right side is just how pressure changes with temperature at fixed
+volume, which is easy. The four potentials give four such identities, and their whole
+value is this: they turn a quantity you cannot get at into one you can.
+
+<Statement kind="Definition" title="A worked relation">
+From $dG = -S\,dT + V\,dP$ the same equality of mixed partials gives $(\partial S/\partial
+P)_T = -(\partial V/\partial T)_P$. The right side is the thermal expansion coefficient,
+tabulated for every material. The left side, the entropy released on compression, would
+otherwise need a calorimeter.
+</Statement>
+
+None of this adds physics to the first and second laws. It is bookkeeping, and the
+bookkeeping is the point: the potentials are four views of the same surface, chosen so
+that whatever you happen to be able to hold fixed, one of them is written in exactly
+those variables.

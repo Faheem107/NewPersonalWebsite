@@ -1,0 +1,78 @@
+---
+title: Series Solutions and Special Functions
+summary: The Frobenius method at a regular singular point, and where Legendre and Bessel functions come from.
+order: 5
+updated: July 2026
+---
+
+Most differential equations that come out of physics cannot be solved in elementary
+functions, and the honest response is not to give up but to lower the bar. Instead of a
+closed form, look for a power series and solve for its coefficients one at a time. Where
+the series works cleanly, and where it needs a repair, is decided entirely by the equation's
+singular points.
+
+## Ordinary points are easy
+
+At an ordinary point of a second-order linear equation, one where the coefficients are
+well-behaved, you may simply assume
+
+$$
+y(x) = \sum_{n=0}^{\infty} a_n x^n,
+$$
+
+substitute, and match powers of $x$. That gives a recurrence relating $a_{n+2}$ to earlier
+coefficients, and two free constants, $a_0$ and $a_1$, that carry the two initial
+conditions. The series converges out to the nearest singular point and no further.
+
+## Singular points need Frobenius
+
+At a regular singular point a plain power series usually fails, because the solution
+behaves like a fractional or logarithmic power there. Frobenius's fix is to allow the
+series to start at a shifted power:
+
+$$
+y(x) = x^{s}\sum_{n=0}^{\infty} a_n x^n, \qquad a_0 \neq 0.
+$$
+
+Substituting and reading off the lowest power gives the indicial equation, a quadratic for
+the exponent $s$. Its two roots are the two allowed leading behaviours.
+
+<Statement kind="Definition" title="The indicial equation">
+For an equation written as $x^2 y'' + x\,p(x)\,y' + q(x)\,y = 0$ with $p, q$ analytic, the
+indicial equation is $s(s-1) + p(0)\,s + q(0) = 0$. When the two roots differ by a
+non-integer, each gives an independent Frobenius series. When they coincide or differ by
+an integer, the second solution can pick up a logarithm, which is the method warning you
+honestly about a case it cannot cover with a bare series.
+</Statement>
+
+## Where the named functions come from
+
+The point of all this is that the standard special functions are not handed down from
+nowhere. Each is the series solution of an equation that drops out of separating a partial
+differential equation in a particular geometry.
+
+<Statement kind="Consequence" title="Two you meet constantly">
+Separating Laplace's equation in spherical coordinates produces the Legendre equation,
+whose polynomial solutions $P_\ell(\cos\theta)$ are the angular building blocks of every
+multipole field. Separating the wave or heat equation in cylindrical coordinates produces
+Bessel's equation, whose solutions $J_\nu(x)$ describe the modes of a drumhead and the
+diffraction pattern of a circular aperture.
+</Statement>
+
+The Legendre polynomials terminate, becoming actual polynomials, precisely for the integer
+values of $\ell$ that keep the solution finite at the poles. That termination is not a
+convenience; it is the boundary condition selecting a discrete set of allowed values, which
+is where the integer $\ell$ in the angular momentum of quantum mechanics ultimately comes
+from.
+
+<Aside>
+So the special functions are best thought of as a vocabulary rather than a bestiary. Each
+is the answer to "what are the natural modes of this shape," and once you know which
+equation a geometry produces, you already know which functions its solutions are built
+from.
+</Aside>
+
+The series method rarely gives the prettiest form of an answer. What it gives is a
+guarantee: a way to construct a solution, term by term, for equations where no shortcut
+exists, and a clear account of exactly where and why that construction has to be handled
+with care.

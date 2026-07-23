@@ -1,0 +1,85 @@
+---
+title: Fourier Series and the Transform
+summary: The eigenfunction expansion Sturm-Liouville promised, and its limit as the interval opens up.
+order: 4
+updated: July 2026
+---
+
+The Sturm-Liouville notes ended with a promise: a well-posed boundary value problem hands
+you an orthogonal basis of eigenfunctions, and any reasonable function can be written in
+it. The oldest and most useful instance of that promise is the one where the operator is
+just the second derivative and the interval is a finite line. Its eigenfunctions are sines
+and cosines, and the expansion is the Fourier series.
+
+## The simplest eigenproblem
+
+On $[-L, L]$ with periodic boundary conditions, the operator $-d^2/dx^2$ has eigenfunctions
+
+$$
+e^{i n\pi x / L}, \qquad n \in \mathbb{Z},
+$$
+
+and they are orthogonal, because $-d^2/dx^2$ is a Sturm-Liouville operator and its
+eigenfunctions for distinct eigenvalues must be. Any periodic $f$ then expands as
+
+$$
+f(x) = \sum_{n=-\infty}^{\infty} c_n\, e^{i n \pi x / L}, \qquad
+c_n = \frac{1}{2L}\int_{-L}^{L} f(x)\, e^{-i n \pi x / L}\,dx.
+$$
+
+The coefficient formula is just the projection onto one basis vector, the same inner
+product that gives a component of an ordinary vector. Nothing here is special to sines; it
+is orthogonality doing the work.
+
+<Aside>
+Convergence is where the subtlety lives. The series converges in the mean-square sense for
+any square-integrable $f$, but at a jump it overshoots by a fixed fraction that never
+shrinks, only narrows. That is the Gibbs phenomenon, and it is a property of the partial
+sums, not a failure of the series.
+</Aside>
+
+## Energy is preserved
+
+Orthonormality gives Parseval's identity, that the total size of a function equals the
+total size of its coefficients:
+
+$$
+\frac{1}{2L}\int_{-L}^{L} |f(x)|^2\,dx = \sum_n |c_n|^2.
+$$
+
+Physically this is a conservation statement: the energy in a wave is the same whether you
+count it in space or across its frequency components. Nothing is lost in changing basis.
+
+## Letting the interval open up
+
+The Fourier series is tied to a finite interval, which quantises the allowed frequencies
+into the discrete set $n\pi/L$. Let $L \to \infty$ and those frequencies crowd together
+into a continuum. The sum becomes an integral and the series becomes the Fourier
+transform:
+
+$$
+\tilde{f}(k) = \int_{-\infty}^{\infty} f(x)\,e^{-ikx}\,dx, \qquad
+f(x) = \frac{1}{2\pi}\int_{-\infty}^{\infty} \tilde{f}(k)\,e^{ikx}\,dk.
+$$
+
+<Statement kind="Theorem" title="Why the transform tames differential equations">
+Under the transform, $d/dx$ becomes multiplication by $ik$. A linear differential
+equation with constant coefficients therefore turns into an algebraic one for
+$\tilde{f}(k)$, which you solve by division and invert. Differentiation, the hard
+operation, has been traded for multiplication, the easy one.
+</Statement>
+
+## The heat equation in one line
+
+Take $\partial_t u = D\,\partial_x^2 u$ and transform in $x$. The spatial derivative
+becomes $-k^2$, leaving $\partial_t \tilde{u} = -Dk^2\tilde{u}$, which is just
+exponential decay:
+
+$$
+\tilde{u}(k,t) = \tilde{u}(k,0)\,e^{-Dk^2 t}.
+$$
+
+Every mode decays, and the sharp ones, large $k$, decay fastest. Inverting the transform
+turns that back into a spreading Gaussian, which is why heat smooths a profile from its
+roughest features first. The transform did not just solve the equation; it said plainly
+which part of the initial data survives longest.

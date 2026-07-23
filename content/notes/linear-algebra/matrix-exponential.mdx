@@ -1,0 +1,79 @@
+---
+title: The Matrix Exponential
+summary: Solving a coupled linear system by exponentiating its matrix, computed through the eigenbasis.
+order: 5
+updated: July 2026
+---
+
+A single linear equation $\dot{x} = ax$ has the solution everyone knows, $x(t) = e^{at}
+x(0)$. A coupled system of them,
+
+$$
+\dot{\mathbf{x}} = A\,\mathbf{x},
+$$
+
+looks harder because the variables feed into each other. It is not, and the reason is that
+the same exponential works if you are willing to exponentiate a matrix.
+
+## Defining the exponential of a matrix
+
+There is only one sensible definition, the power series, which converges for every square
+matrix:
+
+$$
+e^{A} = \sum_{n=0}^{\infty} \frac{A^n}{n!} = I + A + \frac{A^2}{2!} + \cdots
+$$
+
+With it, $e^{At}$ has derivative $A e^{At}$, exactly as the scalar case does, so
+
+$$
+\mathbf{x}(t) = e^{At}\,\mathbf{x}(0)
+$$
+
+solves the system for any initial condition. The whole difficulty has moved into one
+place: actually computing $e^{At}$.
+
+## Computing it through the eigenbasis
+
+Summing an infinite series of matrix powers by hand is hopeless. The eigenbasis makes it
+trivial. If $A = P\Lambda P^{-1}$ is diagonalisable, then $A^n = P\Lambda^n P^{-1}$, and
+the whole series collapses:
+
+$$
+e^{At} = P\,e^{\Lambda t}\,P^{-1}, \qquad
+e^{\Lambda t} = \operatorname{diag}\!\big(e^{\lambda_1 t}, \dots, e^{\lambda_n t}\big).
+$$
+
+Exponentiating a diagonal matrix is just exponentiating its entries. So the recipe is:
+find the eigenvalues and eigenvectors, exponentiate the eigenvalues, transform back.
+
+<Statement kind="Consequence" title="The eigenvalues run the dynamics">
+In the eigenbasis the system uncouples into independent scalar equations $\dot{y}_i =
+\lambda_i y_i$. Each eigenvalue is one decoupled mode: a negative real part decays, a
+positive one grows, an imaginary part oscillates. The long-term fate of the whole system
+is set by the eigenvalue with the largest real part, which is exactly the stability
+criterion for a linear system.
+</Statement>
+
+## When there is no eigenbasis
+
+Some matrices are defective: they do not have enough eigenvectors to diagonalise. The
+exponential still exists, since the series never cared, but you compute it through the
+Jordan form instead. A Jordan block splits as a multiple of the identity plus a nilpotent
+part $N$, and a nilpotent's series terminates because $N^k = 0$ eventually:
+
+$$
+e^{Nt} = I + Nt + \frac{N^2 t^2}{2!} + \cdots + \frac{N^{k-1}t^{k-1}}{(k-1)!}.
+$$
+
+<Aside>
+Those finitely many extra terms are where factors of $t$, and $t^2$, in a solution come
+from: a repeated eigenvalue with too few eigenvectors gives responses like $t\,e^{\lambda
+t}$. It is the mathematical fingerprint of critical damping, the boundary between a system
+that oscillates and one that just relaxes.
+</Aside>
+
+The payoff is a genuine unification. Coupled oscillators, radioactive decay chains, the
+small-oscillation modes of the differential-equations notes, all of them are $\dot{\mathbf
+x} = A\mathbf x$ for some $A$, and all of them are solved the same way: diagonalise, and
+the coupled problem falls apart into scalar exponentials you already understand.

@@ -15,19 +15,29 @@ export const CAMERA_Z = 13
 /** vertical field of view, degrees */
 export const CAMERA_FOV = 45
 
-/** ring centreline of the torus */
-export const TORUS_RADIUS = 1.8
-export const TUBE_RADIUS = 0.6
+/**
+ * Ring centreline and tube of the torus.
+ *
+ * These three constants (with SPHERE_RADIUS) are the whole form, and they were
+ * scaled up together by ~1.28 from their tuned values (1.8 / 0.6 / 2.4) to make
+ * the torus read larger without touching any of the relationships between them.
+ * Because the icon ring, the shader torus and the container all derive from
+ * these through pxPerUnit, a uniform bump enlarges everything at once: the ring
+ * of icons still sits on the tube line and the silhouette still closes just
+ * outside it. Keep any future size change uniform for the same reason.
+ */
+export const TORUS_RADIUS = 2.3
+export const TUBE_RADIUS = 0.77
 
 /**
  * Radius of the ball the torus becomes when the menu opens.
  *
- * Was 3.6, which projected to 534px across: wider than the container that held
- * it, so the icons floated in the middle of a shape whose edge was off past the
- * name. At 2.4 the silhouette sits just outside the icon ring, which is what
- * makes the icons read as being inside it.
+ * Was 3.6, which projected wider than the container that held it, so the icons
+ * floated in the middle of a shape whose edge was off past the name. At the
+ * tuned 2.4 the silhouette sat just outside the icon ring; this 3.05 is that
+ * same ratio carried through the uniform enlargement above.
  */
-export const SPHERE_RADIUS = 2.4
+export const SPHERE_RADIUS = 3.05
 
 /**
  * World height visible across a square canvas at the z = 0 plane. The camera

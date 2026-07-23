@@ -53,6 +53,22 @@ transforms on wrappers, which is what pinned the torus modals above the torus.
 Scroll locking goes through `useScrollLock` (`lib/motion/scroll-lock.ts`).
 `overflow: hidden` alone does not stop Lenis.
 
+## Torus
+
+`lib/torus-geometry.ts` is the single source for the camera and the shape. The
+shader reads it as uniforms and `circular-menu.tsx` reads it through `pxPerUnit`,
+so the ring of icons is derived from the torus rather than guessed. Never
+reintroduce a pixel radius here: the ring sat at a flat 150px for a long time and
+was concentric with nothing.
+
+That GSAP entrance is a trap for anything measured. It scales `[data-torus]` from
+0.9, and a bounding rect includes an ancestor's transform, so r3f sized its canvas
+mid-animation and rendered 32px off-centre for months. The `Canvas` keeps
+`resize={{ offsetSize: true }}` for that reason.
+
+The magnet winds down to almost nothing while the menu is open, since the pointer
+is necessarily inside the form whenever the icons are showing.
+
 ## Content
 
 `content/research.ts` and `content/thoughts.ts` are the single source for those
@@ -98,6 +114,18 @@ way: interference is an actual path difference between two sources, phyllotaxis
 is the golden angle that packs a sunflower head, the orbits use a Kepler-ish
 period so inner rings lead.
 
+Everything is sized against `reach`, the centre-to-corner distance of the
+viewport, and the point budget grows with it through `countFor`. Both are there
+so a construction fills the screen at any aspect **without being stretched**: the
+sunflower head gets more seeds at the same packing, the orbits get more rings at
+the same spacing. If a pattern looks thin on a wide display, that is a budget
+question, not a reason to scale the geometry up.
+
+The field leans slightly toward the pointer, reading the same module-level store
+as the cursor. Keep it a lean: the displacement is the offset times a falloff so
+it vanishes both far away and at the pointer itself, it peaks around ten pixels,
+and the brightness term is 12%. It is not a spotlight.
+
 **No haze layer.** An earlier version put a soft noise wash behind these and it
 read as fog: it hid the pattern and made the whole site look glassy. If the
 backdrop needs to be quieter on a given page, pass `alpha`, do not add
@@ -118,8 +146,12 @@ rather than over the backdrop, and there the text does need something opaque.
 
 ## Git
 
-- Work on `ui/rebuild`. **Do not merge to `main`** until the v0 integration is
-  disconnected, or it will regenerate the UI this removed.
+- Work on `ui/rebuild`, then fast-forward `main` to it. The old rule here was
+  never to merge to `main`, on the grounds that the v0 integration would
+  regenerate the UI the rebuild removed. `main` has carried the rebuild since
+  `be8c8e2` and the v0 branch has not moved since May 2026, so that risk is
+  spent. If `origin/v0/*` ever gains a commit, treat the old rule as back in
+  force and ask before pushing to `main`.
 - Commits carry no AI co-author trailers.
 - The ~90 photography originals live outside the repo in `Pictures for Website/`
   and must be downscaled to ~2400px before any of them is committed.

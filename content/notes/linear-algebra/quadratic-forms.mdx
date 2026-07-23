@@ -1,0 +1,72 @@
+---
+title: Quadratic Forms and Definiteness
+summary: Symmetric matrices as functions, and how the spectral theorem sorts them by sign.
+order: 4
+updated: July 2026
+---
+
+A symmetric matrix can be read two ways. The spectral theorem notes treated it as an
+operator, something that acts on vectors and has a clean eigenbasis. There is a second
+reading, just as useful, in which the same matrix is a function that eats a vector and
+returns a number:
+
+$$
+Q(\mathbf{x}) = \mathbf{x}^{\top} A\, \mathbf{x} = \sum_{i,j} A_{ij}\,x_i x_j.
+$$
+
+This is a quadratic form, the natural generalisation of $a x^2$ to many variables. It
+appears wherever an energy, a variance, or a distance shows up, and the question you
+almost always want to ask of it is: what is its sign?
+
+## Diagonalising the form
+
+Because $A$ is symmetric, the spectral theorem gives an orthonormal basis of eigenvectors
+and real eigenvalues, $A = Q\Lambda Q^{\top}$. Change to that basis, $\mathbf{y} =
+Q^{\top}\mathbf{x}$, and the cross terms vanish:
+
+$$
+Q(\mathbf{x}) = \sum_i \lambda_i\, y_i^2.
+$$
+
+In its own principal axes the form is just a weighted sum of squares, weighted by the
+eigenvalues. Its sign is therefore decided, completely, by the signs of the $\lambda_i$.
+
+<Statement kind="Definition" title="Definiteness">
+$A$ is positive definite if $Q(\mathbf{x}) > 0$ for every non-zero $\mathbf{x}$, which
+holds exactly when all eigenvalues are positive. It is negative definite when all are
+negative, and indefinite when both signs appear. The borderline cases, with a zero
+eigenvalue, are called semidefinite.
+</Statement>
+
+## A criterion you can check by hand
+
+Computing every eigenvalue is more than you need just to know a sign. Sylvester's
+criterion reads definiteness off the leading principal minors, the determinants of the
+top-left $k \times k$ blocks:
+
+$$
+A \text{ is positive definite} \iff \det A_k > 0 \text{ for all } k.
+$$
+
+For a $2\times 2$ symmetric matrix this is just: the top-left entry positive and the whole
+determinant positive. No eigenvalues required.
+
+## Where the sign is the whole story
+
+The reason definiteness earns its own name is that it answers a geometric question about a
+critical point. The second-order behaviour of any smooth function near a stationary point
+is a quadratic form, its Hessian, and the sign of that form is what a minimum, a maximum
+and a saddle are.
+
+<Statement kind="Consequence" title="The second-derivative test, honestly">
+At a stationary point the Hessian's definiteness classifies it: positive definite is a
+minimum, negative definite a maximum, indefinite a saddle. The one-variable rule about the
+second derivative being positive is this statement with a single eigenvalue. When the
+Hessian is only semidefinite the test is silent, which is not a gap in the theory but the
+truthful statement that the quadratic term alone cannot decide.
+</Statement>
+
+The same idea runs through mechanics as stability of an equilibrium, through statistics as
+the positive-definiteness of a covariance matrix, and through the last thermodynamics note
+as the convexity that forces the response functions positive. In each case a symmetric
+matrix is standing in for a bowl, and definiteness is asking which way the bowl opens.

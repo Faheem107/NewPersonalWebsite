@@ -1,0 +1,80 @@
+---
+title: Potentials and Gauge Freedom
+summary: Trading six field components for four potentials, and the redundancy that comes with them.
+order: 5
+updated: July 2026
+---
+
+Maxwell's equations are six coupled equations for six field components. Two of them,
+the ones with no sources, are constraints rather than dynamics: they say the magnetic
+field has no divergence and the electric field's curl is tied to a changing magnetic
+field. Those two can be solved once and for all by writing the fields in terms of
+potentials, which is both a simplification and, as it turns out, a source of a subtle kind
+of freedom.
+
+## Solving two equations for free
+
+Since $\nabla\cdot\mathbf{B} = 0$ everywhere, $\mathbf{B}$ is the curl of something:
+
+$$
+\mathbf{B} = \nabla \times \mathbf{A}.
+$$
+
+Put that into Faraday's law and it forces $\nabla \times (\mathbf{E} + \partial_t
+\mathbf{A}) = 0$, so the combination in the bracket is a gradient:
+
+$$
+\mathbf{E} = -\nabla\varphi - \frac{\partial \mathbf{A}}{\partial t}.
+$$
+
+Four numbers now, the scalar $\varphi$ and the vector $\mathbf{A}$, in place of six, and
+the two source-free Maxwell equations are satisfied automatically by construction.
+
+## The freedom
+
+The potentials are not unique. The same fields come from
+
+$$
+\mathbf{A} \to \mathbf{A} + \nabla\lambda, \qquad
+\varphi \to \varphi - \frac{\partial \lambda}{\partial t},
+$$
+
+for any scalar function $\lambda(\mathbf{r},t)$, because the curl of a gradient and the
+mismatched time derivative cancel exactly. This is a gauge transformation, and the fact
+that no measurement can tell the two sets of potentials apart is gauge freedom.
+
+<Statement kind="Definition" title="Fixing a gauge">
+Choosing a condition that pins down $\lambda$ is called fixing the gauge. It removes the
+redundancy without changing any field. The two common choices are the Coulomb gauge,
+$\nabla\cdot\mathbf{A}=0$, and the Lorenz gauge, $\nabla\cdot\mathbf{A} +
+\mu_0\varepsilon_0\,\partial_t\varphi = 0$.
+</Statement>
+
+## Why the Lorenz gauge is worth it
+
+Substitute the potentials into the two Maxwell equations that do have sources, and in the
+Lorenz gauge the mess uncouples into two identical wave equations:
+
+$$
+\Box\,\varphi = -\frac{\rho}{\varepsilon_0}, \qquad
+\Box\,\mathbf{A} = -\mu_0\,\mathbf{J},
+$$
+
+where $\Box = \nabla^2 - \frac{1}{c^2}\partial_t^2$. Each potential obeys a wave equation
+driven by its own source, the charge for $\varphi$ and the current for $\mathbf{A}$.
+Nothing could be cleaner, and the solutions are the retarded potentials, fields that
+arrive at a distance a time $r/c$ after the source moved.
+
+<Aside>
+The Coulomb gauge makes $\varphi$ the instantaneous Coulomb potential of the charge, as if
+signals travelled infinitely fast. That is not a paradox: $\varphi$ is not measurable on
+its own, and the acausal-looking part cancels against $\mathbf{A}$ when you form
+$\mathbf{E}$. The freedom to shuffle where the retardation sits is the gauge freedom
+again.
+</Aside>
+
+The redundancy is not a defect to be tidied away and forgotten. Insisting that physics
+should not depend on the choice of $\lambda$ is, in more advanced treatments, exactly what
+forces the existence of the electromagnetic field in the first place. Here it is enough to
+notice that the freedom is real, that fixing it is a convenience rather than a physical
+statement, and that the right fix turns six coupled equations into two wave equations.

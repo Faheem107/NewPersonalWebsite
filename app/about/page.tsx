@@ -31,19 +31,26 @@ export default function AboutPage() {
 
         <div className="mt-14 max-w-prose space-y-6 text-lg leading-relaxed text-muted-foreground">
           <p>
-            I am Mohammed Faheem, a second-year student at NYU Abu Dhabi majoring in Physics with a
-            minor in Film &amp; New Media. My academic work is mostly about using mathematical and
-            computational tools to understand biological systems, currently the stochastic
-            behaviour of transcription.
+            I am Mohammed Faheem, a second-year student at NYU Abu Dhabi, studying Physics with a
+            minor in Film &amp; New Media. Most of what I do is trying to use a bit of maths and
+            computation to make slightly more sense of biological systems. Right now that means the
+            stochastic side of transcription, which I am still very much finding my way around.
           </p>
           <p>
-            Alongside coursework and lab research I spend a lot of time on science communication and
-            visual arts. Explaining something in a second medium tends to expose the parts of it I
-            had not understood, which is most of why I keep doing it. I also think the question of
-            what a piece of research is for deserves more attention than it usually gets, and that
-            it is not a question the results answer on their own.
+            Alongside classes and lab work I spend a lot of time explaining things, in writing and
+            in pictures. I mostly do it for selfish reasons: putting an idea into a second form is
+            the quickest way I know to catch the parts I only thought I had understood. I get those
+            parts wrong often enough that it has stopped surprising me.
           </p>
-          <p>Outside of all that, football and reading.</p>
+          <p>
+            I also keep coming back to the question of what a given piece of research is actually
+            for, which the results never seem to answer on their own. I do not have a good answer to
+            that yet, and I would rather sit with the question than pretend I do.
+          </p>
+          <p>
+            Away from all that I play football and read more than is probably good for me. If any of
+            this lines up with something you are working on, I would be really glad to hear from you.
+          </p>
         </div>
 
         <section className="mt-20 border-t border-border pt-8">
