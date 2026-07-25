@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     template: '%s · Faheem',
   },
   description:
-    'Mohammed Faheem. Physics major, Film & New Media minor at NYU Abu Dhabi. Research notes, biophysics work, photography and film.',
+    'Mohammed Faheem, a second-year Physics student at NYU Abu Dhabi with a Film & New Media minor. Coursework notes, biophysics research, photography and film.',
   keywords: ['physics', 'biophysics', 'NYU Abu Dhabi', 'statistical mechanics', 'photography', 'film'],
   authors: [{ name: 'Mohammed Faheem' }],
   openGraph: {
@@ -46,12 +46,12 @@ export const metadata: Metadata = {
     url: SITE,
     siteName: 'Faheem',
     title: 'Faheem · Physics at NYU Abu Dhabi',
-    description: 'Research notes, biophysics work, photography and film.',
+    description: 'Coursework notes, biophysics research, photography and film.',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Faheem · Physics at NYU Abu Dhabi',
-    description: 'Research notes, biophysics work, photography and film.',
+    description: 'Coursework notes, biophysics research, photography and film.',
   },
   // The Voyager golden record. Masked to a circle, so the tab icon sits the
   // same way on light and dark browser chrome instead of being a dark square.

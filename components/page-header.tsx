@@ -22,7 +22,16 @@ export default function PageHeader({ title, lede }: { title: string; lede?: stri
     const ctx = gsap.context(() => {
       const heading = root.querySelector('h1')
       if (!heading) return
-      const split = new SplitText(heading, { type: 'chars', charsClass: 'inline-block' })
+      // smartWrap is load-bearing, not a nicety. A chars-only split makes every
+      // character its own inline-block, and the browser will then break inside
+      // a word: at a partial window "Photography and film" wrapped as
+      // "Photograph / y and film". smartWrap puts each word's chars in a
+      // white-space: nowrap span, which is GSAP's own answer to this.
+      const split = new SplitText(heading, {
+        type: 'chars',
+        charsClass: 'inline-block',
+        smartWrap: true,
+      })
 
       gsap
         .timeline()

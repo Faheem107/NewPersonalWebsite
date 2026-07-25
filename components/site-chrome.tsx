@@ -10,7 +10,7 @@ import { useScrollLock } from '@/lib/motion/scroll-lock'
 
 const NAV = [
   { label: 'research', href: '/research' },
-  { label: 'photography & films', href: '/photography' },
+  { label: 'photography & film', href: '/photography' },
   { label: 'some thoughts!', href: '/thoughts' },
   { label: 'notes', href: '/notes' },
   { label: 'about', href: '/about' },
@@ -91,8 +91,16 @@ export default function SiteChrome() {
 
   return (
     <>
+      {/* The header has to outrank the overlay while the menu is open. It is a
+          positioned element, so it establishes a stacking context and the
+          z-[70] on the close button could not escape it: the button sat under
+          the overlay at z-60 and did not respond to a tap. On a phone that left
+          no way out of the menu except following a link, since there is no
+          Escape key to press. */}
       <motion.header
-        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-6 px-6 py-5 md:px-10 md:py-7"
+        className={`fixed inset-x-0 top-0 flex items-center justify-between gap-6 px-6 py-5 md:px-10 md:py-7 ${
+          open ? 'z-[70]' : 'z-50'
+        }`}
         animate={{ y: visible ? 0 : -96, opacity: visible ? 1 : 0 }}
         transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
       >
@@ -110,11 +118,13 @@ export default function SiteChrome() {
 
         <div className="flex items-center gap-4 md:hidden">
           <ThemeToggle />
+          {/* -mr-3 pulls the padding back out of the layout, so the button
+              keeps a 44px tap target without visibly shifting off the edge. */}
           <button
             onClick={() => setOpen(v => !v)}
             aria-expanded={open}
             aria-label={open ? 'Close menu' : 'Open menu'}
-            className="caption relative z-[70] py-1"
+            className="caption relative z-[70] -mr-3 flex min-h-11 items-center px-3"
           >
             {open ? 'close' : 'menu'}
           </button>
@@ -150,6 +160,24 @@ export default function SiteChrome() {
                   </Link>
                 </motion.div>
               ))}
+
+              {/* Search lived only in the desktop nav, so on a phone the index
+                  was reachable by the shortcut and by nothing else. */}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12 + NAV.length * 0.06, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <button
+                  onClick={() => {
+                    setOpen(false)
+                    window.dispatchEvent(new Event('open-site-search'))
+                  }}
+                  className="font-display text-3xl tracking-tight text-muted-foreground"
+                >
+                  search
+                </button>
+              </motion.div>
             </nav>
           </motion.div>
         )}

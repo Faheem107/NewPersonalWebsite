@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import Backdrop from '@/components/backdrop/pattern'
@@ -41,6 +41,16 @@ type Item = {
   videoUrl?: string
 }
 
+/**
+ * Drive serves the original at whatever size it was uploaded, which for these
+ * is several megabytes each, ninety times over, to a phone. The `=w` suffix is
+ * lh3's own resize, so a grid tile asks for the width it will actually be drawn
+ * at and only the lightbox pulls the full file.
+ */
+function sized(url: string, width: number) {
+  return `${url}=w${width}`
+}
+
 const GALLERY_ITEMS: Item[] = [
   {
     id: 'ninaivu-film',
@@ -53,28 +63,6 @@ const GALLERY_ITEMS: Item[] = [
     type: 'photography',
     imageUrl: `https://lh3.googleusercontent.com/d/${id}`,
   })),
-]
-
-/** The work behind the images. Same rail layout as the research page. */
-const WORK = [
-  {
-    title: 'Ninaivu',
-    role: 'Director and writer',
-    when: 'Oct 2025',
-    body: 'A short film about memory, made with a team of three. It took second place out of more than thirty-five entries at the IIT Abu Dhabi Film Festival, which surprised all of us.',
-  },
-  {
-    title: 'Labocine',
-    role: 'Producer',
-    when: 'Jan 2025 to present',
-    body: 'Producing short films that sit between systems biology, scientific illustration and cinema. Eight so far. The recurring difficulty is that most of what they are about happens at a scale no camera reaches, so the image has to be argued for rather than captured.',
-  },
-  {
-    title: 'The Gazelle',
-    role: 'Lead photographer',
-    when: 'Feb 2025 to present',
-    body: 'Lead photographer and design team member at the student newspaper at NYU Abu Dhabi, with five photo essays on student life and the city around it.',
-  },
 ]
 
 const FILTERS = ['all', 'photography', 'film'] as const
@@ -116,11 +104,31 @@ function Lightbox({
 }) {
   useScrollLock(true)
 
+  // Swipe. On a phone this is the first thing anyone tries, and the arrows are
+  // the thing they were least likely to reach for. Pointer events cover touch
+  // and a trackpad drag alike; 44px is far enough to not fire on a tap.
+  const swipeStart = useRef<{ x: number; y: number } | null>(null)
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    swipeStart.current = { x: e.clientX, y: e.clientY }
+  }
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    const start = swipeStart.current
+    swipeStart.current = null
+    if (!start) return
+    const dx = e.clientX - start.x
+    // Ignore anything that was mostly vertical: that is a scroll attempt.
+    if (Math.abs(dx) < 44 || Math.abs(dx) < Math.abs(e.clientY - start.y)) return
+    if (dx < 0) onNext()
+    else onPrev()
+  }
+
   if (typeof document === 'undefined') return null
 
   return createPortal(
     <motion.div
-      className="fixed inset-0 z-[120] flex items-center justify-center bg-background/95 p-4 md:p-12"
+      className="fixed inset-0 z-[120] flex flex-col items-center justify-center bg-background/95 p-4 md:p-12"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -134,32 +142,36 @@ function Lightbox({
           e.stopPropagation()
           onClose()
         }}
-        className="caption fixed right-6 top-6 z-10 md:right-10 md:top-8"
+        className="caption fixed right-4 top-4 z-10 flex min-h-11 items-center px-3 md:right-10 md:top-8"
       >
         Close [esc]
       </button>
 
+      {/* Arrows flank the image from sm up. Below that they sat on top of the
+          photograph, which on a phone is most of the screen. */}
       <button
         onClick={e => {
           e.stopPropagation()
           onPrev()
         }}
         aria-label="Previous"
-        className="absolute left-2 top-1/2 -translate-y-1/2 p-4 text-3xl text-muted-foreground transition-colors hover:text-foreground md:left-8 md:text-4xl"
+        className="absolute left-2 top-1/2 hidden -translate-y-1/2 p-4 text-3xl text-muted-foreground transition-colors hover:text-foreground sm:block md:left-8 md:text-4xl"
       >
         ←
       </button>
 
       <div
-        className="relative flex h-[90vh] w-full max-w-7xl select-none items-center justify-center"
+        className="relative flex w-full max-w-7xl flex-1 select-none items-center justify-center"
         onClick={e => e.stopPropagation()}
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
       >
         <AnimatePresence mode="wait" initial={false}>
           <motion.img
             key={item.id}
             src={item.imageUrl}
             alt=""
-            className="h-auto max-h-[90vh] max-w-full rounded-sm object-contain"
+            className="h-auto max-h-full max-w-full rounded-sm object-contain"
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
@@ -175,10 +187,24 @@ function Lightbox({
           onNext()
         }}
         aria-label="Next"
-        className="absolute right-2 top-1/2 -translate-y-1/2 p-4 text-3xl text-muted-foreground transition-colors hover:text-foreground md:right-8 md:text-4xl"
+        className="absolute right-2 top-1/2 hidden -translate-y-1/2 p-4 text-3xl text-muted-foreground transition-colors hover:text-foreground sm:block md:right-8 md:text-4xl"
       >
         →
       </button>
+
+      {/* Phones get the same two controls as a row under the image, where a
+          thumb already is. */}
+      <div
+        className="flex shrink-0 items-center gap-10 pt-3 sm:hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        <button onClick={onPrev} aria-label="Previous" className="px-6 py-2 text-3xl text-muted-foreground">
+          ←
+        </button>
+        <button onClick={onNext} aria-label="Next" className="px-6 py-2 text-3xl text-muted-foreground">
+          →
+        </button>
+      </div>
     </motion.div>,
     document.body,
   )
@@ -203,9 +229,12 @@ function GalleryItem({ item, onOpen }: { item: Item; onOpen: () => void }) {
           edge, no lift and no shadow. */}
       <div className="plate relative flex min-h-[280px] items-center justify-center overflow-hidden p-2 transition-colors duration-500 group-hover:border-foreground/25">
         <img
-          src={item.imageUrl}
+          src={sized(item.imageUrl, 800)}
+          srcSet={`${sized(item.imageUrl, 600)} 600w, ${sized(item.imageUrl, 1200)} 1200w`}
+          sizes="(max-width: 768px) 100vw, 40vw"
           alt=""
           loading="lazy"
+          decoding="async"
           className="block h-auto w-full rounded-md object-contain"
         />
 
@@ -251,34 +280,17 @@ export default function PhotographyPage() {
   }, [selected, handleNext, handlePrev])
 
   return (
-    <main className="min-h-screen">
-      <Backdrop pattern="orbits" />
+    <main className="min-h-[100svh]">
+      {/* a halftone screen seen through a lens, which is how the pictures got here */}
+      <Backdrop pattern="halftone" />
 
       <div className="mx-auto w-full max-w-6xl px-6 pb-32 pt-36 md:px-8 md:pt-44">
         <PageHeader
-          title="Photography and Films"
-          lede="Film work and photography, most of it documentary. Almost everything here was going to happen whether or not I turned up with a camera."
+          title="Photography and film"
+          lede="Mostly documentary photographs, plus the film work I have been part of. I tend to shoot things that were going to happen anyway."
         />
 
-        <section className="mt-20">
-          {WORK.map(item => (
-            <article
-              key={item.title}
-              className="grid gap-x-8 gap-y-3 border-t border-border py-9 md:grid-cols-[var(--rail)_1fr]"
-            >
-              <div className="caption pt-1.5 md:text-right">{item.when}</div>
-              <div>
-                <h2 className="wght-head font-display text-[length:var(--text-h3)]">
-                  {item.title}
-                </h2>
-                <p className="caption mt-2">{item.role}</p>
-                <p className="mt-3 max-w-prose text-muted-foreground">{item.body}</p>
-              </div>
-            </article>
-          ))}
-        </section>
-
-        <div className="mt-20 flex items-center gap-6 border-t border-border pt-8">
+        <div className="mt-16 flex items-center gap-6 border-t border-border pt-8">
           {FILTERS.map(value => (
             <FilterLink
               key={value}

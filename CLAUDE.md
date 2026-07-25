@@ -105,21 +105,28 @@ the piece.
 ## Backdrop
 
 `components/backdrop/pattern.tsx` draws one construction per section: stars,
-orbits, interference, phyllotaxis, lattice. Every point's position comes from
+halftone, interference, phyllotaxis, lattice. Every point's position comes from
 `gl_VertexID` in the vertex shader, so there are no attribute buffers and the CPU
 does nothing between frames.
 
 Each pattern is a real construction rather than decoration, and should stay that
 way: interference is an actual path difference between two sources, phyllotaxis
-is the golden angle that packs a sunflower head, the orbits use a Kepler-ish
-period so inner rings lead.
+is the golden angle that packs a sunflower head and lights its Fibonacci arms,
+halftone varies dot **area** against a tone field and then defocuses it by
+distance from a sweeping focal plane. `halftone` replaced `orbits`, which was
+nested tilted ellipses and resolved into a rosette: a real construction, but the
+one that read as decoration, and it was sitting behind the photographs.
 
 Everything is sized against `reach`, the centre-to-corner distance of the
 viewport, and the point budget grows with it through `countFor`. Both are there
 so a construction fills the screen at any aspect **without being stretched**: the
-sunflower head gets more seeds at the same packing, the orbits get more rings at
-the same spacing. If a pattern looks thin on a wide display, that is a budget
-question, not a reason to scale the geometry up.
+sunflower head gets more seeds at the same packing, the halftone screen gets more
+dots at the same pitch. If a pattern looks thin on a wide display, that is a
+budget question, not a reason to scale the geometry up.
+
+`v_soft` is the one varying besides alpha. It exists because a defocused dot is
+a wide disc with a soft rim, not a large dot with a hard one; every pattern but
+halftone leaves it at the 0.26 the fragment shader used to hard-code.
 
 The field leans slightly toward the pointer, reading the same module-level store
 as the cursor. Keep it a lean: the displacement is the offset times a falloff so

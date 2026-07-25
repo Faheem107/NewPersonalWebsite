@@ -1,5 +1,5 @@
 {
   "title": "Differential Equations",
-  "blurb": "Separation, Green's functions and Sturm-Liouville theory, with attention to what the boundary conditions fix.",
+  "blurb": "Separation, Green's functions, Sturm-Liouville theory. Mostly about what the boundary conditions are quietly doing.",
   "order": 4
 }

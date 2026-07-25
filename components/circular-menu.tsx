@@ -9,7 +9,7 @@ import Image from "next/image"
 import { Canvas } from "@react-three/fiber"
 import { TorusShader } from "@/components/torus-shader"
 import { useScrollLock } from "@/lib/motion/scroll-lock"
-import { CAMERA_FOV, CAMERA_Z, SPHERE_RADIUS, TORUS_RADIUS, pxPerUnit } from "@/lib/torus-geometry"
+import { CAMERA_FOV, CAMERA_Z, TORUS_RADIUS, canvasForContainer, pxPerUnit } from "@/lib/torus-geometry"
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -161,6 +161,158 @@ function ModalShell({
   )
 }
 
+// ─── The turntable ────────────────────────────────────────────────────────────
+
+/**
+ * A record on a beveled plate, in the same 98-era chrome as the player.
+ *
+ * Three layers, and the split between them is the thing that makes it read as
+ * vinyl rather than as a spinning picture:
+ *
+ *  - the disc rotates, carrying the grooves and the label,
+ *  - the sheen does NOT, because a light source does not turn with the record,
+ *    so what you see is the grooves travelling under a fixed highlight,
+ *  - the spindle sits still in the middle of both.
+ *
+ * The album art is the label only. It used to be stretched over the whole disc,
+ * which is not what a record looks like from any angle.
+ */
+function Turntable({ src, playing }: { src: string; playing: boolean }) {
+  const SIZE = 148
+  const LABEL = Math.round(SIZE * 0.38)
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        width: SIZE + 18,
+        height: SIZE + 18,
+        flexShrink: 0,
+        display: 'grid',
+        placeItems: 'center',
+        background: '#8a8a8a',
+        border: '2px solid',
+        // sunken, the inverse of the raised bevel the buttons use
+        borderColor: '#808080 #ffffff #ffffff #808080',
+      }}
+    >
+      <div style={{ position: 'relative', width: SIZE, height: SIZE }}>
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '50%',
+            // Grooves. A repeating radial gradient is what a 98 skin would have
+            // faked this with, and it is still the cheapest honest way to do it.
+            background: `
+              repeating-radial-gradient(
+                circle at 50% 50%,
+                #0b0b0b 0px, #0b0b0b 1px,
+                #1a1a1a 2px, #0f0f0f 3px
+              )
+            `,
+            boxShadow: 'inset 0 0 12px rgba(0,0,0,0.9)',
+            animation: 'vinyl-spin 3.2s linear infinite',
+            animationPlayState: playing ? 'running' : 'paused',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              width: LABEL,
+              height: LABEL,
+              marginLeft: -LABEL / 2,
+              marginTop: -LABEL / 2,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: '1px solid #000',
+            }}
+          >
+            <Image src={src} alt="" fill className="object-cover" sizes="60px" unoptimized />
+          </div>
+        </div>
+
+        {/* Fixed sheen. Stays put while the disc turns under it. */}
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '50%',
+            pointerEvents: 'none',
+            background:
+              'conic-gradient(from 210deg, rgba(255,255,255,0) 0deg, rgba(255,255,255,0.16) 34deg, rgba(255,255,255,0) 78deg, rgba(255,255,255,0) 190deg, rgba(255,255,255,0.10) 220deg, rgba(255,255,255,0) 260deg)',
+          }}
+        />
+
+        {/* Spindle, punched through the label. */}
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            width: 7,
+            height: 7,
+            marginLeft: -3.5,
+            marginTop: -3.5,
+            borderRadius: '50%',
+            background: '#8a8a8a',
+            boxShadow: 'inset 1px 1px 0 #555',
+          }}
+        />
+      </div>
+
+      {/* Tonearm: swings onto the record while it plays, lifts when it stops. */}
+      <motion.div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          right: 8,
+          top: 10,
+          width: 6,
+          height: SIZE * 0.62,
+          transformOrigin: '50% 6px',
+          background: '#c0c0c0',
+          border: '1px solid',
+          borderColor: '#ffffff #707070 #707070 #ffffff',
+        }}
+        animate={{ rotate: playing ? 26 : 2 }}
+        transition={{ type: 'spring', stiffness: 120, damping: 18 }}
+      >
+        {/* pivot */}
+        <div
+          style={{
+            position: 'absolute',
+            left: -5,
+            top: -6,
+            width: 14,
+            height: 14,
+            borderRadius: '50%',
+            background: '#c0c0c0',
+            border: '2px solid',
+            borderColor: '#ffffff #707070 #707070 #ffffff',
+          }}
+        />
+        {/* headshell */}
+        <div
+          style={{
+            position: 'absolute',
+            left: -3,
+            bottom: -6,
+            width: 11,
+            height: 9,
+            background: '#a8a8a8',
+            border: '1px solid #6a6a6a',
+          }}
+        />
+      </motion.div>
+    </div>
+  )
+}
+
 // ─── Windows 95 vinyl modal ───────────────────────────────────────────────────
 
 function Win95Modal({ onClose }: { onClose: () => void }) {
@@ -254,7 +406,7 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
         boxShadow:   "inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #707070",
         fontFamily:  '"MS Sans Serif", "Pixelated MS Sans Serif", Arial, sans-serif',
         width:       "100%",
-        maxWidth:    380,
+        maxWidth:    560,
       }}
     >
       <audio
@@ -302,58 +454,44 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        {/* Body */}
-        <div style={{ padding: "10px 12px 12px" }}>
-          
-          {/* Rotating Vinyl & Visualizer Row */}
-          <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-            {/* Spinning Vinyl */}
-            <motion.div
-              animate={{ rotate: isPlaying ? 360 : 0 }}
-              transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-              style={{
-                width: 50, height: 50,
-                borderRadius: '50%',
-                background: '#111',
-                border: '2px solid #333',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', // FIXED: Capitalized C in justifyContent
-                position: 'relative', overflow: 'hidden', flexShrink: 0,
-                boxShadow: "0 2px 4px rgba(0,0,0,0.5)"
-              }}
-            >
-              <Image 
-                src={SONGS[currentTrack].imgSrc} 
-                alt="album" 
-                fill 
-                className="object-cover opacity-90" 
-                unoptimized
-              />
-              <div style={{ position: 'absolute', width: 10, height: 10, background: '#c0c0c0', borderRadius: '50%', border: '1px solid #555' }} />
-            </motion.div>
+        {/* Body. The turntable sits beside the player above 520px and stacks
+            above it below that, which is the only breakpoint in here. */}
+        <div
+          style={{
+            padding: "10px 12px 12px",
+            display: "flex",
+            gap: 12,
+            alignItems: "flex-start",
+            flexWrap: "wrap",
+          }}
+        >
+          <Turntable src={SONGS[currentTrack].imgSrc} playing={isPlaying} />
 
-            {/* Visualizer bars */}
-            <div
-              style={{
-                flex: 1,
-                background:  "#000",
-                display:     "flex",
-                alignItems:  "flex-end",
-                gap:         2,
-                padding:     "4px 6px",
-              }}
-            >
-              {bars.map((h, i) => (
-                <div
-                  key={i}
-                  style={{
-                    flex:       1,
-                    height:     h,
-                    background: i < 8 ? "#00ff00" : i < 16 ? "#ffff00" : "#ff4444",
-                    transition: "height 0.1s ease-in-out"
-                  }}
-                />
-              ))}
-            </div>
+          <div style={{ flex: "1 1 260px", minWidth: 0 }}>
+
+          {/* Visualizer bars */}
+          <div
+            style={{
+              background:  "#000",
+              display:     "flex",
+              alignItems:  "flex-end",
+              gap:         2,
+              padding:     "4px 6px",
+              height:      50,
+              marginBottom: 10,
+            }}
+          >
+            {bars.map((h, i) => (
+              <div
+                key={i}
+                style={{
+                  flex:       1,
+                  height:     h,
+                  background: i < 8 ? "#00ff00" : i < 16 ? "#ffff00" : "#ff4444",
+                  transition: "height 0.1s ease-in-out"
+                }}
+              />
+            ))}
           </div>
 
           {/* Track list */}
@@ -413,6 +551,7 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
               <button onClick={onClose} style={{ ...buttonStyle, marginLeft: 8 }}>Close</button>
             </div>
           </div>
+          </div>
         </div>
       </div>
     </ModalShell>
@@ -425,7 +564,9 @@ const buttonStyle = {
   borderColor: "#ffffff #808080 #808080 #ffffff",
   fontSize:    10,
   fontFamily:  "inherit",
-  padding:     "2px 6px",
+  // 2px 6px is authentic and unusable with a thumb. This is the smallest that
+  // still reads as a 98 button.
+  padding:     "5px 9px",
   cursor:      "pointer",
   letterSpacing: 0.5,
 }
@@ -439,7 +580,7 @@ function ContentModal({
   type: "books" | "movies"
   onClose: () => void
 }) {
-  const title = type === "books" ? "Reading" : "Favourite Films"
+  const title = type === "books" ? "Reading" : "Films I go back to"
   const items =
     type === "books"
       ? BOOKS.map((b) => ({ main: b.title, sub: b.author }))
@@ -483,28 +624,57 @@ function ContentModal({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
+/** Largest the form is allowed to get, whatever room it is given. */
+const MAX_CONTAINER = 480
+
 export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolean }) {
   const [hovered,    setHovered]    = useState(false)
   const [activeItem, setActiveItem] = useState<string | null>(null)
   const [modal,      setModal]      = useState<"vinyl" | "books" | "movies" | null>(null)
   const [angle,      setAngle]      = useState(0)
 
-  // ─── Mobile Responsiveness State ───
-  const [isMobile, setIsMobile] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [touch, setTouch] = useState(false)
+  const [touchOpen, setTouchOpen] = useState(false)
 
-  // Detect screen size on mount and resize
+  // Whether the form has to answer to taps rather than to hover. This used to
+  // be innerWidth < 640, which is a different question and also disagreed with
+  // the md breakpoint the hero stacks at, so 640-767px got hover behaviour on
+  // a stacked layout. A pointer that cannot hover is the actual condition.
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 640)
-    }
-    handleResize()
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
+    const mq = window.matchMedia("(hover: none)")
+    const sync = () => setTouch(mq.matches)
+    sync()
+    mq.addEventListener("change", sync)
+    return () => mq.removeEventListener("change", sync)
   }, [])
 
-  // The menu expands if forced, if hovered on desktop, or if tapped on mobile
-  const isExpanded = forceOpen || (isMobile ? mobileOpen : (hovered || activeItem !== null))
+  // ─── Sizing ───
+  // Measured rather than assumed. The wrapper is the grid cell the hero gives
+  // us, so this is however much width the page actually has after its padding.
+  const shellRef = useRef<HTMLDivElement>(null)
+  const [containerSize, setContainerSize] = useState(MAX_CONTAINER)
+  const [viewport, setViewport] = useState(MAX_CONTAINER * 2)
+
+  useEffect(() => {
+    const el = shellRef.current
+    if (!el) return
+    const measure = () => {
+      const room = el.getBoundingClientRect().width
+      if (room > 0) setContainerSize(Math.min(room, MAX_CONTAINER))
+      setViewport(document.documentElement.clientWidth)
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    window.addEventListener('resize', measure)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', measure)
+    }
+  }, [])
+
+  // The menu expands if forced, if hovered, or if tapped on a touch device.
+  const isExpanded = forceOpen || (touch ? touchOpen : (hovered || activeItem !== null))
 
   // Handle continuous rotation
   useEffect(() => {
@@ -522,62 +692,62 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
     else if (item.modal) setModal(item.modal)
   }, [])
 
-  // Handle click on the central container (for mobile tap-to-toggle)
+  // Tap the form itself to toggle the ring, on a device that cannot hover.
   const handleContainerClick = () => {
-    if (isMobile) {
-      setMobileOpen(!mobileOpen)
-    }
+    if (touch) setTouchOpen(v => !v)
   }
 
   const N         = MENU_ITEMS.length
   const angleStep = (2 * Math.PI) / N
 
   // ─── Geometry ───
-  // The canvas is deliberately much larger than the form: the intro scatter
-  // streams in from up to 60 units out, and a tight canvas clips that.
+  // The canvas is deliberately larger than the form: the intro scatter streams
+  // in from up to 60 units out, and a tight canvas clips that. That ratio is
+  // what the 1.65 is; the canvas follows the container rather than the other
+  // way round, so the whole assembly fits whatever room the page has.
   //
-  // Everything else is derived from the shape rather than chosen. RADIUS was a
-  // flat 150px, which had no relationship to anything the shader draws, so the
-  // ring of icons was never concentric with the torus. It sits on the torus's
-  // own ring line now, and the container is sized to the ball the torus becomes
-  // when the menu opens, so the silhouette closes just outside the icons.
-  const canvasSize    = isMobile ? 600 : 800
-  const scale         = pxPerUnit(canvasSize)
-  const RADIUS        = TORUS_RADIUS * scale                             // 171px / 128px
-  const containerSize = Math.round(SPHERE_RADIUS * scale * 2 + 24)       // 477px / 364px
-  const itemScale     = isMobile ? 0.85 : 1
+  // Everything else derives from the shape. RADIUS was a flat 150px, which had
+  // no relationship to anything the shader draws, so the ring of icons was
+  // never concentric with the torus. It sits on the torus's own ring line now.
+  //
+  // The 1.65 is capped at the viewport because the canvas is absolutely
+  // positioned and centred on the page, so anything wider than the screen is
+  // scrollable overflow that nothing in the layout accounts for: on a 320px
+  // phone this came out 722px wide and only the overflow-x backstop was hiding
+  // it. Clamping costs a little of the scatter's run-up on small screens, which
+  // was off the edge and unseen there anyway.
+  const formCanvas = canvasForContainer(containerSize)
+  const canvasSize = Math.round(Math.min(formCanvas * 1.65, viewport))
+  const RADIUS     = TORUS_RADIUS * pxPerUnit(formCanvas)
+  const itemScale  = Math.max(0.7, Math.min(1, containerSize / MAX_CONTAINER))
 
   return (
     <>
-      {/* Mobile background overlay to tap-out and close */}
-      {isMobile && mobileOpen && (
-        <div 
-          className="fixed inset-0 z-[40]" 
-          onClick={() => setMobileOpen(false)} 
+      {/* Tap-out target, so the ring closes again on a touch device. */}
+      {touch && touchOpen && (
+        <div
+          className="fixed inset-0 z-[40]"
+          onClick={() => setTouchOpen(false)}
         />
       )}
 
+      {/* The shell is what gets measured: it takes the width the hero grid
+          gives it, and the square form sizes itself inside that. */}
+      <div ref={shellRef} className="flex w-full justify-center">
       <div
-        className={`relative flex items-center justify-center isolate select-none touch-none ${
-          isMobile && mobileOpen ? "z-[50]" : "z-10"
+        className={`relative flex items-center justify-center isolate select-none touch-pan-y ${
+          touch && touchOpen ? "z-[50]" : "z-10"
         }`}
         style={{ width: containerSize, height: containerSize }}
-        onMouseEnter={() => !isMobile && setHovered(true)}
-        onMouseLeave={() => { 
-          if (!isMobile) {
-            setHovered(false); 
-            setActiveItem(null) 
+        onMouseEnter={() => !touch && setHovered(true)}
+        onMouseLeave={() => {
+          if (!touch) {
+            setHovered(false)
+            setActiveItem(null)
           }
         }}
         onClick={handleContainerClick}
       >
-        {/* Mobile tap hint */}
-        {isMobile && !mobileOpen && (
-          <div className="absolute top-4 text-[10px] uppercase tracking-widest text-foreground/40 animate-pulse font-sans font-bold pointer-events-none">
-            Tap to explore
-          </div>
-        )}
-
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
           style={{ width: canvasSize, height: canvasSize }}
@@ -613,17 +783,19 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
                   // The visible label only appears on hover, so without this
                   // the orbit is seven unnamed buttons to a screen reader.
                   aria-label={item.label}
-                  className="absolute flex flex-col items-center gap-0.5 cursor-pointer z-[50]"
+                  // The icon is 22px, which is half a usable tap target, so the
+                  // padding is the hit area rather than decoration.
+                  className="absolute flex flex-col items-center justify-center gap-0.5 cursor-pointer z-[50] size-11"
                   style={{ x: ox, y: oy }}
                   initial={{ opacity: 0, scale: 0.3 }}
-                  animate={{ 
-                    opacity: 1, 
-                    scale: active ? (itemScale * 1.3) : itemScale 
+                  animate={{
+                    opacity: 1,
+                    scale: active ? (itemScale * 1.3) : itemScale
                   }}
                   exit={{   opacity: 0, scale: 0.3 }}
                   transition={{ type: "spring", stiffness: 380, damping: 28, delay: i * 0.04 }}
-                  onMouseEnter={() => !isMobile && setActiveItem(item.id)}
-                  onMouseLeave={() => !isMobile && setActiveItem(null)}
+                  onMouseEnter={() => !touch && setActiveItem(item.id)}
+                  onMouseLeave={() => !touch && setActiveItem(null)}
                   onClick={(e) => handleClick(item, e)}
                 >
                   {item.kind === "img" ? (
@@ -636,7 +808,7 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
                         alt={item.label}
                         fill
                         className={`object-contain transition-opacity duration-200 ${
-                          active || isMobile ? "opacity-100" : "opacity-80" 
+                          active || touch ? "opacity-100" : "opacity-80"
                         }`}
                         sizes="44px"
                         unoptimized
@@ -645,7 +817,7 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
                   ) : (
                     <span
                       className={`transition-colors duration-150 ${
-                        active || isMobile ? "text-foreground" : "text-foreground/50"
+                        active || touch ? "text-foreground" : "text-foreground/50"
                       }`}
                     >
                       {item.icon}
@@ -653,7 +825,7 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
                   )}
 
                   <AnimatePresence>
-                    {(active || isMobile) && (
+                    {(active || touch) && (
                       <motion.span
                         className="absolute -bottom-5 text-[9px] font-sans font-bold text-foreground/80 whitespace-nowrap tracking-wide"
                         initial={{ opacity: 0, y: -2 }}
@@ -669,6 +841,7 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
               )
             })}
         </AnimatePresence>
+      </div>
       </div>
 
       <AnimatePresence>

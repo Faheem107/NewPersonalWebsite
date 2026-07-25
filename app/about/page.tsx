@@ -5,7 +5,7 @@ import PageHeader from '@/components/page-header'
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'Mohammed Faheem, Physics major with a Film & New Media minor at NYU Abu Dhabi.',
+    'Mohammed Faheem, a second-year Physics student at NYU Abu Dhabi with a Film & New Media minor.',
 }
 
 const FACTS = [
@@ -23,7 +23,7 @@ const LINKS = [
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-[100svh]">
       <Backdrop pattern="lattice" />
 
       <div className="mx-auto w-full max-w-3xl px-6 pb-32 pt-36 md:px-8 md:pt-44">
@@ -31,24 +31,23 @@ export default function AboutPage() {
 
         <div className="mt-14 max-w-prose space-y-6 text-lg leading-relaxed text-muted-foreground">
           <p>
-            I am Mohammed Faheem, a second-year student at NYU Abu Dhabi, studying Physics with a
-            minor in Film &amp; New Media. Most of my work uses mathematical and computational tools
-            to understand biological systems. Right now that means the stochastic side of
-            transcription.
+            I am Mohammed Faheem. I am in my second year at NYU Abu Dhabi, studying Physics with a
+            minor in Film &amp; New Media. Most of what I do is pointing maths and code at biology
+            problems, which at the moment means the random side of transcription.
           </p>
           <p>
-            Alongside classes and lab work I spend a lot of time explaining things, in writing and
-            in pictures. Putting an idea into a second form is the clearest way I have found to
-            understand it properly, which is most of why I keep doing it.
+            Between classes and lab work I spend a lot of time explaining things, in writing and in
+            pictures. I do it because I find out what I have not actually understood the moment I
+            try to put it into a second form.
           </p>
           <p>
-            I also keep coming back to the question of what a piece of research is for, which the
-            results do not settle on their own. I would rather hold that question open than answer
-            it too quickly.
+            I also keep coming back to what a piece of research is for, which the results never
+            seem to settle on their own. I do not have a good answer yet and I would rather not
+            force one.
           </p>
           <p>
-            Away from all that, I play football and read a good deal. If any of this overlaps with
-            what you are working on, I would be glad to hear from you.
+            Outside of that I play football and read. If any of this overlaps with what you are
+            working on, I would be glad to hear from you.
           </p>
         </div>
 

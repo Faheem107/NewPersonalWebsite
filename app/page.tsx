@@ -42,7 +42,7 @@ export default function Home() {
   }, [])
 
   return (
-    <main ref={root} className="flex min-h-screen flex-col">
+    <main ref={root} className="flex min-h-[100svh] flex-col">
       <div className="flex flex-1 items-center px-6 pb-16 pt-28 md:px-12 md:pb-0 md:pt-0 lg:px-20">
         {/* Stacks below md. The previous hero was a hard grid-cols-2 with no
             breakpoint, so the torus ran off the left edge of every phone. */}
@@ -71,7 +71,7 @@ export default function Home() {
             </p>
 
             <p data-role className="caption mt-7">
-              Physics at NYU Abu Dhabi
+              Second-year Physics at NYU Abu Dhabi
             </p>
 
             <Magnetic>

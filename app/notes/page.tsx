@@ -13,7 +13,7 @@ export default function NotesPage() {
   const subjects = getSubjects()
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-[100svh]">
       <Backdrop pattern="interference" />
 
       {/* No sidebar here. The index is the way in; the sidebar appears once
@@ -21,7 +21,7 @@ export default function NotesPage() {
       <div className="mx-auto w-full max-w-6xl px-6 pb-32 pt-36 md:px-8 md:pt-44">
         <PageHeader
           title="Notes"
-          lede="Physics and mathematics from my coursework, written out in full. I have left in the steps that took me longest, since those are usually the ones a textbook skips."
+          lede="Physics and mathematics from my coursework, written out in full. I have left in the steps that took me longest, which are usually the ones a textbook skips. Corrections are welcome."
         />
 
         <div className="mt-16">

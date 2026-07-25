@@ -9,9 +9,10 @@ import { getCursorState } from '@/lib/motion/pointer'
  *
  * Each pattern is a real thing rather than decoration. Interference is two
  * sources and a path difference; phyllotaxis is the golden angle that actually
- * packs seeds in a sunflower head; the orbits obey a Kepler-ish period so the
- * inner rings lead. That is the whole reason the site can carry a moving
- * backdrop without it feeling arbitrary.
+ * packs seeds in a sunflower head, down to the Fibonacci arms you can count on
+ * one; halftone is dot area standing in for tone, seen through a lens that is
+ * not focused on all of it. That is the whole reason the site can carry a
+ * moving backdrop without it feeling arbitrary.
  *
  * There is no cloud layer. An earlier version put a soft noise wash behind
  * these and it read as fog: it hid the pattern and made the page look glassy.
@@ -31,11 +32,11 @@ import { getCursorState } from '@/lib/motion/pointer'
  * of uniforms.
  */
 
-export type Pattern = 'stars' | 'orbits' | 'interference' | 'phyllotaxis' | 'lattice'
+export type Pattern = 'stars' | 'halftone' | 'interference' | 'phyllotaxis' | 'lattice'
 
 const PATTERN_INDEX: Record<Pattern, number> = {
   stars: 0,
-  orbits: 1,
+  halftone: 1,
   interference: 2,
   phyllotaxis: 3,
   lattice: 4,
@@ -44,16 +45,19 @@ const PATTERN_INDEX: Record<Pattern, number> = {
 /**
  * Point budget per pattern. The grids need far more than the curves.
  *
- * Orbits and phyllotaxis went up when the constructions grew to fill the
- * screen. Neither was stretched to get there: the sunflower head has more
- * seeds at the same packing, and the orbits have more rings at the same
- * spacing. Scaling the old counts up instead would have thinned both out.
+ * Phyllotaxis went up when the constructions grew to fill the screen, and was
+ * not stretched to get there: the sunflower head has more seeds at the same
+ * packing. Scaling the old count up instead would have thinned it out.
  */
 const COUNT: Record<Pattern, number> = {
   stars: 900,
-  orbits: 7000,
+  halftone: 14000,
   interference: 15600,
-  phyllotaxis: 7600,
+  // 7600 seeds spread over the whole reach came out as scattered dust: the head
+  // was there but too sparse to see, and the Fibonacci arms need neighbouring
+  // seeds close enough to line up before they read as arms at all. Packing is
+  // reach/sqrt(count), so this tightens the head rather than growing it.
+  phyllotaxis: 16000,
   lattice: 4200,
 }
 
@@ -63,16 +67,16 @@ const BASE_REACH = Math.hypot(16 / 9, 1)
 /**
  * How each construction's budget grows with the field.
  *
- * The two grids span the viewport by construction: their rows and columns
- * stretch, so the count is already right at any aspect. The other three are
- * sized against `reach`, and holding their counts fixed there would just spread
- * the same points more thinly the wider the display gets. Stars and phyllotaxis
- * fill an area, so they follow reach²; the orbits gain rings rather than
- * density, so they follow reach.
+ * Interference and lattice span the viewport by construction: their rows and
+ * columns stretch, so the count is already right at any aspect. The other three
+ * would just spread the same points more thinly the wider the display gets, and
+ * all three fill an area, so they follow reach². For halftone that is the whole
+ * point of a screen: the dot pitch has to stay put, so a wider field needs
+ * proportionally more dots rather than larger ones.
  */
 const GROWTH: Record<Pattern, number> = {
   stars: 2,
-  orbits: 1,
+  halftone: 2,
   interference: 0,
   phyllotaxis: 2,
   lattice: 0,
@@ -101,9 +105,13 @@ uniform vec2  u_pointer;
 uniform float u_pointer_amt;
 
 out float v_alpha;
+/** half-width of the point's soft edge, so a defocused dot can spread */
+out float v_soft;
 
 const float TAU = 6.28318530718;
 const float GOLDEN = 2.39996322973;
+/** the angle a halftone screen is set at, to stop it beating with the image grid */
+const float SCREEN_ANGLE = 0.2618;
 
 float hash11(float p) {
   p = fract(p * 0.1031);
@@ -116,6 +124,43 @@ vec2 hash21(float p) {
   vec3 p3 = fract(vec3(p) * vec3(0.1031, 0.1030, 0.0973));
   p3 += dot(p3, p3.yzx + 33.33);
   return fract((p3.xx + p3.yz) * p3.zy);
+}
+
+vec2 rotate(vec2 p, float a) {
+  float c = cos(a), s = sin(a);
+  return vec2(p.x * c - p.y * s, p.x * s + p.y * c);
+}
+
+/**
+ * The tone the halftone screen is reproducing: two soft sources and a ramp.
+ *
+ * Not noise. A photograph has light coming from somewhere and falling off, and
+ * that structure is what the dot sizes have to encode for the screen to read as
+ * a screen rather than as a texture.
+ */
+float toneAt(vec2 p, float t, float reach) {
+  float r2 = reach * reach;
+  vec2 a = vec2(cos(t * 0.043), sin(t * 0.031)) * reach * 0.42;
+  vec2 b = vec2(cos(t * 0.027 + 2.1), sin(t * 0.051 + 1.3)) * reach * 0.55;
+  float g = exp(-dot(p - a, p - a) / (r2 * 0.62))
+          + 0.7 * exp(-dot(p - b, p - b) / (r2 * 0.44));
+  g += 0.3 * (0.5 - p.y / (2.0 * reach));
+  // The floor is the point. A screen holds its shadows with a small dot rather
+  // than dropping them, and without it the darker half of the field went bare
+  // and the construction stopped covering the page.
+  return clamp(0.15 + g * 0.72, 0.0, 1.0);
+}
+
+/**
+ * Depth of the scene behind the screen: a plane receding up the frame, with
+ * some undulation across it. Gives the focus sweep something to travel through.
+ */
+float depthAt(vec2 p, float t, float reach) {
+  return clamp(
+    0.5 + 0.34 * (p.y / reach) + 0.2 * sin(p.x * 1.8 / reach + t * 0.05),
+    0.0,
+    1.0
+  );
 }
 
 void main() {
@@ -134,6 +179,9 @@ void main() {
   vec2 pos = vec2(0.0);
   float a = 1.0;
   float size = 2.6;
+  // Matches the edge the fragment shader used to hard-code. Only halftone
+  // varies it.
+  float soft = 0.26;
 
   if (u_pattern == 0) {
     // ── stars ────────────────────────────────────────────────────────────────
@@ -145,41 +193,64 @@ void main() {
     float x = (r.x * 2.0 - 1.0) * asp + u_time * 0.008 * (0.25 + depth);
     pos = vec2(mod(x + asp, 2.0 * asp) - asp, r.y * 2.0 - 1.0);
 
-    float twinkle = 0.62 + 0.38 * sin(u_time * 0.6 + i * 1.7);
+    // The rate used to be shared, so every star had the same period and only
+    // the phase differed. Tying it to depth gives each layer its own tempo,
+    // which is what the parallax needs to read as three depths.
+    float twinkle = 0.62 + 0.38 * sin(u_time * (0.35 + depth * 0.55) + i * 1.7);
     a = (0.22 + depth * 0.78) * twinkle;
     size = 1.6 + depth * 2.6;
 
   } else if (u_pattern == 1) {
-    // ── orbits ───────────────────────────────────────────────────────────────
-    // Nested ellipses, each rotated from the last by the golden angle so no two
-    // line up. Inner rings travel faster, which is the one detail that makes it
-    // read as orbits rather than as rings.
-    float per = 200.0;
-    float ring = floor(i / per);
-    float k = mod(i, per);
+    // ── halftone ─────────────────────────────────────────────────────────────
+    // A halftone screen seen through a lens: the two halves of making a
+    // photograph, which is why this one sits behind the photography page.
+    //
+    // Halftone is the printing half. A press has one ink and cannot vary its
+    // darkness, so it varies the DOT: area proportional to tone, on a grid set
+    // at an angle so the screen does not beat against the image. Dot area, not
+    // dot brightness, is the whole idea, which is why the size term below is a
+    // square root.
+    //
+    // The circle of confusion is the lens half. A point that is not on the
+    // focal plane does not image as a point; it images as a disc of the
+    // aperture, wider and fainter the further off it sits. The focal plane
+    // sweeps, so the field racks focus through itself.
+    //
+    // The grid is square by construction rather than a fixed rows x cols: a
+    // screen with rectangular cells is not a screen. Deriving both from the
+    // budget and the aspect keeps the pitch even on any display.
+    float cols = floor(sqrt(u_count * asp));
+    float rows = floor(u_count / cols);
+    float gx = mod(i, cols);
+    float gy = floor(i / cols);
 
-    // The outermost ring lands on the corner, and the spacing between rings
-    // falls out of how many there are. On a 16:9 display this comes to 0.057,
-    // which is where the fixed 0.055 used to sit: the system covers the screen
-    // now without changing how the rings read.
-    float rings = u_count / per;
-    float rr = 0.1 + ring * ((reach - 0.1) / (rings - 1.0));
-    float rn = rr / reach;
+    // Laid out over more than the viewport, because rotating a grid pulls its
+    // corners inside the frame. The overspill is clipped and costs a few
+    // percent of the budget.
+    float ext = 1.32;
+    vec2 g = vec2(
+      (gx / (cols - 1.0) * 2.0 - 1.0) * ext * asp,
+      (gy / max(rows - 1.0, 1.0) * 2.0 - 1.0) * ext
+    );
+    pos = rotate(g, SCREEN_ANGLE);
 
-    float ecc = 0.55 + 0.18 * sin(ring * 0.9);
-    float tilt = ring * GOLDEN;
-    float speed = 0.22 / pow(rn + 0.28, 1.5);
+    float tone = toneAt(pos, u_time, reach);
+    float depth = depthAt(pos, u_time, reach);
 
-    float th = (k / per) * TAU + u_time * speed;
-    vec2 e = vec2(cos(th) * rr, sin(th) * rr * ecc);
-    pos = vec2(e.x * cos(tilt) - e.y * sin(tilt), e.x * sin(tilt) + e.y * cos(tilt));
+    // The rack. Slow enough that it reads as a focus pull rather than a pulse.
+    float focus = 0.5 + 0.42 * sin(u_time * 0.09);
+    float coc = abs(depth - focus);
+    float spread = 1.0 + coc * 2.6;
 
-    // Brighter along one limb, so each ring has a leading edge.
-    a = 0.18 + 0.82 * pow(0.5 + 0.5 * sin(th), 2.2);
-    // Outer rings sit back a little rather than fading out. The old curve was
-    // steep enough to erase them, which is why the field stopped short.
-    a *= smoothstep(1.9, 0.4, rn);
-    size = 2.3;
+    // sqrt because the eye reads dot AREA as tone, which is what a screen is for.
+    float dot_r = sqrt(tone);
+
+    size = (0.9 + 3.6 * dot_r) * spread;
+    // The same ink over a larger disc is fainter. Without this the defocused
+    // parts of the field would be the brightest thing on the page.
+    a = (0.24 + 0.76 * tone) / pow(spread, 1.3);
+    // In focus the dot has a hard edge; out of focus it is a soft disc.
+    soft = 0.13 + 0.34 * smoothstep(0.0, 0.5, coc);
 
   } else if (u_pattern == 2) {
     // ── interference ─────────────────────────────────────────────────────────
@@ -200,7 +271,11 @@ void main() {
     float d = length(pos - vec2(-sep, 0.0)) - length(pos - vec2(sep, 0.0));
 
     float f = cos(d * 26.0 - u_time * 0.55);
-    a = smoothstep(0.2, 0.95, f);
+    // The old curve clipped everything below 0.2 to nothing, so the dark
+    // fringes were flat holes and the bright ones had no edge to them. The
+    // floor keeps a trace in the minima, which is what makes them read as
+    // fringes rather than as gaps.
+    a = 0.05 + 0.95 * smoothstep(0.1, 0.92, f);
     // The fringes are hyperbolas and run off the edges on their own, so there
     // is nothing to vignette. The old falloff was a circle of radius 1.5 in a
     // field whose corner is at 2.04, which cut off both sides of the screen.
@@ -224,8 +299,19 @@ void main() {
 
     pos = vec2(cos(th) * rr, sin(th) * rr);
 
-    a = smoothstep(1.02, 0.12, rn) * (0.45 + 0.55 * sin(i * 0.05 + u_time * 0.3) * 0.5 + 0.275);
-    size = 1.9 + 1.6 * smoothstep(0.98, 0.0, rn);
+    // The arms are geometry, not shading. Pack enough seeds at the golden angle
+    // and the Fibonacci parastichies appear on their own, which is the entire
+    // reason to draw this rather than a spiral. So the brightness term stays
+    // light: seeds a Fibonacci number apart sit on the same arm, and tracing
+    // the 21 and 34 families just picks out what the packing already did.
+    // What was here before modulated on i * 0.05, a period belonging to nothing,
+    // which banded the head across its own arms.
+    float p21 = cos(i * TAU / 21.0 + u_time * 0.25);
+    float p34 = cos(i * TAU / 34.0 - u_time * 0.16);
+    float arms = 0.5 + 0.25 * (p21 + p34);
+
+    a = smoothstep(1.15, 0.1, rn) * (0.62 + 0.38 * arms);
+    size = 2.3 + 1.5 * smoothstep(0.98, 0.0, rn);
 
   } else {
     // ── lattice ──────────────────────────────────────────────────────────────
@@ -244,8 +330,14 @@ void main() {
       (gy / (rows - 1.0) * 2.0 - 1.0)
     );
 
-    float w = sin(pos.x * 2.4 + pos.y * 1.5 - u_time * 0.42);
-    a = 0.12 + 0.88 * smoothstep(0.1, 1.0, w);
+    // Two plane waves rather than one. A single wave is a stripe crossing the
+    // packing; two at different angles beat against each other and against the
+    // lattice, which is the moire a real crystal shows.
+    float w = 0.5 * (
+      sin(pos.x * 2.4 + pos.y * 1.5 - u_time * 0.42) +
+      sin(pos.x * -1.6 + pos.y * 2.7 - u_time * 0.31)
+    );
+    a = 0.12 + 0.88 * smoothstep(-0.15, 0.85, w);
     // Same story as the interference grid: the lattice already spans the
     // viewport and it was the falloff that stopped it at the edges.
     a *= smoothstep(reach * 1.3, reach * 0.85, length(pos));
@@ -269,6 +361,7 @@ void main() {
   float sweep = smoothstep(-0.5, 1.0, u_reveal * 2.4 - (pos.x / max(asp, 1.0) + pos.y + 2.0) * 0.4);
 
   v_alpha = a * sweep;
+  v_soft = soft;
   gl_Position = vec4(pos.x / asp, pos.y, 0.0, 1.0);
   gl_PointSize = size * u_dpr;
 }
@@ -278,6 +371,7 @@ const FRAG = `#version 300 es
 precision highp float;
 
 in float v_alpha;
+in float v_soft;
 uniform vec3  u_tint;
 uniform float u_alpha;
 
@@ -285,9 +379,13 @@ out vec4 outColor;
 
 void main() {
   // Round, with a soft edge. A square point at this size reads as dirt.
+  //
+  // The edge is a varying rather than a constant because a defocused dot is
+  // not a small dot: it is a wide disc with a soft rim, and drawing it with a
+  // hard edge makes it read as a bigger dot instead of an out-of-focus one.
   vec2 d = gl_PointCoord - 0.5;
   float r = length(d);
-  float mask = smoothstep(0.5, 0.24, r);
+  float mask = smoothstep(0.5, 0.5 - v_soft, r);
 
   outColor = vec4(u_tint, v_alpha * u_alpha * mask);
 }

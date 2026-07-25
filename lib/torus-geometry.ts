@@ -49,3 +49,26 @@ const VIEW_UNITS = 2 * CAMERA_Z * Math.tan(((CAMERA_FOV * Math.PI) / 180) / 2)
 export function pxPerUnit(canvasPx: number) {
   return canvasPx / VIEW_UNITS
 }
+
+/** Padding between the sphere's silhouette and the edge of its container. */
+export const CONTAINER_PAD = 24
+
+/** CSS size of the box the form needs, for a canvas of the given size. */
+export function containerForCanvas(canvasPx: number) {
+  return Math.round(SPHERE_RADIUS * pxPerUnit(canvasPx) * 2 + CONTAINER_PAD)
+}
+
+/**
+ * The inverse: how large a canvas has to be for the form to fill a container of
+ * the given width.
+ *
+ * The canvas was a flat 600px on phones and 800px elsewhere, which put the
+ * container at 364px on a 375px screen with 327px of room after the page
+ * padding, so the home page scrolled sideways and every column under it read as
+ * shifted. Sizing runs this way round now: measure the room available, and let
+ * the shape follow. Everything else (the icon ring, the shader torus) already
+ * derives from pxPerUnit, so it all scales together.
+ */
+export function canvasForContainer(containerPx: number) {
+  return ((containerPx - CONTAINER_PAD) * VIEW_UNITS) / (2 * SPHERE_RADIUS)
+}

@@ -9,14 +9,14 @@ export default function ResearchPage() {
   const scope = useReveal<HTMLDivElement>()
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-[100svh]">
       {/* flow past a body, the figure a fluid-dynamics paper opens with */}
       <Backdrop pattern="phyllotaxis" />
 
       <div ref={scope} className="mx-auto w-full max-w-3xl px-6 pb-32 pt-36 md:px-8 md:pt-44">
         <PageHeader
           title="Research"
-          lede="Lab work and computational projects, mostly on stochastic processes in cell biology: transcription, diffusion in crowded media, and the statistics of active matter."
+          lede="Lab and computational work, mostly on the random side of cell biology. I am still learning most of this as I go."
         />
 
         <div className="mt-20">

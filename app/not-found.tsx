@@ -3,7 +3,7 @@ import Backdrop from '@/components/backdrop/pattern'
 
 export default function NotFound() {
   return (
-    <main className="grid min-h-screen place-items-center px-6">
+    <main className="grid min-h-[100svh] place-items-center px-6">
       <Backdrop pattern="stars" />
       <div className="text-center">
         <p className="caption">404</p>
