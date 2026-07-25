@@ -8,60 +8,212 @@ import PageHeader from '@/components/page-header'
 import { useHighlight, useStick } from '@/lib/motion/pointer'
 import { useScrollLock } from '@/lib/motion/scroll-lock'
 
-// Drive-hosted, in upload order reversed by hand.
-const IMAGE_IDS = [
-  "1XcNIzTmNrtkomKoppJsLMEjTcENUfz1B", "1PhNBab_5paap_X27Gj-xPYJTXmQ2I2Bj", "1qOmAoPLTr8OqyQvxhgW1auXF8epvXMER", "1vcAxfwY_wW3NSN8Tx6YM5Zp91x5TXxuH",
-  "1DrxqKOTs-rP1FHLavu0QRO3rvUo-YYft", "1shsjqOuaQEzSocBdXGp2FCSBjkYcvc3i", "1PkpfwXJYruM5y_yY9ipzgK4Q29Klzk1X", "17IB6cMe6DUovEqUpZQzaF2VfkNlvhGSN",
-  "1ZQ2tLOnzAJ0PU8ZpnB0YG_b2qg95mJBx", "18gGBC9WuReuNllqISRUTSU0MHb5AMr_b", "1_hkbv8vKqNGhm2A37DZUNW69TY_4VNiH", "1J41akVBClrF3zsSIgpEvCbKXjT-jUZaG",
-  "1fY2LUq71zCsLdMYmcMFQ5dXwysX-1whs", "1JYWgcdUY6G5_t2kwmp_rC99m2XT8wlSd", "149t-uHElQnZygnWnls82WqnP3BvTQUm-", "1E76wkocDML-PoacKeDIkrk6dfOC5BpNJ",
-  "12suoU7RqSQKAirCP6fpzBHA1xSFo-jHq", "1Y8LygAsLrMXHEjz4ESPy2wLdCKyXaVbH", "1Ik4CYa57TVpehAjVVrhy66FXr8QghIpU", "1Nuq4uw2N-hbmLp62Ask_eN_2pKVYYI7a",
-  "1rbsoWCNdu9M0eawqrnjIVnd31RWmJeak", "1c9tdwkNl_o0g_Khyl1AR6tIciiPykKzO", "1qCOHPIwTNhsFv2RDgeGeKbwIgYWP82VV", "17SntI85XoE20Hz3el4Ysdz9J4VnRapNx",
-  "1SuL8U6ks64BxWmpSlrTgGLFoevvxrfyk", "1FL-cmoPNxPAxMOSelAucR-3Za6VsvuJG", "1FhND_7GSEbdO3jTCQoQYQBAUZLQjVshW", "1kXfeeSn74G7NKEfOZQt0wXGS4lKzSuZi",
-  "1lpUjBJnJl9iqp_CHbGQBBkCpDjRtoINm", "1glGvSBX_0StOKV5gl6ITbSCULGdPS1x6", "1YT20UxJMPH1M711uCjZjkgj_anB5e1KX", "1nrIXyQvy1CbpV8p-LhcYTHR-V4RWGdaQ",
-  "1wQPKYPWMTOCz_ZsbH8avw_2CuG8IHqbM", "19-ZbkWYTSG7a22wFzzM2f0KebhJV9DWp", "1N-QDjnKbjtcXLm7pSHopLjdeS_3Ky_Vr", "115cklbmCjlXFlteF-cUKKCB0W-LqgZIu",
-  "1CozUpgCsA9toMtzvr06An_bQ4IFVHPuW", "1asrp79H4l6iQicTjTaEH1UTr8GEVRC5J", "1vitDhV0UO_PWuvg-FWaIs12KyUsj0qsP", "1Tk6T8vtMSEuDVRSYLi_xAjDYEqX7hwKS",
-  "1ZzF-96qehDXlfVa2lMnEHkirNZnaMlcK", "1ZfRnwswiyrby7n5gs6cITN4C2QbXj7VP", "1c6uL7ep4FbCZW8n4b6aIqmTQFq4-jrAI", "1Xsoy5MzVOKz3AhuHE6uNTGgEpVVUkxbb",
-  "1wSDrS5Y0nH8tGri6euVYTBy3xFdj6vhX", "18t9hNtugspICYdsceuY7Qb06nWOk-5IU", "1eznA4HGD3NK9uARm6Qu4YtmHERC54lLo", "1BQFmOd--edC08LaciNZXS1UyAflCOm4G",
-  "1FDiOZuWgxoTg346bKXLlMn0Pcw5pUwTU", "1pJWurlsVjqfjpMYw8k2zC9Ag14HC5Vtq", "1653mbYuN8Wjx-PKP9dOqKP54McbMYQzs", "1ZdEA03T8nJIJ9IbhSZeScpwCPqzK46mS",
-  "10QHg4W5mlhC3KL9tW4fSbCKc9RHsA6J6", "1Ena6hRxb8j3tYjFKY1c1X6BU11A1JYKH", "1N8VlkCinSs39SADdf6KxD06chJCdRW2X", "13ANpbjrDR8A9jUnk3vdXng336Du_9Iyi",
-  "1wQhro8LEufTE_IdaJwG8aihpWSjLGaQw", "1PHYvILuFESvXyqByw2c2d72YXscdyZk1", "1OFfkrsrPD4XGPU7hBq5xl8vLzeiB3_uO", "1g9XCClmAOZlqMlKmV8CRjxiib3fKIDDX",
-  "1EDoP74ki_O3-VFON1wairdloPNKz5an8", "1kTdWvKFmd-KMMjj51xgmY4FKSzWPaMGr", "15CZ5JjCuHHDJ0OXNqUxC7gMx_a2oeFsK", "1A6Br5lOacnQkFFFOBYh6fjdKq8-7tsF3",
-  "16LsZRyR3Ssi16H-sk7jIzf9sPnuG1TK3", "1iSZN6E_NGRyUFuF-7g7wSwZRf-cuP2TK", "1WCts8vIRjVpwLW_iMcfGXp0UUVb1jfdL", "1dU5qR1KbInXy4uEEMYRbXO7Jax2Nczvr",
-  "1bYs0jkIVrLhvsr7r8ujBsSmS797yxVjc", "1DaWxfoi4zYKIMFWqZqyRaNVaG0X4msOP", "1_dHQSwVDZgndRygcA1HEib07rSfe_9d", "1O5A3vVXf5yIoma3-I5usdhEl7QObO48u",
-  "1OQQD_U70YqAfor_ERA5qDa1O3QxwYVNy", "1i93AY3SHZNVlmhZMfwLdgmtH_Ja63DJy", "1O72e5yXuHme19hPPEIY92kZ0j0aN-BwV", "1l79MkePW5JzNbg6dLKYT0JbLDhejTGoh",
-  "19IXcTY0Hwa0-N6Jwg2sOparh1RTvI5UA", "1Adws50gO9H9OaI3bNECRM0pg8V8gP2Y9", "1fVb7U7GRdWW0SQq6zqp_ly6-iKvRGP9i", "1orHgPexhiL6HRajOXJhAmnOgwyBfjVYK",
-  "1I4-MxcTFhqyCi8ryz45EZogD7rSfe_9d", "1qEQyD4FQT6H3gSYPCbXkado9Z4Hn4lQt", "1XjW9AtjhwgXeZqUfd6bghGKADlJtq7rp", "1zJDhf81dcNUlPgltnFjvs1kNmiag1ZqI",
-  "1rKToFYef0Zg7AHyCzur6FCGODdKzoEgS", "1SPq47xnq-mTQ_teNL2QpSCNpCG5n5H3t", "1DzRVfOkwkCyfu1im2qmUFtjVLgt6dY20"
+/**
+ * Every photograph in the Drive folder, oldest first.
+ *
+ * The order is the EXIF DateTimeOriginal of each file, not the upload order and
+ * not the filename. Those disagree: the folder holds three naming schemes from
+ * different cameras (IMG_, DSC_, and Google Photos' 1000029493), so filenames
+ * only sort within one device, and the upload batches carry photographs taken
+ * eighteen months apart. The dates were read from the JPEGs themselves, which
+ * lh3 serves with EXIF intact, so a future update means re-reading them rather
+ * than trusting the order the folder happens to list.
+ *
+ * The date travels with the id because it is what puts the photograph where it
+ * is, and the lightbox shows it.
+ */
+const PHOTOS: [id: string, taken: string][] = [
+  ['1SPq47xnq-mTQ_teNL2QpSCNpCG5n5H3t', '2024-12-20'],
+  ['1DzRVfOkwkCyfu1im2qmUFtjVLgt6dY20', '2024-12-20'],
+  ['1rKToFYef0Zg7AHyCzur6FCGODdKzoEgS', '2024-12-21'],
+  ['1zJDhf81dcNUlPgltnFjvs1kNmiag1ZqI', '2024-12-22'],
+  ['1fVb7U7GRdWW0SQq6zqp_ly6-iKvRGP9i', '2024-12-22'],
+  ['1XjW9AtjhwgXeZqUfd6bghGKADlJtq7rp', '2024-12-30'],
+  ['1I4-MxcTFhqyCi8ryz45EZogD7rSfe_9d', '2024-12-30'],
+  ['1qEQyD4FQT6H3gSYPCbXkado9Z4Hn4lQt', '2024-12-30'],
+  ['1orHgPexhiL6HRajOXJhAmnOgwyBfjVYK', '2024-12-30'],
+  ['1Adws50gO9H9OaI3bNECRM0pg8V8gP2Y9', '2025-01-10'],
+  ['1l79MkePW5JzNbg6dLKYT0JbLDhejTGoh', '2025-01-10'],
+  ['1i93AY3SHZNVlmhZMfwLdgmtH_Ja63DJy', '2025-01-11'],
+  ['1O72e5yXuHme19hPPEIY92kZ0j0aN-BwV', '2025-01-11'],
+  ['19IXcTY0Hwa0-N6Jwg2sOparh1RTvI5UA', '2025-01-11'],
+  ['1O5A3vVXf5yIoma3-I5usdhEl7QObO48u', '2025-06-03'],
+  ['1OQQD_U70YqAfor_ERA5qDa1O3QxwYVNy', '2025-06-03'],
+  ['1_dHQSwVDZgndRygcA1HEib0q6r2K9mB8', '2025-06-07'],
+  ['1dU5qR1KbInXy4uEEMYRbXO7Jax2Nczvr', '2025-06-07'],
+  ['1DaWxfoi4zYKIMFWqZqyRaNVaG0X4msOP', '2025-06-07'],
+  ['1bYs0jkIVrLhvsr7r8ujBsSmS797yxVjc', '2025-06-07'],
+  ['1WCts8vIRjVpwLW_iMcfGXp0UUVb1jfdL', '2025-06-21'],
+  ['1iSZN6E_NGRyUFuF-7g7wSwZRf-cuP2TK', '2025-07-03'],
+  ['16LsZRyR3Ssi16H-sk7jIzf9sPnuG1TK3', '2025-07-03'],
+  ['15CZ5JjCuHHDJ0OXNqUxC7gMx_a2oeFsK', '2025-07-05'],
+  ['1A6Br5lOacnQkFFFOBYh6fjdKq8-7tsF3', '2025-07-06'],
+  ['1kTdWvKFmd-KMMjj51xgmY4FKSzWPaMGr', '2025-10-19'],
+  ['1EDoP74ki_O3-VFON1wairdloPNKz5an8', '2025-12-08'],
+  ['10QHg4W5mlhC3KL9tW4fSbCKc9RHsA6J6', '2025-12-24'],
+  ['1Ena6hRxb8j3tYjFKY1c1X6BU11A1JYKH', '2025-12-24'],
+  ['1N8VlkCinSs39SADdf6KxD06chJCdRW2X', '2025-12-24'],
+  ['13ANpbjrDR8A9jUnk3vdXng336Du_9Iyi', '2025-12-24'],
+  ['1g9XCClmAOZlqMlKmV8CRjxiib3fKIDDX', '2025-12-24'],
+  ['1OFfkrsrPD4XGPU7hBq5xl8vLzeiB3_uO', '2025-12-24'],
+  ['1PHYvILuFESvXyqByw2c2d72YXscdyZk1', '2025-12-24'],
+  ['1wQhro8LEufTE_IdaJwG8aihpWSjLGaQw', '2025-12-24'],
+  ['1ZdEA03T8nJIJ9IbhSZeScpwCPqzK46mS', '2026-01-01'],
+  ['1653mbYuN8Wjx-PKP9dOqKP54McbMYQzs', '2026-01-06'],
+  ['1pJWurlsVjqfjpMYw8k2zC9Ag14HC5Vtq', '2026-01-06'],
+  ['1FDiOZuWgxoTg346bKXLlMn0Pcw5pUwTU', '2026-01-06'],
+  ['1c6uL7ep4FbCZW8n4b6aIqmTQFq4-jrAI', '2026-01-08'],
+  ['1ZzF-96qehDXlfVa2lMnEHkirNZnaMlcK', '2026-01-08'],
+  ['1Xsoy5MzVOKz3AhuHE6uNTGgEpVVUkxbb', '2026-01-08'],
+  ['1eznA4HGD3NK9uARm6Qu4YtmHERC54lLo', '2026-01-08'],
+  ['1ZfRnwswiyrby7n5gs6cITN4C2QbXj7VP', '2026-01-08'],
+  ['18t9hNtugspICYdsceuY7Qb06nWOk-5IU', '2026-01-08'],
+  ['1BQFmOd--edC08LaciNZXS1UyAflCOm4G', '2026-01-08'],
+  ['1wSDrS5Y0nH8tGri6euVYTBy3xFdj6vhX', '2026-01-08'],
+  ['1Tk6T8vtMSEuDVRSYLi_xAjDYEqX7hwKS', '2026-01-09'],
+  ['1asrp79H4l6iQicTjTaEH1UTr8GEVRC5J', '2026-01-10'],
+  ['1N-QDjnKbjtcXLm7pSHopLjdeS_3Ky_Vr', '2026-01-10'],
+  ['115cklbmCjlXFlteF-cUKKCB0W-LqgZIu', '2026-01-10'],
+  ['1CozUpgCsA9toMtzvr06An_bQ4IFVHPuW', '2026-01-10'],
+  ['1vitDhV0UO_PWuvg-FWaIs12KyUsj0qsP', '2026-01-10'],
+  ['1wQPKYPWMTOCz_ZsbH8avw_2CuG8IHqbM', '2026-01-11'],
+  ['19-ZbkWYTSG7a22wFzzM2f0KebhJV9DWp', '2026-01-11'],
+  ['1FhND_7GSEbdO3jTCQoQYQBAUZLQjVshW', '2026-01-11'],
+  ['1SuL8U6ks64BxWmpSlrTgGLFoevvxrfyk', '2026-01-12'],
+  ['1kXfeeSn74G7NKEfOZQt0wXGS4lKzSuZi', '2026-01-12'],
+  ['1FL-cmoPNxPAxMOSelAucR-3Za6VsvuJG', '2026-01-12'],
+  ['1glGvSBX_0StOKV5gl6ITbSCULGdPS1x6', '2026-01-12'],
+  ['1lpUjBJnJl9iqp_CHbGQBBkCpDjRtoINm', '2026-01-12'],
+  ['1nrIXyQvy1CbpV8p-LhcYTHR-V4RWGdaQ', '2026-01-12'],
+  ['1YT20UxJMPH1M711uCjZjkgj_anB5e1KX', '2026-01-12'],
+  ['1qCOHPIwTNhsFv2RDgeGeKbwIgYWP82VV', '2026-01-14'],
+  ['17SntI85XoE20Hz3el4Ysdz9J4VnRapNx', '2026-01-14'],
+  ['1c9tdwkNl_o0g_Khyl1AR6tIciiPykKzO', '2026-01-14'],
+  ['1rbsoWCNdu9M0eawqrnjIVnd31RWmJeak', '2026-02-20'],
+  ['1Nuq4uw2N-hbmLp62Ask_eN_2pKVYYI7a', '2026-02-21'],
+  ['1Ik4CYa57TVpehAjVVrhy66FXr8QghIpU', '2026-04-12'],
+  ['1Y8LygAsLrMXHEjz4ESPy2wLdCKyXaVbH', '2026-04-12'],
+  ['149t-uHElQnZygnWnls82WqnP3BvTQUm-', '2026-04-12'],
+  ['1E76wkocDML-PoacKeDIkrk6dfOC5BpNJ', '2026-04-12'],
+  ['1JYWgcdUY6G5_t2kwmp_rC99m2XT8wlSd', '2026-04-14'],
+  ['12suoU7RqSQKAirCP6fpzBHA1xSFo-jHq', '2026-04-26'],
+  ['1fY2LUq71zCsLdMYmcMFQ5dXwysX-1whs', '2026-04-26'],
+  ['1_hkbv8vKqNGhm2A37DZUNW69TY_4VNiH', '2026-06-06'],
+  ['17IB6cMe6DUovEqUpZQzaF2VfkNlvhGSN', '2026-06-06'],
+  ['1J41akVBClrF3zsSIgpEvCbKXjT-jUZaG', '2026-06-06'],
+  ['1ZQ2tLOnzAJ0PU8ZpnB0YG_b2qg95mJBx', '2026-06-06'],
+  ['1PhNBab_5paap_X27Gj-xPYJTXmQ2I2Bj', '2026-06-06'],
+  ['1shsjqOuaQEzSocBdXGp2FCSBjkYcvc3i', '2026-06-06'],
+  ['1PkpfwXJYruM5y_yY9ipzgK4Q29Klzk1X', '2026-06-06'],
+  ['18gGBC9WuReuNllqISRUTSU0MHb5AMr_b', '2026-06-06'],
+  ['1mojGkH2gkD0gzjRI3MflunB3b9SWSYuK', '2026-06-06'],
+  ['1qOmAoPLTr8OqyQvxhgW1auXF8epvXMER', '2026-06-06'],
+  ['1TgEiSjiJ57WROzT5OXQobpXfLy86b3HZ', '2026-06-06'],
+  ['1DrxqKOTs-rP1FHLavu0QRO3rvUo-YYft', '2026-06-06'],
+  ['1vcAxfwY_wW3NSN8Tx6YM5Zp91x5TXxuH', '2026-06-06'],
+  ['1XcNIzTmNrtkomKoppJsLMEjTcENUfz1B', '2026-06-06'],
+  ['1wkObXrIcSGS2XYpWPioJwrS4damXGRjv', '2026-06-25'],
+  ['1Hi9M7DSMBti1zi_3weTR50q1FyKWqKhj', '2026-06-25'],
+  ['1VNiQe531Il2gxiDWTPuquwvB-m0ylgYS', '2026-06-25'],
+  ['1KcvdKbIcODJzRC8NwEdtamc7OdpO9OSx', '2026-06-25'],
+  ['14Yangjf1G32xIxXtH6SFyOTRI7OETnmL', '2026-06-25'],
+  ['1AjT01b3iL4aDq42ZyduKyZ2P-Xd1DRwK', '2026-06-25'],
+  ['1tzfs_zRd-5pnQDvYOPKdXh6VafYon4Mt', '2026-06-25'],
+  ['1-X07outU5MskfbGcLu_t-tWxa_tkHtJu', '2026-06-25'],
+  ['11xpUdgfpBel271fPEYkcZM-L6k2TkvwH', '2026-06-26'],
+  ['1J2MMRGxbns4B-mPDHWP_3RkMddXM8cKM', '2026-06-26'],
+  ['12q8M8HiSuuBk2PaTJe91vlKg6gyl13q8', '2026-06-26'],
+  ['1TFuUJUCN79otHUb14FZ2e16nAKg88Il_', '2026-06-26'],
+  ['1IyY-UEyEae9D9cegrlTfWNJRF8LkNKvH', '2026-06-26'],
+  ['1sLkmKnlZUO98-QiDbbuufATFLHXG2jBw', '2026-06-26'],
+  ['1E1dx_-yu307Fq5pQVqAtSqyBkES676uD', '2026-06-28'],
+  ['1vCrZkxIOR6l18Jf4xLx4yZCSRbYsc9ED', '2026-06-28'],
+  ['1-WVP6Q1thJOGKYtTjH11UntiOkTJ261c', '2026-07-03'],
+  ['11tfj5pGejs9wvH6lMTyTLmKlYTEwIXiV', '2026-07-03'],
+  ['1zv75x8OC3L9ZUGTEdw5bww4U8kdQc2n1', '2026-07-03'],
+  ['17txU3AONl3FHiLOYtn5Pbyk6XxmbHYQX', '2026-07-03'],
+  ['1dYHg1cne09VRlxePPpOHE_NkxyHV3ZRL', '2026-07-03'],
+  ['1TFbuyWZVeCr5e0vzfaVp2YaNM_9E2ZsH', '2026-07-03'],
+  ['1ki97Sc1bW4ilrpo0qa3y_9t82ft9zSx7', '2026-07-04'],
+  ['1Aj490GKcv4DIcL04-I8wyvyu2XwsUQ6P', '2026-07-05'],
+  ['1jQgWKMgWdvnHrt_CwOhFg7jaw4XXBW3I', '2026-07-12'],
+  ['1wO4UnPYuQ7Q5zMrt5HUUzUSz7mKtTGDv', '2026-07-12'],
+  ['1RKg4hKCwsWlDSGz-M9uRuaFWhoiRL3A8', '2026-07-12'],
+  ['15tfjae_JYVctCrWO9JACtj42ZMMq3Xy9', '2026-07-12'],
+  ['1nYP7wYtVAlEKrfh8pKUSbkVRqyb5aqHF', '2026-07-12'],
+  ['1l-SvtSqDIWStEHsnvGwVrFtB5HN1hx1y', '2026-07-12'],
+  ['10LtzRMlRtqr00I7SHBLImMuAZcWiwZ4q', '2026-07-12'],
+  ['15LH6sAQQIaARcDlTY0_G_xm3EleWfTIy', '2026-07-14'],
+  ['1zv-D-AsOaqCP4QR58FaOjxXxmE3fHCuY', '2026-07-14'],
+  ['1gg_MLUHTj57vW1VZnwTdM_IywwTm5PNo', '2026-07-14'],
+  ['12_9JJlStiT9DJgkQ4RYLxhllWf18Dwx2', '2026-07-14'],
+  ['1XWAav1SHFDE0MOozzPgNb06iVyN-Sw14', '2026-07-14'],
+  ['1JiTuPnm-ReGrdQEaH4JI3UwagQ9z-NHE', '2026-07-14'],
+  ['1IG69xAgmYpUbfn0MCXfGoSNdl7pcfFNH', '2026-07-14'],
+  ['1uDCI6wjXmyUbtbmA83rX9_ePAzn2uAxu', '2026-07-16'],
+  ['1pu0jzMdO37syY0RSFQFUiGX3fMsV0aDo', '2026-07-16'],
+  ['1c72xgJuLy3IMH6cl8Fnxnr2xn7eFSZo_', '2026-07-16'],
+  ['1icnr44XNkB8ExwMTkuJEDWWYYVN7_qTF', '2026-07-18'],
+  ['1HXqd53mj0ap6bjLKI9grvtER3DHADokL', '2026-07-18'],
+  ['1meLlpZSfyB0rYBfpNy405ExZWZofuBGl', '2026-07-19'],
+  ['1r8XkdGrAgyKxmZBAuDxUDxGcbagPF0Po', '2026-07-19'],
+  ['1xb5YzZ_KcO9fZt9lyht8fr5ygoSE6VqE', '2026-07-19'],
+  ['163OVASGfgOJED2NoO9_sy1tu5LpQl6ft', '2026-07-19'],
+  ['1MnNUQgP0r2gCoz0eL2MKmW5FOsFAyIaS', '2026-07-19'],
+  ['1bOJwYwGIFy2VNopBah2fvXyeBUHRA7ty', '2026-07-19'],
+  ['1llOk6pk6_d5mBARPqsnMPYHGC6uqY2wr', '2026-07-19'],
+  ['1P0tDB-PMkmMSLvVSWDw78uMdaYXZ2V90', '2026-07-24'],
+  ['1K9gkIsBTEH9QfHIKWskYSLn-FUztFyym', '2026-07-24'],
+  ['1PM2Omkap-LE7T9CMHEhzjUGtLd0xnyye', '2026-07-26'],
+  ['1zEd65xQQS6vT4tm8rOqqHDZejuA_KWb4', '2026-07-26'],
+  ['1RV7FlCfd_b3vZZVpBA_LfPYDDTcNUhBI', '2026-07-26'],
+  ['1OfkuQ9XGxuEj-mXSu767rzlascfj5o5g', '2026-07-26'],
+  ['19X6x1Dq4Ouq3gsVLoju-jHkjqCqGJN8j', '2026-07-26'],
+  ['1CB54WvFLmI62losg3rTQPczalfYaj2do', '2026-07-26'],
+  ['1JtX5Uz4-JYVNpO29CsG-9pt6DtpBjzpl', '2026-07-26'],
 ]
-
 type Item = {
   id: string
   type: 'film' | 'photography'
   imageUrl: string
   videoUrl?: string
+  /** ISO date the photograph was taken, from its own EXIF */
+  taken?: string
 }
 
 /**
  * Drive serves the original at whatever size it was uploaded, which for these
- * is several megabytes each, ninety times over, to a phone. The `=w` suffix is
- * lh3's own resize, so a grid tile asks for the width it will actually be drawn
- * at and only the lightbox pulls the full file.
+ * is several megabytes each, a hundred and fifty times over, to a phone. The
+ * `=w` suffix is lh3's own resize, so a grid tile asks for the width it will
+ * actually be drawn at and only the lightbox pulls the full file.
  */
 function sized(url: string, width: number) {
   return `${url}=w${width}`
 }
 
+/** "2026-07-26" as "July 2026". The day is noise at this scale. */
+function monthOf(iso: string) {
+  const [y, m] = iso.split('-')
+  return `${
+    ['January','February','March','April','May','June',
+     'July','August','September','October','November','December'][Number(m) - 1]
+  } ${y}`
+}
+
 const GALLERY_ITEMS: Item[] = [
+  // The film sits at the top rather than at its date. It is the only one, and
+  // the chronology is a claim about the photographs.
   {
     id: 'ninaivu-film',
     type: 'film',
     imageUrl: 'https://lh3.googleusercontent.com/d/1J8QtfX7sUyyT346qgt8P8gFK4OrC6aOe',
     videoUrl: 'https://www.youtube.com/watch?v=1DDs1A89pIw',
   },
-  ...IMAGE_IDS.map<Item>((id, index) => ({
+  ...PHOTOS.map<Item>(([id, taken], index) => ({
     id: `photo-${index}`,
     type: 'photography',
     imageUrl: `https://lh3.googleusercontent.com/d/${id}`,
+    taken,
   })),
 ]
 
@@ -146,6 +298,14 @@ function Lightbox({
       >
         Close [esc]
       </button>
+
+      {/* When it was taken. The gallery is ordered by this, so it is worth
+          being able to see it rather than having to infer it from the order. */}
+      {item.taken && (
+        <span className="caption fixed left-4 top-4 z-10 flex min-h-11 items-center md:left-10 md:top-8">
+          {monthOf(item.taken)}
+        </span>
+      )}
 
       {/* Arrows flank the image from sm up. Below that they sat on top of the
           photograph, which on a phone is most of the screen. */}
