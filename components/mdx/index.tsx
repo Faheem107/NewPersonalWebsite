@@ -2,9 +2,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { slugify } from '@/lib/slug'
+import Gloss from '@/components/gloss'
 import Plot from '@/components/mdx/plot'
 
 export { default as Plot } from '@/components/mdx/plot'
+export { default as Gloss } from '@/components/gloss'
 
 /**
  * The note vocabulary. One set, shared by every note. The pages this replaces
@@ -189,6 +191,9 @@ export const mdxComponents = {
   Plot,
   Diagram,
   Aside,
+  // <Gloss entryKey="poisson">a Poisson process</Gloss> inside a note, for a
+  // term that deserves a sentence rather than its own <Definition>.
+  Gloss,
   Statement,
   Definition,
   Theorem,

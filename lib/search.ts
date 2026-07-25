@@ -1,6 +1,7 @@
 import { getSubjects } from '@/lib/notes'
 import { RESEARCH } from '@/content/research'
 import { THOUGHTS } from '@/content/thoughts'
+import { stripAnnotations } from '@/lib/annotate'
 import type { SearchDoc } from '@/lib/search-match'
 
 /**
@@ -45,13 +46,16 @@ export function buildSearchIndex(): SearchDoc[] {
     }
   }
 
+  // Everything from the content files goes through stripAnnotations, so the
+  // index holds the words a reader sees rather than the [[key|text]] syntax
+  // those bodies are written in. A search result must never show a bracket.
   for (const entry of RESEARCH) {
     docs.push({
       href: `/research#${entry.id}`,
       section: 'Research',
       title: entry.title,
-      context: `${entry.where} · ${entry.when}`,
-      body: entry.body,
+      context: `${stripAnnotations(entry.where)} · ${entry.when}`,
+      body: stripAnnotations(entry.body),
     })
   }
 
@@ -61,7 +65,7 @@ export function buildSearchIndex(): SearchDoc[] {
       section: 'Thoughts',
       title: thought.title,
       context: thought.date,
-      body: thought.body.join(' '),
+      body: stripAnnotations(thought.body.join(' ')),
     })
   }
 
@@ -70,28 +74,28 @@ export function buildSearchIndex(): SearchDoc[] {
       href: '/',
       section: 'Pages',
       title: 'Home',
-      context: 'Physics at NYU Abu Dhabi',
+      context: 'Physics, film and mathematics',
       body: 'faheem physics film mathematics music books movies',
     },
     {
       href: '/research',
       section: 'Pages',
       title: 'Research',
-      context: 'Lab work and computational projects',
+      context: 'Lab and computational work',
       body: 'biophysics stochastic transcription condensates modelling oxford cambridge laidlaw igem',
     },
     {
       href: '/photography',
       section: 'Pages',
-      title: 'Photography and Films',
-      context: 'Photographs, and the films behind them',
-      body: 'ninaivu labocine the gazelle photo essays cinema camera',
+      title: 'Photography and film',
+      context: 'Mostly documentary',
+      body: 'ninaivu photographs photo essays cinema camera documentary',
     },
     {
       href: '/thoughts',
       section: 'Pages',
       title: 'Some thoughts!',
-      context: 'Space, groups, and risk',
+      context: 'Things I went to look up',
       body: 'essays writing space sociology risk anthropomorphism fermi micromort dunbar survivorship bias',
     },
     {

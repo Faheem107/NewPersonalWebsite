@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Backdrop from '@/components/backdrop/pattern'
+import Gloss from '@/components/gloss'
 import PageHeader from '@/components/page-header'
 
 export const metadata: Metadata = {
@@ -30,10 +31,16 @@ export default function AboutPage() {
         <PageHeader title="About" />
 
         <div className="mt-14 max-w-prose space-y-6 text-lg leading-relaxed text-muted-foreground">
+          {/* Three terms, and no more: this is the first paragraph anyone
+              reads, and a sentence carrying five dotted underlines stops being
+              a sentence. "Transcription" is the one that matters, because it is
+              the hand-off to the research page. */}
           <p>
-            I am Mohammed Faheem. I am in my second year at NYU Abu Dhabi, studying Physics with a
-            minor in Film &amp; New Media. Most of what I do is pointing maths and code at biology
-            problems, which at the moment means the random side of transcription.
+            I am Mohammed Faheem. I am in my second year at{' '}
+            <Gloss entryKey="nyuad">NYU Abu Dhabi</Gloss>, studying Physics with a minor in{' '}
+            <Gloss entryKey="film-new-media">Film &amp; New Media</Gloss>. Most of what I do is
+            pointing maths and code at biology problems, which at the moment means the random side
+            of <Gloss entryKey="transcription">transcription</Gloss>.
           </p>
           <p>
             Between classes and lab work I spend a lot of time explaining things, in writing and in

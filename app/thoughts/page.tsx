@@ -2,6 +2,7 @@
 
 import Backdrop from '@/components/backdrop/pattern'
 import PageHeader from '@/components/page-header'
+import { Annotated } from '@/lib/annotate'
 import { useReveal } from '@/lib/motion/use-reveal'
 import { THOUGHTS } from '@/content/thoughts'
 
@@ -37,7 +38,9 @@ export default function ThoughtsPage() {
               </h2>
               <div data-reveal-child className="mt-5 space-y-4 text-muted-foreground">
                 {thought.body.map((para, i) => (
-                  <p key={i}>{para}</p>
+                  <p key={i}>
+                    <Annotated text={para} />
+                  </p>
                 ))}
               </div>
             </article>

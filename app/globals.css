@@ -339,6 +339,58 @@
     border-radius: var(--radius-xl);
   }
 
+  /* A term that explains itself.
+
+     Dotted, because that is the old convention for "there is a definition
+     here", and because it has to be distinguishable at a glance from
+     .rule-link below. The two make different promises: this one opens a box
+     where you are, that one takes you somewhere else. A reader should not have
+     to click to find out which.
+
+     The wrapper stays `inline` with only position on it, so a term still
+     breaks across lines like the prose around it. */
+  .gloss {
+    position: relative;
+  }
+
+  .gloss-term {
+    cursor: pointer;
+    text-decoration: underline dotted;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+    text-decoration-color: rgb(var(--wash) / 0.6);
+    font-variation-settings: 'wght' var(--wght-body);
+    transition:
+      text-decoration-color 0.25s ease,
+      font-variation-settings 0.25s ease,
+      color 0.25s ease;
+  }
+
+  .gloss-term:hover,
+  .gloss-term:focus-visible,
+  .gloss-term[aria-expanded='true'] {
+    color: var(--foreground);
+    text-decoration-color: var(--accent);
+    font-variation-settings: 'wght' 560;
+  }
+
+  /* The box a term opens.
+
+     The reset is not optional. A gloss can sit inside a .caption (the research
+     page puts the institution in the caption rail), and .caption is uppercase
+     with 0.14em tracking, both of which inherit straight into the box and turn
+     two sentences of explanation into shouting. The box sets its own
+     typography rather than inheriting whatever it opened over. */
+  .gloss-box {
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: var(--text-body);
+    line-height: 1.65;
+    font-variation-settings: 'wght' var(--wght-body);
+    color: var(--foreground);
+    text-align: left;
+  }
+
   /* Underline that draws from the leading edge. */
   .rule-link {
     position: relative;

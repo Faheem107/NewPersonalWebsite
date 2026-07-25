@@ -30,12 +30,15 @@ export default function Home() {
     // quite landed together.
     // The name and the disciplines type themselves now, so the timeline no
     // longer touches them: animating opacity underneath a typewriter fights it.
+    // [data-explore] takes an absolute start time rather than the '-=0.3' it
+    // used to take from the role line's tween. That line is gone, and a
+    // relative offset from a tween that no longer exists would have shifted the
+    // button back onto the torus's entrance.
     const ctx = gsap.context(() => {
       gsap
         .timeline({ defaults: { ease: 'power4.out' } })
         .from('[data-torus]', { opacity: 0, scale: 0.9, duration: 1.4 })
-        .from('[data-role]', { opacity: 0, y: 10, duration: 0.6 }, NAME_DONE / 1000 + 0.4)
-        .from('[data-explore]', { opacity: 0, duration: 0.6 }, '-=0.3')
+        .from('[data-explore]', { opacity: 0, duration: 0.6 }, NAME_DONE / 1000 + 0.5)
     }, el)
 
     return () => ctx.revert()
@@ -70,17 +73,13 @@ export default function Home() {
               <TypeCycle words={DISCIPLINES} startDelay={NAME_DONE + 320} />
             </p>
 
-            <p data-role className="caption mt-7">
-              Second-year Physics at NYU Abu Dhabi
-            </p>
-
             <Magnetic>
               <button
                 {...stick}
                 data-explore
                 onClick={() => setOpen(v => !v)}
                 aria-pressed={open}
-                className="caption mt-9 py-2 transition-colors hover:text-foreground"
+                className="caption mt-10 py-2 transition-colors hover:text-foreground"
               >
                 {open ? 'collapse' : 'explore'}
               </button>

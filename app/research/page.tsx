@@ -2,6 +2,7 @@
 
 import Backdrop from '@/components/backdrop/pattern'
 import PageHeader from '@/components/page-header'
+import { Annotated } from '@/lib/annotate'
 import { useReveal } from '@/lib/motion/use-reveal'
 import { RESEARCH } from '@/content/research'
 
@@ -35,8 +36,15 @@ export default function ResearchPage() {
 
               <div data-reveal-child>
                 <h2 className="wght-head font-display text-[length:var(--text-h2)]">{item.title}</h2>
-                <p className="caption mt-2">{item.where}</p>
-                <p className="mt-4 max-w-prose text-muted-foreground">{item.body}</p>
+                {/* The rail's institution line carries the link out to the
+                    actual group, so the reader can go from a job title to the
+                    people who do the work. */}
+                <p className="caption mt-2">
+                  <Annotated text={item.where} />
+                </p>
+                <p className="mt-4 max-w-prose text-muted-foreground">
+                  <Annotated text={item.body} />
+                </p>
               </div>
             </article>
           ))}

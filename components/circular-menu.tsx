@@ -9,7 +9,14 @@ import Image from "next/image"
 import { Canvas } from "@react-three/fiber"
 import { TorusShader } from "@/components/torus-shader"
 import { useScrollLock } from "@/lib/motion/scroll-lock"
-import { CAMERA_FOV, CAMERA_Z, TORUS_RADIUS, canvasForContainer, pxPerUnit } from "@/lib/torus-geometry"
+import {
+  CAMERA_FOV,
+  CAMERA_Z,
+  TORUS_RADIUS,
+  canvasForContainer,
+  containerForCanvas,
+  pxPerUnit,
+} from "@/lib/torus-geometry"
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -624,8 +631,23 @@ function ContentModal({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-/** Largest the form is allowed to get, whatever room it is given. */
-const MAX_CONTAINER = 480
+/**
+ * Largest the form is allowed to get, whatever room it is given.
+ *
+ * Was 480, which is over half the height of a typical laptop viewport and read
+ * as the whole page rather than as one object on it.
+ */
+const MAX_CONTAINER = 360
+
+/**
+ * How much of the available column the form may take.
+ *
+ * The cap alone does nothing on a phone: a 375px screen offers 327px after the
+ * page padding, already under the cap, so the torus filled the column edge to
+ * edge no matter what MAX_CONTAINER said. This is the part that gives it room
+ * to sit in.
+ */
+const ROOM_SHARE = 0.8
 
 export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolean }) {
   const [hovered,    setHovered]    = useState(false)
@@ -653,15 +675,22 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
   // us, so this is however much width the page actually has after its padding.
   const shellRef = useRef<HTMLDivElement>(null)
   const [containerSize, setContainerSize] = useState(MAX_CONTAINER)
-  const [viewport, setViewport] = useState(MAX_CONTAINER * 2)
 
   useEffect(() => {
     const el = shellRef.current
     if (!el) return
     const measure = () => {
       const room = el.getBoundingClientRect().width
-      if (room > 0) setContainerSize(Math.min(room, MAX_CONTAINER))
-      setViewport(document.documentElement.clientWidth)
+      // Three limits, all real. The room the column gives us, the cap above,
+      // and the largest form whose canvas still fits across the screen: the
+      // canvas is absolutely positioned and centred, so one wider than the
+      // viewport is scrollable overflow nothing in the layout accounts for.
+      // containerForCanvas inverts the last one, so the shape shrinks to fit
+      // rather than the canvas being clipped away from under it.
+      const screen = containerForCanvas(document.documentElement.clientWidth)
+      if (room > 0) {
+        setContainerSize(Math.min(room * ROOM_SHARE, MAX_CONTAINER, screen))
+      }
     }
     measure()
     const ro = new ResizeObserver(measure)
@@ -701,24 +730,28 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
   const angleStep = (2 * Math.PI) / N
 
   // ─── Geometry ───
-  // The canvas is deliberately larger than the form: the intro scatter streams
-  // in from up to 60 units out, and a tight canvas clips that. That ratio is
-  // what the 1.65 is; the canvas follows the container rather than the other
-  // way round, so the whole assembly fits whatever room the page has.
+  // The canvas size IS the shape's scale. The camera has a fixed FOV at a fixed
+  // z, so a canvas of N pixels shows exactly VIEW_UNITS of world across it, and
+  // the torus takes whatever fraction of that its radii come to. There is no
+  // separate zoom to compensate with.
   //
-  // Everything else derives from the shape. RADIUS was a flat 150px, which had
-  // no relationship to anything the shader draws, so the ring of icons was
-  // never concentric with the torus. It sits on the torus's own ring line now.
+  // Which is why there is no scatter multiplier here any more. A previous
+  // version drew the canvas at 1.65x "for the intro scatter's run-up" and that
+  // multiplied the torus with it: at a 480px container the shape came out 757px
+  // across, which is what made the landing page read as one enormous donut.
+  // The run-up needs no multiplier, because the margin is already in the frame:
+  // the sphere is 6.1 world units in a 10.77 unit view, so 43% of the canvas is
+  // empty space around the form by construction.
   //
-  // The 1.65 is capped at the viewport because the canvas is absolutely
-  // positioned and centred on the page, so anything wider than the screen is
-  // scrollable overflow that nothing in the layout accounts for: on a 320px
-  // phone this came out 722px wide and only the overflow-x backstop was hiding
-  // it. Clamping costs a little of the scatter's run-up on small screens, which
-  // was off the edge and unseen there anyway.
+  // RADIUS was a flat 150px once, which had no relationship to anything the
+  // shader draws, so the ring of icons was never concentric with the torus. It
+  // sits on the torus's own ring line now, off the same scale.
   const formCanvas = canvasForContainer(containerSize)
-  const canvasSize = Math.round(Math.min(formCanvas * 1.65, viewport))
+  const canvasSize = Math.round(formCanvas)
   const RADIUS     = TORUS_RADIUS * pxPerUnit(formCanvas)
+  // Applied to the icon, never to the button around it. The button carries the
+  // tap target, and scaling that down on a small screen shrinks the hit area on
+  // exactly the devices with the least precise pointer.
   const itemScale  = Math.max(0.7, Math.min(1, containerSize / MAX_CONTAINER))
 
   return (
@@ -788,20 +821,24 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
                   className="absolute flex flex-col items-center justify-center gap-0.5 cursor-pointer z-[50] size-11"
                   style={{ x: ox, y: oy }}
                   initial={{ opacity: 0, scale: 0.3 }}
-                  animate={{
-                    opacity: 1,
-                    scale: active ? (itemScale * 1.3) : itemScale
-                  }}
+                  animate={{ opacity: 1, scale: 1 }}
                   exit={{   opacity: 0, scale: 0.3 }}
                   transition={{ type: "spring", stiffness: 380, damping: 28, delay: i * 0.04 }}
                   onMouseEnter={() => !touch && setActiveItem(item.id)}
                   onMouseLeave={() => !touch && setActiveItem(null)}
                   onClick={(e) => handleClick(item, e)}
                 >
+                  {/* The scale lives here, on the mark, so the 44px button
+                      around it keeps its size at every ring radius. */}
+                  <motion.span
+                    className="flex items-center justify-center"
+                    animate={{ scale: active ? itemScale * 1.3 : itemScale }}
+                    transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                  >
                   {item.kind === "img" ? (
                     <div
                       className="relative overflow-hidden shadow-2xl rounded-lg bg-background/90"
-                      style={{ width: 44, height: 44 }} 
+                      style={{ width: 44, height: 44 }}
                     >
                       <Image
                         src={item.imgSrc!}
@@ -823,6 +860,7 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
                       {item.icon}
                     </span>
                   )}
+                  </motion.span>
 
                   <AnimatePresence>
                     {(active || touch) && (

@@ -102,6 +102,36 @@ one thread, name the effect or study where there is one, stop before the moral.
 Where a well-known story turns out to be shakier than its retelling, say so in
 the piece.
 
+## Glosses
+
+`content/glossary.ts` holds every term that explains itself. Prose refers to one
+with `[[key]]` or `[[key|words as they read here]]`, and `lib/annotate.tsx` is
+the only thing that parses that syntax: `stripAnnotations` is why the search
+index never shows a bracket, so route any new content source through it.
+
+Prefer `[[key|display]]` over the bare form. The bare form falls back to the
+entry's own `term`, which is capitalised for the box heading and will land
+mid-sentence as "One The micromort is...".
+
+Three fields, three different questions. `short` is what it is, `href` is where
+the real thing lives off-site, `see` is where this site says more. `see` is the
+point of a shared glossary rather than per-page annotations: it is what lets
+About hand off to Research and Research hand off to the notes.
+
+Dotted underline means "there is an explanation here" and `.rule-link`'s solid
+underline means "this navigates". Keep them distinguishable: an institution gets
+the dotted underline and puts its link inside the box, so a click never
+navigates unexpectedly.
+
+Two things the box has to keep. It sets its own typography through `.gloss-box`,
+because a gloss inside a `.caption` inherits uppercase and 0.14em tracking and
+the explanation comes out shouting. And its horizontal clamp goes through
+motion's `x`, never a `transform` in `style`, which motion overwrites on the
+first frame while animating `y`.
+
+Budget it. At most two terms per research entry and one or two per piece: a
+paragraph carrying five dotted underlines is no longer prose.
+
 ## Backdrop
 
 `components/backdrop/pattern.tsx` draws one construction per section: stars,
