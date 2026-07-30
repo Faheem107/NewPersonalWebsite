@@ -5,21 +5,15 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "lint": "eslint .",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
-    "@mdx-js/react": "^3.1.1",
     "@next/mdx": "^16.2.11",
-    "@react-spring/web": "^10.1.2",
     "@react-three/fiber": "^9.6.1",
     "@types/three": "^0.184.1",
-    "@use-gesture/react": "^10.3.1",
     "@vercel/analytics": "^2.0.1",
-    "animejs": "^4.5.0",
-    "clsx": "^2.1.1",
     "gray-matter": "^4.0.3",
     "gsap": "^3.15.0",
     "katex": "^0.17.0",
@@ -35,7 +29,6 @@
     "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
-    "tailwind-merge": "^3.3.1",
     "three": "^0.184.0"
   },
   "devDependencies": {

@@ -9,22 +9,12 @@ import { useHighlight, useStick } from '@/lib/motion/pointer'
 import { useScrollLock } from '@/lib/motion/scroll-lock'
 
 /**
- * Every photograph in the Drive folder, newest first.
+ * Every photograph, newest first.
  *
- * The order is the EXIF DateTimeOriginal of each file, not the upload order and
- * not the filename. Those disagree: the folder holds three naming schemes from
- * different cameras (IMG_, DSC_, and Google Photos' 1000029493), so filenames
- * only sort within one device, and the upload batches carry photographs taken
- * eighteen months apart. The dates were read from the JPEGs themselves, which
- * lh3 serves with EXIF intact, so a future update means re-reading them rather
- * than trusting the order the folder happens to list.
- *
- * Newest first because the most recent work should be the first thing anyone
- * sees, and 148 tiles is a long way to scroll to reach it. Adding a photograph
- * means putting it in date order, which for anything new is the top.
- *
- * The date travels with the id because it is what puts the photograph where it
- * is, and the lightbox shows it.
+ * The order is each file's EXIF DateTimeOriginal, not the upload order and not
+ * the filename: the folder holds three naming schemes from different cameras,
+ * so filenames only sort within one device. Adding a photograph means reading
+ * its date and putting it in order, which for anything new is the top.
  */
 const PHOTOS: [id: string, taken: string][] = [
   ['1JtX5Uz4-JYVNpO29CsG-9pt6DtpBjzpl', '2026-07-26'],
@@ -186,10 +176,9 @@ type Item = {
 }
 
 /**
- * Drive serves the original at whatever size it was uploaded, which for these
- * is several megabytes each, a hundred and fifty times over, to a phone. The
- * `=w` suffix is lh3's own resize, so a grid tile asks for the width it will
- * actually be drawn at and only the lightbox pulls the full file.
+ * The `=w` suffix is lh3's own resize, so a grid tile asks for the width it is
+ * drawn at rather than the several-megabyte original. Only the lightbox pulls
+ * the full file.
  */
 function sized(url: string, width: number) {
   return `${url}=w${width}`
@@ -260,9 +249,8 @@ function Lightbox({
 }) {
   useScrollLock(true)
 
-  // Swipe. On a phone this is the first thing anyone tries, and the arrows are
-  // the thing they were least likely to reach for. Pointer events cover touch
-  // and a trackpad drag alike; 44px is far enough to not fire on a tap.
+  // Swipe: the first thing anyone tries on a phone. Pointer events cover touch
+  // and a trackpad drag alike, and 44px is far enough not to fire on a tap.
   const swipeStart = useRef<{ x: number; y: number } | null>(null)
 
   const onPointerDown = (e: React.PointerEvent) => {
@@ -285,6 +273,7 @@ function Lightbox({
   return createPortal(
     <motion.div
       className="fixed inset-0 z-[120] flex flex-col items-center justify-center bg-background/95 p-4 md:p-12"
+      style={{ height: '100dvh' }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -298,7 +287,8 @@ function Lightbox({
           e.stopPropagation()
           onClose()
         }}
-        className="caption fixed right-4 top-4 z-10 flex min-h-11 items-center px-3 md:right-10 md:top-8"
+        className="caption fixed right-4 z-10 flex min-h-11 items-center px-3 md:right-10"
+        style={{ top: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
       >
         Close [esc]
       </button>
@@ -306,7 +296,10 @@ function Lightbox({
       {/* When it was taken. The gallery is ordered by this, so it is worth
           being able to see it rather than having to infer it from the order. */}
       {item.taken && (
-        <span className="caption fixed left-4 top-4 z-10 flex min-h-11 items-center md:left-10 md:top-8">
+        <span
+          className="caption fixed left-4 z-10 flex min-h-11 items-center md:left-10"
+          style={{ top: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
+        >
           {monthOf(item.taken)}
         </span>
       )}
@@ -360,6 +353,7 @@ function Lightbox({
           thumb already is. */}
       <div
         className="flex shrink-0 items-center gap-10 pt-3 sm:hidden"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         onClick={e => e.stopPropagation()}
       >
         <button onClick={onPrev} aria-label="Previous" className="px-6 py-2 text-3xl text-muted-foreground">
@@ -378,9 +372,11 @@ function GalleryItem({ item, onOpen }: { item: Item; onOpen: () => void }) {
   const highlight = useHighlight()
 
   return (
+    // No `layout`. With 150 tiles it measures every one of them on each filter
+    // change, which is the whole cost of the page on a phone; the fade covers
+    // the reflow just as well.
     <motion.button
       {...highlight}
-      layout
       type="button"
       initial={{ opacity: 0, y: 32 }}
       animate={{ opacity: 1, y: 0 }}
@@ -389,8 +385,7 @@ function GalleryItem({ item, onOpen }: { item: Item; onOpen: () => void }) {
       className="group block w-full text-left"
       onClick={onOpen}
     >
-      {/* A plate, like everything else on the site: framed field, hairline
-          edge, no lift and no shadow. */}
+      {/* A plate, like everything else: framed field, hairline edge, no lift. */}
       <div className="plate relative flex min-h-[280px] items-center justify-center overflow-hidden p-2 transition-colors duration-500 group-hover:border-foreground/25">
         <img
           src={sized(item.imageUrl, 800)}
@@ -465,7 +460,7 @@ export default function PhotographyPage() {
           ))}
         </div>
 
-        <motion.div layout className="mt-12 grid grid-cols-1 gap-x-10 gap-y-14 md:grid-cols-2">
+        <motion.div className="mt-12 grid grid-cols-1 gap-x-10 gap-y-14 md:grid-cols-2">
           <AnimatePresence mode="popLayout">
             {filtered.map(item => (
               <GalleryItem

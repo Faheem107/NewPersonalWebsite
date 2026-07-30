@@ -1,23 +1,11 @@
 /**
- * The glossary.
+ * The glossary. One entry per term that earns an explanation, keyed by a slug.
+ * Prose refers to one with `[[key]]` or `[[key|words as they read here]]`.
  *
- * One entry per term that earns an explanation, keyed by a slug. Prose anywhere
- * on the site refers to an entry with `[[key]]`, or `[[key|words as they read
- * in the sentence]]` when the grammar needs something other than the term
- * itself. lib/annotate.tsx is the only thing that reads that syntax.
- *
- * Three fields matter and each answers a different question:
- *
- *  - `short` answers "what is this", in the same plain voice as the rest of the
- *    site. Two sentences at most. If it needs three it is a note, not a gloss.
- *  - `href` answers "where is the real thing", off-site.
- *  - `see` answers "where does this site say more", and is the reason the
- *    glossary is one shared file rather than annotations written per page. It
- *    is what lets About point at the research entry that expands it, and the
- *    research entries point at the notes that derive what they use.
- *
- * Voice: explain, do not sell. No sentence should read as though it is proving
- * the author knows the term.
+ * Three fields, three questions: `short` is what it is, in two sentences at
+ * most; `href` is where the real thing lives off-site; `see` is where this site
+ * says more, which is the reason for one shared glossary rather than notes
+ * written per page.
  */
 
 export type GlossEntry = {
@@ -34,7 +22,7 @@ export type GlossEntry = {
 }
 
 export const GLOSSARY: Record<string, GlossEntry> = {
-  // ── places and people ────────────────────────────────────────────────────
+  // places and people
   'gene-machines': {
     term: 'Gene Machines, Oxford',
     short:
@@ -96,7 +84,7 @@ export const GLOSSARY: Record<string, GlossEntry> = {
     see: { href: '/photography', label: 'What has come out of it' },
   },
 
-  // ── things in the work ───────────────────────────────────────────────────
+  // things in the work
   transcription: {
     term: 'Transcription',
     short:
@@ -141,7 +129,7 @@ export const GLOSSARY: Record<string, GlossEntry> = {
       'The cytoplasm is roughly thirty percent occupied by other molecules, so nothing diffuses through it the way it would through water.',
   },
 
-  // ── things in the thoughts ───────────────────────────────────────────────
+  // things in the thoughts
   eliza: {
     term: 'ELIZA',
     short:

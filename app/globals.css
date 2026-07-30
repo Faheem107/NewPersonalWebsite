@@ -2,24 +2,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ==========================================================================
-   Cyanotype
-   --------------------------------------------------------------------------
-   The cyanotype is the one process that belongs to both halves of this site:
-   it is a photographic print and it is what "blueprint" means. So the palette
-   is cold paper and Prussian blue rather than anything warm, content sits on
-   "plates" (a framed field with a caption rail) rather than cards, and the one
-   place with chroma is the accent.
-   ========================================================================== */
+/* Cyanotype: cold paper, Prussian blue accent. Content sits on plates, which
+   are framed fields with a caption rail, never cards. */
 
 :root {
-  /* paper --------------------------------------------------------------- */
   --background: #f4f6f7;
   --foreground: #101416;
 
-  /* A plate is a framed field, not a card: no shadow, no lift. Transparent
-     enough that the backdrop pattern reads through it, opaque enough that the
-     text on top still holds its contrast. */
   --plate: rgb(252 253 253 / 0.52);
   --plate-border: rgb(16 20 22 / 0.1);
   --plate-hover: rgb(252 253 253 / 0.86);
@@ -39,11 +28,10 @@
   /* Prussian blue, dark enough to pass AA as text on paper */
   --accent: #1b4f77;
   --accent-foreground: #ffffff;
-  /* the wash a cyanotype leaves where light fell, used for plate hover */
+  /* the wash a cyanotype leaves where light fell */
   --wash: 27 79 119;
 
-  /* The cursor and the hairline that keeps it visible over photographs. Kept
-     as bare triples so the cursor can set its own alpha per frame. */
+  /* Bare triples, so the cursor can set its own alpha per frame. */
   --cursor: 16 20 22;
   --cursor-contrast: 244 246 247;
 
@@ -98,13 +86,11 @@
 
 @theme inline {
   /* Inter is reserved for the name and the wordmark. Lexend does everything
-     else, display sizes included. Both are variable, which the weight-on-hover
-     behaviour below depends on. */
+     else. Both are variable, which the weight-on-hover behaviour depends on. */
   --font-name: var(--font-inter), 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-display: var(--font-lexend), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-lexend), ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
-  /* nothing loads a serif any more; the alias survives for older call sites */
   --font-serif: var(--font-display);
 
   --color-background: var(--background);
@@ -144,11 +130,9 @@
   --text-h1: clamp(2rem, 4.6vw, 3.25rem);
   --text-display: clamp(2.75rem, 8vw, 6rem);
 
-  /* Weight is a function of size, not one flat body setting. Lexend sets
-     optically heavier and wider than most grotesques, so body sits lighter
-     than it would elsewhere and the display steps need negative tracking to
-     stop large headings reading loose. Paired values: never change a weight
-     here without checking its tracking. */
+  /* Weight is a function of size. These are paired with the tracking values
+     below: never change a weight without checking its tracking. Lexend sets
+     optically heavier and wider than most grotesques. */
   --wght-name: 700;
   --wght-h1: 640;
   --wght-h2: 600;
@@ -174,11 +158,8 @@
     -webkit-text-size-adjust: 100%;
   }
 
-  /* A backstop, not a layout tool. Every column on the site is fluid, so
-     anything that manages to stick out sideways is a bug somewhere else; this
-     stops it taking the whole page's alignment with it while it goes
-     unnoticed, which is exactly what the fixed-size torus used to do on a
-     phone. Vertical scrolling is untouched. */
+  /* A backstop. Every column is fluid, so anything sticking out sideways is a
+     bug elsewhere; this stops it taking the page's alignment with it. */
   html,
   body {
     overflow-x: hidden;
@@ -189,8 +170,6 @@
     font-size: var(--text-body);
     line-height: 1.65;
     font-variation-settings: 'wght' var(--wght-body);
-    /* Both faces are variable and cover the whole range, so a synthesised
-       bold would only ever be a distortion of a weight we already have. */
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -225,8 +204,8 @@
     text-wrap: pretty;
   }
 
-  /* Keyboard focus was entirely absent before, and the site hides the cursor,
-     so this is the only affordance a keyboard user has. */
+  /* The site hides the pointer, so this is the only affordance a keyboard user
+     has. */
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 3px;
@@ -238,7 +217,7 @@
     color: var(--foreground);
   }
 
-  /* The typewriter caret. CSS so it blinks without a React render per frame. */
+  /* The typewriter caret. CSS, so it blinks without a render per frame. */
   @keyframes caret {
     0%, 45%   { opacity: 1; }
     50%, 95%  { opacity: 0; }
@@ -246,24 +225,31 @@
   }
 
   /* The record on the music player. CSS rather than a motion loop so it can be
-     paused with animation-play-state instead of animated back to zero, which is
-     what made the old 50px disc rewind itself every time playback stopped. The
-     reduced-motion block below stops it along with everything else. */
+     paused with animation-play-state instead of animated back to zero. */
   @keyframes vinyl-spin {
     to { transform: rotate(360deg); }
   }
 }
 
 /* --------------------------------------------------------------------------
+   Entrance
+   Elements with a scripted entrance are held hidden from the first painted
+   frame, not from the first frame after hydration. The flag comes from the
+   inline script in app/layout.tsx, so this never applies with JavaScript off or
+   under reduced motion. The animation code removes the attribute as it takes
+   over.
+   -------------------------------------------------------------------------- */
+html[data-motion='on'] [data-enter] {
+  opacity: 0;
+}
+
+/* --------------------------------------------------------------------------
    Weight-on-hover.
-   The reference site's signature interaction: text thickens under the pointer
-   instead of changing colour. Only works on a variable font, which is why both
-   faces are variable.
+   Text thickens under the pointer instead of changing colour. Only works on a
+   variable font, which is why both faces are variable.
    -------------------------------------------------------------------------- */
 @layer components {
-  /* The name, and only the name. Inter is here to be Helvetica; everything
-     else on the page is Lexend, and the contrast between the two is the
-     point of loading a second family at all. */
+  /* The name, and only the name. */
   .name {
     font-family: var(--font-name);
     font-variation-settings: 'wght' var(--wght-name);
@@ -284,8 +270,7 @@
   }
 
   /* Sits on headings, which already carry a weight from the base layer, so it
-     only names the hover end. Each heading level thickens by about the same
-     perceptual step rather than all landing on one fixed weight. */
+     only names the hover end. */
   .wght-head {
     transition: font-variation-settings 0.25s ease;
   }
@@ -295,7 +280,6 @@
   h3.wght-head:hover,
   h4.wght-head:hover { font-variation-settings: 'wght' 680; }
 
-  /* .wght-head also lands on spans and links that are not headings. */
   .wght-head:not(h1):not(h2):not(h3):not(h4) {
     font-variation-settings: 'wght' var(--wght-h3);
   }
@@ -305,8 +289,8 @@
   }
 
   /* The utility register: a plate caption, a film slate, a figure number.
-     Archivo's width axis used to do this; Lexend has no width axis, so the
-     condensed feel comes from weight and tracking instead. */
+     Lexend has no width axis, so the condensed feel comes from weight and
+     tracking. */
   .caption {
     font-family: var(--font-sans);
     font-size: var(--text-caption);
@@ -317,12 +301,8 @@
     line-height: 1.4;
   }
 
-  /* A plate: framed field, hairline edge, no shadow.
-
-     The blur used to be 10px over a 74% opaque fill, which is glassmorphism:
-     it frosted the backdrop into a smear and was most of why the pattern
-     behind it could not be read. A plate should sit ON the backdrop, not
-     dissolve it. */
+  /* A plate: framed field, hairline edge, no shadow. The blur stays at 2px over
+     a half-opaque fill so the backdrop reads through rather than frosting. */
   .plate {
     background: var(--plate);
     border: 1px solid var(--plate-border);
@@ -331,26 +311,24 @@
     -webkit-backdrop-filter: blur(2px);
   }
 
-  /* Dialogs are the exception. They sit over the whole page rather than over
-     the backdrop, and there the text does need something opaque behind it. */
+  /* Dialogs sit over the page rather than over the backdrop, and there the text
+     does need something opaque behind it. */
   .plate-solid {
     background: var(--popover);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
   }
 
-  /* A term that explains itself.
-
-     Dotted, because that is the old convention for "there is a definition
-     here", and because it has to be distinguishable at a glance from
-     .rule-link below. The two make different promises: this one opens a box
-     where you are, that one takes you somewhere else. A reader should not have
-     to click to find out which.
-
-     The wrapper stays `inline` with only position on it, so a term still
-     breaks across lines like the prose around it. */
+  /* A term that explains itself. Dotted means "there is an explanation here";
+     .rule-link's solid underline means "this navigates". The wrapper stays
+     inline with only position on it, so a term still breaks across lines. */
   .gloss {
     position: relative;
+  }
+
+  /* Raised only while open, so the box clears anything painted after it. */
+  .gloss:has(> [aria-expanded='true']) {
+    z-index: 80;
   }
 
   .gloss-term {
@@ -374,13 +352,9 @@
     font-variation-settings: 'wght' 560;
   }
 
-  /* The box a term opens.
-
-     The reset is not optional. A gloss can sit inside a .caption (the research
-     page puts the institution in the caption rail), and .caption is uppercase
-     with 0.14em tracking, both of which inherit straight into the box and turn
-     two sentences of explanation into shouting. The box sets its own
-     typography rather than inheriting whatever it opened over. */
+  /* The box sets its own typography rather than inheriting. A gloss can sit
+     inside a .caption, which is uppercase at 0.14em tracking, and that turns
+     two sentences of explanation into shouting. */
   .gloss-box {
     text-transform: none;
     letter-spacing: normal;
@@ -416,9 +390,8 @@
 /* --------------------------------------------------------------------------
    Cursor
    Only hide the system cursor where a real pointer exists and the replacement
-   will actually be rendered. Over prose the custom cursor takes a bar shape,
-   since hiding the system cursor otherwise removes the I-beam and there is no
-   longer anything to tell you the text is selectable.
+   will be rendered. Over prose the custom cursor takes a bar shape, since
+   hiding the system cursor otherwise removes the I-beam.
    -------------------------------------------------------------------------- */
 @media (pointer: fine) {
   html.has-custom-cursor,
@@ -428,8 +401,8 @@
 }
 
 /* --------------------------------------------------------------------------
-   Reduced motion.
-   The site is heavily animated; this has to be a real off switch, not a hint.
+   Reduced motion. The site is heavily animated; this has to be a real off
+   switch, not a hint.
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -441,6 +414,11 @@
     scroll-behavior: auto !important;
   }
 
+  /* Belt and braces: nothing scripted will run to reveal these. */
+  [data-enter] {
+    opacity: 1 !important;
+  }
+
   html.has-custom-cursor,
   html.has-custom-cursor * {
     cursor: auto !important;
@@ -448,12 +426,8 @@
 }
 
 /* --------------------------------------------------------------------------
-   Note prose.
-   The topic page has referenced .notes-prose since it was written, but the
-   class was never actually defined anywhere, so the notes had no measure and
-   no rhythm of their own. It also marks the region where the cursor becomes a
-   text bar, which is why it is a class on the wrapper rather than a set of
-   utilities on each element.
+   Note prose. Also marks the region where the cursor becomes a text bar, which
+   is why it is a class on the wrapper rather than utilities on each element.
    -------------------------------------------------------------------------- */
 .notes-prose {
   max-width: 42rem;
@@ -461,8 +435,7 @@
   line-height: 1.75;
 }
 
-/* Anchors land under the fixed header otherwise, which search deep-links hit
-   constantly. */
+/* Anchors land under the fixed header otherwise, which search deep-links hit. */
 .notes-prose :is(h2, h3, h4, [id]) {
   scroll-margin-top: 7rem;
 }

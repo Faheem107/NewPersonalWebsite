@@ -1,15 +1,12 @@
 /**
- * Research entries.
+ * Research entries, most recent first.
  *
- * Lives here rather than inside the page so the search index and the page read
- * the same source. Anything added here is searchable with no further work.
+ * Here rather than in the page so the search index and the page read the same
+ * source: anything added is searchable with no further work.
  *
- * Ordered by start date, most recent first.
- *
- * House style: say what the work is and what is still open in it. Titles and
- * institutions are facts and stay; anything that was doing the job of a
- * credential ("first cohort", "independently") has been taken out, because the
- * rail already carries the date and the reader can weigh the rest themselves.
+ * House style: say what the work is and what is still open in it. No wording
+ * that does the job of a credential; the rail carries the date and the reader
+ * can weigh the rest.
  */
 
 export type ResearchEntry = {

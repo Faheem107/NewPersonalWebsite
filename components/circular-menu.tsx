@@ -2,7 +2,14 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react"
 import { createPortal } from "react-dom"
-import { motion, AnimatePresence } from "motion/react"
+import {
+  AnimatePresence,
+  motion,
+  useAnimationFrame,
+  useMotionValue,
+  useTransform,
+  type MotionValue,
+} from "motion/react"
 import { Linkedin, Instagram, Github, Mail } from "lucide-react"
 import { BookOpen, Disc3, Clapperboard } from "lucide-react"
 import Image from "next/image"
@@ -18,7 +25,7 @@ import {
   pxPerUnit,
 } from "@/lib/torus-geometry"
 
-// ─── Data ────────────────────────────────────────────────────────────────────
+// Data
 
 const SONGS = [
   { title: "Hublots",  artist: "Frank Ocean",  audioSrc: "/audio/hublots.mp3",  imgSrc: "/audio/endless.jpg" },
@@ -44,29 +51,27 @@ const MOVIES = [
   { title: "Chungking Express",     director: "Wong Kar-wai",     year: "1994" },
 ]
 
-// ─── Orbit item config ────────────────────────────────────────────────────────
+// Orbit item config
 
 type MenuItem = {
   id: string
   label: string
-  kind: "img" | "icon"
-  imgSrc?: string
   icon?: React.ReactNode
   href?: string
   modal?: "vinyl" | "books" | "movies"
 }
 
 const MENU_ITEMS: MenuItem[] = [
-  { id: "music",    label: "Music",    kind: "icon", icon: <Disc3 size={22} strokeWidth={1.5} />,        modal: "vinyl" },
-  { id: "books",    label: "Books",    kind: "icon", icon: <BookOpen size={22} strokeWidth={1.5} />,     modal: "books" },
-  { id: "movies",   label: "Movies",   kind: "icon", icon: <Clapperboard size={22} strokeWidth={1.5} />, modal: "movies" },
-  { id: "linkedin", label: "LinkedIn", kind: "icon", icon: <Linkedin size={22} strokeWidth={1.5} />,     href: "https://www.linkedin.com/in/mohammed-faheem-33bb49295/" },
-  { id: "instagram",label: "Instagram",kind: "icon", icon: <Instagram size={22} strokeWidth={1.5} />,    href: "https://www.instagram.com/faheemmmm._/" },
-  { id: "github",   label: "GitHub",   kind: "icon", icon: <Github size={22} strokeWidth={1.5} />,       href: "https://github.com/Faheem107" },
-  { id: "email",    label: "Email",    kind: "icon", icon: <Mail size={22} strokeWidth={1.5} />,         href: "mailto:mj3398@nyu.edu" },
+  { id: "music",    label: "Music",    icon: <Disc3 size={22} strokeWidth={1.5} />,        modal: "vinyl" },
+  { id: "books",    label: "Books",    icon: <BookOpen size={22} strokeWidth={1.5} />,     modal: "books" },
+  { id: "movies",   label: "Movies",   icon: <Clapperboard size={22} strokeWidth={1.5} />, modal: "movies" },
+  { id: "linkedin", label: "LinkedIn", icon: <Linkedin size={22} strokeWidth={1.5} />,     href: "https://www.linkedin.com/in/mohammed-faheem-33bb49295/" },
+  { id: "instagram",label: "Instagram",icon: <Instagram size={22} strokeWidth={1.5} />,    href: "https://www.instagram.com/faheemmmm._/" },
+  { id: "github",   label: "GitHub",   icon: <Github size={22} strokeWidth={1.5} />,       href: "https://github.com/Faheem107" },
+  { id: "email",    label: "Email",    icon: <Mail size={22} strokeWidth={1.5} />,         href: "mailto:mj3398@nyu.edu" },
 ]
 
-// ─── Modal shell ──────────────────────────────────────────────────────────────
+// Modal shell
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -74,12 +79,9 @@ const FOCUSABLE =
 /**
  * Backdrop, centring, focus and scroll behaviour for both modals.
  *
- * The portal is the point. These used to render where they sit in the tree,
- * which is inside [data-torus] on the home page, and the GSAP entrance timeline
- * puts a transform on that element. A transformed ancestor becomes the
- * containing block for position: fixed, so `inset-0` resolved to the torus box
- * and the modal opened above the torus instead of centred in the viewport.
- * Nothing was wrong with the modal's own CSS.
+ * The portal is load-bearing. Rendered in place these sit inside [data-torus],
+ * and a transformed ancestor becomes the containing block for position: fixed,
+ * so inset-0 would resolve to the torus box rather than to the viewport.
  */
 function ModalShell({
   label,
@@ -168,21 +170,14 @@ function ModalShell({
   )
 }
 
-// ─── The turntable ────────────────────────────────────────────────────────────
+// The turntable
 
 /**
  * A record on a beveled plate, in the same 98-era chrome as the player.
  *
- * Three layers, and the split between them is the thing that makes it read as
- * vinyl rather than as a spinning picture:
- *
- *  - the disc rotates, carrying the grooves and the label,
- *  - the sheen does NOT, because a light source does not turn with the record,
- *    so what you see is the grooves travelling under a fixed highlight,
- *  - the spindle sits still in the middle of both.
- *
- * The album art is the label only. It used to be stretched over the whole disc,
- * which is not what a record looks like from any angle.
+ * Three layers: the disc turns, carrying the grooves and the label; the sheen
+ * does not, because a light source does not turn with the record; the spindle
+ * sits still in the middle of both. The album art is the label only.
  */
 function Turntable({ src, playing }: { src: string; playing: boolean }) {
   const SIZE = 148
@@ -209,8 +204,7 @@ function Turntable({ src, playing }: { src: string; playing: boolean }) {
             position: 'absolute',
             inset: 0,
             borderRadius: '50%',
-            // Grooves. A repeating radial gradient is what a 98 skin would have
-            // faked this with, and it is still the cheapest honest way to do it.
+            // Grooves, faked the way a 98 skin would have faked them.
             background: `
               repeating-radial-gradient(
                 circle at 50% 50%,
@@ -320,7 +314,7 @@ function Turntable({ src, playing }: { src: string; playing: boolean }) {
   )
 }
 
-// ─── Windows 95 vinyl modal ───────────────────────────────────────────────────
+// Windows 95 vinyl modal
 
 function Win95Modal({ onClose }: { onClose: () => void }) {
   const [currentTrack, setCurrentTrack] = useState(0)
@@ -329,7 +323,7 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
   const [bars, setBars]                 = useState<number[]>(Array(22).fill(6))
   const audioRef                        = useRef<HTMLAudioElement>(null)
 
-  // Visualizer Animation
+  // Bars are decorative: real analysis would need an AudioContext per track.
   useEffect(() => {
     if (!isPlaying) {
       setBars(Array(22).fill(4))
@@ -341,7 +335,7 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
     return () => clearInterval(interval)
   }, [isPlaying])
 
-  // Playback & "Middle 30s" Logic
+  // Each track plays the thirty seconds around its midpoint.
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
@@ -354,7 +348,7 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
         if (audio.currentTime >= endTime) {
           audio.pause()
           setIsPlaying(false)
-          audio.currentTime = midPoint - 15 // Reset to start point
+          audio.currentTime = midPoint - 15
         }
       }
     }
@@ -363,7 +357,7 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
       const midPoint = audio.duration / 2
       audio.currentTime = Math.max(0, midPoint - 15)
       if (isPlaying) {
-        audio.play().catch((e) => console.log("Autoplay prevented:", e))
+        audio.play().catch(() => {})
       }
     }
 
@@ -378,7 +372,6 @@ function Win95Modal({ onClose }: { onClose: () => void }) {
     }
   }, [currentTrack, isPlaying])
 
-  // Volume Control
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume
@@ -571,14 +564,13 @@ const buttonStyle = {
   borderColor: "#ffffff #808080 #808080 #ffffff",
   fontSize:    10,
   fontFamily:  "inherit",
-  // 2px 6px is authentic and unusable with a thumb. This is the smallest that
-  // still reads as a 98 button.
+  // 2px 6px is authentic and unusable with a thumb.
   padding:     "5px 9px",
   cursor:      "pointer",
   letterSpacing: 0.5,
 }
 
-// ─── Generic dark modal (books / movies) ─────────────────────────────────────
+// Generic dark modal (books / movies)
 
 function ContentModal({
   type,
@@ -613,8 +605,7 @@ function ContentModal({
             className="flex items-center gap-3 rounded-lg px-2 py-2"
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
-            // Behind the panel's own spring, so the list arrives after the
-            // thing containing it rather than alongside it.
+            // Behind the panel's own spring, so the list arrives after it.
             transition={{ delay: 0.06 + i * 0.035, duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
           >
             <span className="w-4 font-mono text-xs text-muted-foreground/50">{i + 1}</span>
@@ -629,39 +620,111 @@ function ContentModal({
   )
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// One item in the orbit. Its own component because the ring's rotation is a
+// motion value read through useTransform, which needs a hook per item.
+function OrbitItem({
+  item,
+  theta0,
+  radius,
+  scale,
+  delay,
+  spin,
+  touch,
+  active,
+  onActive,
+  onSelect,
+}: {
+  item: MenuItem
+  theta0: number
+  radius: number
+  scale: number
+  delay: number
+  spin: MotionValue<number>
+  touch: boolean
+  active: boolean
+  onActive: (id: string | null) => void
+  onSelect: (item: MenuItem, e: React.MouseEvent) => void
+}) {
+  const x = useTransform(spin, s => Math.cos(theta0 + s) * radius)
+  const y = useTransform(spin, s => Math.sin(theta0 + s) * radius)
+
+  return (
+    <motion.button
+      // The label is only visible on hover, so without this the orbit is seven
+      // unnamed buttons to a screen reader.
+      aria-label={item.label}
+      // The icon is 22px, half a usable tap target: size-11 is the hit area.
+      className="absolute z-[50] flex size-11 cursor-pointer flex-col items-center justify-center gap-0.5"
+      style={{ x, y }}
+      initial={{ opacity: 0, scale: 0.3 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.3 }}
+      transition={{ type: 'spring', stiffness: 380, damping: 28, delay }}
+      onMouseEnter={() => !touch && onActive(item.id)}
+      onMouseLeave={() => !touch && onActive(null)}
+      onClick={e => onSelect(item, e)}
+    >
+      {/* The scale lives on the mark, so the 44px button around it keeps its
+          size at every ring radius.
+
+          The mark sits on a round plate for the same reason every other plate
+          on the site exists: it is over the expanded ball, which is a dense
+          field of colour, and a bare glyph in either theme's foreground is
+          unreadable against it. Framed field, hairline edge, no shadow. */}
+      <motion.span
+        className={`flex items-center justify-center rounded-full border p-[7px] backdrop-blur-[2px] transition-colors duration-200 ${
+          active
+            ? 'border-foreground/35 bg-background text-foreground'
+            : 'border-plate-border bg-background/80 text-foreground/70'
+        }`}
+        animate={{ scale: active ? scale * 1.15 : scale }}
+        transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+      >
+        {item.icon}
+      </motion.span>
+
+      <AnimatePresence>
+        {(active || touch) && (
+          <motion.span
+            className="caption absolute -bottom-6 whitespace-nowrap text-[9px] text-foreground/80"
+            initial={{ opacity: 0, y: -2 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -2 }}
+            // Behind the ring's own spring, so the labels settle after the
+            // icons have found their places rather than travelling with them.
+            transition={{ duration: 0.16, delay: touch ? delay + 0.12 : 0 }}
+          >
+            {item.label}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </motion.button>
+  )
+}
+
+/** Largest the form is allowed to get, whatever room it is given. */
+const MAX_CONTAINER = 410
 
 /**
- * Largest the form is allowed to get, whatever room it is given.
- *
- * Was 480, which is over half the height of a typical laptop viewport and read
- * as the whole page rather than as one object on it.
+ * How much of the available column the form may take. The cap alone does
+ * nothing on a phone, where the column is already narrower than it; this is
+ * what gives the shape room to sit in.
  */
-const MAX_CONTAINER = 360
+const ROOM_SHARE = 0.82
 
-/**
- * How much of the available column the form may take.
- *
- * The cap alone does nothing on a phone: a 375px screen offers 327px after the
- * page padding, already under the cap, so the torus filled the column edge to
- * edge no matter what MAX_CONTAINER said. This is the part that gives it room
- * to sit in.
- */
-const ROOM_SHARE = 0.8
+/** Degrees a second the ring turns while it is open. */
+const ORBIT_SPEED = 3
 
 export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolean }) {
   const [hovered,    setHovered]    = useState(false)
   const [activeItem, setActiveItem] = useState<string | null>(null)
   const [modal,      setModal]      = useState<"vinyl" | "books" | "movies" | null>(null)
-  const [angle,      setAngle]      = useState(0)
 
   const [touch, setTouch] = useState(false)
   const [touchOpen, setTouchOpen] = useState(false)
 
-  // Whether the form has to answer to taps rather than to hover. This used to
-  // be innerWidth < 640, which is a different question and also disagreed with
-  // the md breakpoint the hero stacks at, so 640-767px got hover behaviour on
-  // a stacked layout. A pointer that cannot hover is the actual condition.
+  // A pointer that cannot hover, rather than a width: at 640-767px a width test
+  // gives hover behaviour to a layout that has already stacked.
   useEffect(() => {
     const mq = window.matchMedia("(hover: none)")
     const sync = () => setTouch(mq.matches)
@@ -670,9 +733,8 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
     return () => mq.removeEventListener("change", sync)
   }, [])
 
-  // ─── Sizing ───
-  // Measured rather than assumed. The wrapper is the grid cell the hero gives
-  // us, so this is however much width the page actually has after its padding.
+  // Sizing. Measured rather than assumed: the wrapper is the grid cell the hero
+  // gives us, so this is however much width the page has after its padding.
   const shellRef = useRef<HTMLDivElement>(null)
   const [containerSize, setContainerSize] = useState(MAX_CONTAINER)
 
@@ -681,12 +743,10 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
     if (!el) return
     const measure = () => {
       const room = el.getBoundingClientRect().width
-      // Three limits, all real. The room the column gives us, the cap above,
-      // and the largest form whose canvas still fits across the screen: the
+      // Three limits, all real: the room the column gives us, the cap above,
+      // and the largest form whose canvas still fits across the screen. The
       // canvas is absolutely positioned and centred, so one wider than the
-      // viewport is scrollable overflow nothing in the layout accounts for.
-      // containerForCanvas inverts the last one, so the shape shrinks to fit
-      // rather than the canvas being clipped away from under it.
+      // viewport is overflow the layout does not account for.
       const screen = containerForCanvas(document.documentElement.clientWidth)
       if (room > 0) {
         setContainerSize(Math.min(room * ROOM_SHARE, MAX_CONTAINER, screen))
@@ -705,18 +765,18 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
   // The menu expands if forced, if hovered, or if tapped on a touch device.
   const isExpanded = forceOpen || (touch ? touchOpen : (hovered || activeItem !== null))
 
-  // Handle continuous rotation
-  useEffect(() => {
+  // The ring's rotation, in radians, advanced on the frame clock. Nothing
+  // re-renders as it turns: each item reads it through useTransform.
+  const spin = useMotionValue(0)
+  useAnimationFrame((_, delta) => {
     if (!isExpanded) return
-    const id = setInterval(() => setAngle((a) => a + 0.15), 50)
-    return () => clearInterval(id)
-  }, [isExpanded])
+    spin.set(spin.get() + (ORBIT_SPEED * Math.PI) / 180 * (Math.min(delta, 50) / 1000))
+  })
 
   // Escape is handled by ModalShell, which only listens while a modal is open.
-
-  // Handle click on individual menu items
   const handleClick = useCallback((item: MenuItem, e: React.MouseEvent) => {
-    e.stopPropagation() // Prevent the container click from firing and closing the menu
+    // Or the container's own click fires and closes the menu.
+    e.stopPropagation()
     if (item.href)  window.open(item.href, "_blank", "noopener,noreferrer")
     else if (item.modal) setModal(item.modal)
   }, [])
@@ -729,30 +789,23 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
   const N         = MENU_ITEMS.length
   const angleStep = (2 * Math.PI) / N
 
-  // ─── Geometry ───
-  // The canvas size IS the shape's scale. The camera has a fixed FOV at a fixed
-  // z, so a canvas of N pixels shows exactly VIEW_UNITS of world across it, and
-  // the torus takes whatever fraction of that its radii come to. There is no
-  // separate zoom to compensate with.
+  // Geometry. The canvas size is the shape's scale: the camera has a fixed FOV
+  // at a fixed z, so a canvas of N pixels shows exactly VIEW_UNITS of world
+  // across it and the torus takes whatever fraction its radii come to. There is
+  // no separate zoom, and no multiplier for the intro scatter's run-up: the
+  // margin is already in the frame by construction.
   //
-  // Which is why there is no scatter multiplier here any more. A previous
-  // version drew the canvas at 1.65x "for the intro scatter's run-up" and that
-  // multiplied the torus with it: at a 480px container the shape came out 757px
-  // across, which is what made the landing page read as one enormous donut.
-  // The run-up needs no multiplier, because the margin is already in the frame:
-  // the sphere is 6.1 world units in a 10.77 unit view, so 43% of the canvas is
-  // empty space around the form by construction.
-  //
-  // RADIUS was a flat 150px once, which had no relationship to anything the
-  // shader draws, so the ring of icons was never concentric with the torus. It
-  // sits on the torus's own ring line now, off the same scale.
+  // RADIUS comes off the same scale as the shader's own ring line, so the icons
+  // are concentric with the torus rather than sitting at a guessed pixel value.
   const formCanvas = canvasForContainer(containerSize)
   const canvasSize = Math.round(formCanvas)
   const RADIUS     = TORUS_RADIUS * pxPerUnit(formCanvas)
-  // Applied to the icon, never to the button around it. The button carries the
-  // tap target, and scaling that down on a small screen shrinks the hit area on
-  // exactly the devices with the least precise pointer.
-  const itemScale  = Math.max(0.7, Math.min(1, containerSize / MAX_CONTAINER))
+  // Applied to the mark, never to the button around it: the button carries the
+  // tap target, and shrinking that on a small screen costs hit area on exactly
+  // the devices with the least precise pointer. Measured against the ring the
+  // marks actually sit on rather than against the desktop cap, or a phone gets
+  // the smallest marks and the least room to read them.
+  const itemScale  = Math.max(0.86, Math.min(1, RADIUS / 150))
 
   return (
     <>
@@ -788,13 +841,12 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
           <Canvas
             camera={{ position: [0, 0, CAMERA_Z], fov: CAMERA_FOV }}
             gl={{ antialias: true, alpha: true }}
-            // Measure with offsetWidth/offsetHeight rather than a bounding rect.
-            // The hero's GSAP entrance scales [data-torus] from 0.9, and a
-            // bounding rect includes an ancestor's transform, so r3f sized the
-            // canvas mid-animation: it came out 736px inside an 800px box and
-            // then sat anchored to the top left of it. The torus rendered 32px
-            // up and left of the icons, which is why the ring never looked
-            // concentric with it. offsetSize ignores transforms.
+            // Uncapped this renders at the device ratio, which on a phone is 3x
+            // and nine times the fragment work.
+            dpr={[1, 2]}
+            // offsetWidth/offsetHeight rather than a bounding rect, which would
+            // include any ancestor transform and size the canvas to whatever an
+            // entrance animation happened to be part-way through.
             resize={{ offsetSize: true }}
             style={{ background: "transparent", width: "100%", height: "100%" }}
           >
@@ -804,80 +856,21 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
 
         <AnimatePresence>
           {isExpanded &&
-            MENU_ITEMS.map((item, i) => {
-              const theta  = angleStep * i - Math.PI / 2 + (angle * Math.PI) / 180
-              const ox     = Math.cos(theta) * RADIUS
-              const oy     = Math.sin(theta) * RADIUS
-              const active = activeItem === item.id
-
-              return (
-                <motion.button
-                  key={item.id}
-                  // The visible label only appears on hover, so without this
-                  // the orbit is seven unnamed buttons to a screen reader.
-                  aria-label={item.label}
-                  // The icon is 22px, which is half a usable tap target, so the
-                  // padding is the hit area rather than decoration.
-                  className="absolute flex flex-col items-center justify-center gap-0.5 cursor-pointer z-[50] size-11"
-                  style={{ x: ox, y: oy }}
-                  initial={{ opacity: 0, scale: 0.3 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{   opacity: 0, scale: 0.3 }}
-                  transition={{ type: "spring", stiffness: 380, damping: 28, delay: i * 0.04 }}
-                  onMouseEnter={() => !touch && setActiveItem(item.id)}
-                  onMouseLeave={() => !touch && setActiveItem(null)}
-                  onClick={(e) => handleClick(item, e)}
-                >
-                  {/* The scale lives here, on the mark, so the 44px button
-                      around it keeps its size at every ring radius. */}
-                  <motion.span
-                    className="flex items-center justify-center"
-                    animate={{ scale: active ? itemScale * 1.3 : itemScale }}
-                    transition={{ type: "spring", stiffness: 380, damping: 28 }}
-                  >
-                  {item.kind === "img" ? (
-                    <div
-                      className="relative overflow-hidden shadow-2xl rounded-lg bg-background/90"
-                      style={{ width: 44, height: 44 }}
-                    >
-                      <Image
-                        src={item.imgSrc!}
-                        alt={item.label}
-                        fill
-                        className={`object-contain transition-opacity duration-200 ${
-                          active || touch ? "opacity-100" : "opacity-80"
-                        }`}
-                        sizes="44px"
-                        unoptimized
-                      />
-                    </div>
-                  ) : (
-                    <span
-                      className={`transition-colors duration-150 ${
-                        active || touch ? "text-foreground" : "text-foreground/50"
-                      }`}
-                    >
-                      {item.icon}
-                    </span>
-                  )}
-                  </motion.span>
-
-                  <AnimatePresence>
-                    {(active || touch) && (
-                      <motion.span
-                        className="absolute -bottom-5 text-[9px] font-sans font-bold text-foreground/80 whitespace-nowrap tracking-wide"
-                        initial={{ opacity: 0, y: -2 }}
-                        animate={{ opacity: 1, y: 0  }}
-                        exit={{   opacity: 0, y: -2  }}
-                        transition={{ duration: 0.12 }}
-                      >
-                        {item.label}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </motion.button>
-              )
-            })}
+            MENU_ITEMS.map((item, i) => (
+              <OrbitItem
+                key={item.id}
+                item={item}
+                theta0={angleStep * i - Math.PI / 2}
+                radius={RADIUS}
+                scale={itemScale}
+                delay={i * 0.04}
+                spin={spin}
+                touch={touch}
+                active={activeItem === item.id}
+                onActive={setActiveItem}
+                onSelect={handleClick}
+              />
+            ))}
         </AnimatePresence>
       </div>
       </div>

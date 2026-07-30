@@ -3,14 +3,9 @@
 import { useEffect, useRef, useState } from 'react'
 
 /**
- * Typewriters.
- *
- * Both of these drive a `useState` per keystroke, which an earlier version of
- * the hero was deliberately moved away from. It is affordable here only because
- * the strings are one short word and the elements are leaves: a re-render of a
- * single span costs nothing. Do not extend this to anything with children.
- *
- * The caret is CSS, so it blinks without involving React at all.
+ * Typewriters. Both drive a `useState` per keystroke, which is affordable only
+ * because the strings are one short word and the elements are leaves. Do not
+ * extend this to anything with children. The caret is CSS.
  */
 
 const CARET = (
@@ -67,8 +62,8 @@ export function TypeOnce({
 
   return (
     <span className={`inline-flex items-baseline ${className}`}>
-      {/* The full string is present for assistive tech and for search engines,
-          which should not have to wait on an animation to read a name. */}
+      {/* The full string, so assistive tech and crawlers do not wait on an
+          animation to read a name. */}
       <span className="sr-only">{text}</span>
       <span aria-hidden>{text.slice(0, n)}</span>
       {!done.current && n < text.length && CARET}

@@ -1,17 +1,11 @@
 /**
- * Short pieces.
+ * Short pieces, newest first. Same arrangement as the research entries: the
+ * page and the search index read this one file.
  *
- * Same arrangement as the research entries: the page and the search index read
- * this one file. Newest first.
- *
- * House style, since it is easy to drift: open on something concrete, follow
- * one thread, name the effect or the study where there is one, and stop before
- * the moral. Where a well-known story turns out to be shakier than its
- * retelling, say so. No em dashes.
- *
- * Watch the last line of every piece in particular. That is where a landing
- * gets smuggled in, and a landing is the thing that makes writing sound like it
- * was performed rather than thought. Finish the thought and stop.
+ * House style: open on something concrete, follow one thread, name the effect
+ * or the study where there is one, and stop before the moral. Where a well
+ * known story turns out shakier than its retelling, say so. No em dashes, and
+ * watch the last line of every piece: that is where a landing gets smuggled in.
  */
 
 export type Thought = {

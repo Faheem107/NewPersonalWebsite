@@ -1,24 +1,29 @@
-"use client"
+'use client'
 
-import { useRef, useMemo, useState, useEffect } from "react"
-import { useFrame, useThree } from "@react-three/fiber"
-import { useTheme } from "next-themes"
-import * as THREE from "three"
-import { SPHERE_RADIUS, TORUS_RADIUS, TUBE_RADIUS } from "@/lib/torus-geometry"
+import { useRef, useMemo, useEffect } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
+import { useTheme } from 'next-themes'
+import * as THREE from 'three'
+import { CAMERA_Z, SPHERE_RADIUS, TORUS_RADIUS, TUBE_RADIUS } from '@/lib/torus-geometry'
+
+/** Frame-rate independent exponential smoothing. */
+function approach(current: number, goal: number, dt: number, rate: number) {
+  return current + (goal - current) * (1 - Math.exp(-dt * rate))
+}
 
 export function TorusShader({ explode = false }: { explode?: boolean }) {
   const pointsRef = useRef<THREE.Points>(null)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
-  const [mouse3D, setMouse3D] = useState(new THREE.Vector3(0, 0, -10))
+  // A ref, not state: this is written on every pointer move, and a setState
+  // there re-renders the whole hero for a value only the shader reads.
+  const mouse3D = useRef(new THREE.Vector3(0, 0, -10))
   const { camera, gl } = useThree()
-  
-  const { resolvedTheme } = useTheme()
-  const isDark = resolvedTheme !== "light"
 
-  // `scatter` is where each point starts: somewhere on a loose shell around the
-  // torus. `seed` staggers its arrival, so the form assembles rather than
-  // appearing whole. Both are computed once and uploaded as attributes; doing
-  // it from a hash in the shader would be cheaper but far less controllable.
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme !== 'light'
+
+  // `scatter` is where each point starts, on a loose cloud around the torus;
+  // `seed` staggers its arrival so the form assembles rather than appearing.
   const { positions, scatter, seed } = useMemo(() => {
     const torusGeometry = new THREE.TorusGeometry(TORUS_RADIUS, TUBE_RADIUS, 80, 160)
     const positions = torusGeometry.attributes.position.array as Float32Array
@@ -28,16 +33,12 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
     const seed = new Float32Array(count)
 
     for (let i = 0; i < count; i++) {
-      // Uniform direction on a sphere.
       const u = Math.random() * 2 - 1
       const theta = Math.random() * Math.PI * 2
       const r = Math.sqrt(1 - u * u)
 
-      // Heavy-tailed radius rather than a narrow shell. A shell has an edge,
-      // and on a dark page that edge is plainly visible: the intro read as a
-      // hollow ball collapsing. Raising a uniform to a small power puts most
-      // points close and a long tail far off past the viewport, so the cloud
-      // has no boundary to see.
+      // Heavy-tailed rather than a narrow shell: a shell has a visible edge, and
+      // the intro then reads as a hollow ball collapsing.
       const dist = 5 + Math.pow(Math.random(), 0.28) * 55
 
       scatter[i * 3] = Math.cos(theta) * r * dist
@@ -59,10 +60,10 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
           uExpand: { value: 0.0 },
           uIsDark: { value: 1.0 },
           uIntro: { value: 0.0 },
+          uCameraZ: { value: CAMERA_Z },
           // From lib/torus-geometry, so the DOM and the shader cannot drift
           // apart on what size the shape is.
           uRadius: { value: TORUS_RADIUS },
-          uTube: { value: TUBE_RADIUS },
           uSphereRadius: { value: SPHERE_RADIUS },
         },
         vertexShader: `
@@ -72,12 +73,9 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
           uniform float uExpand;
           uniform float uIntro;
           uniform float uRadius;
-          uniform float uTube;
           uniform float uSphereRadius;
           attribute vec3 scatter;
           attribute float seed;
-          varying float vDistanceFromCenter;
-          varying float vMouseInfluence;
           varying vec3 vWorldPosition;
           varying vec3 vNormal;
           varying float vExpand;
@@ -87,27 +85,22 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
             vec3 pos = position;
             vExpand = uExpand;
 
-            // Breathing. Small enough not to read as a scale animation, large
-            // enough that the surface is never quite still.
+            // Small enough not to read as a scale animation, large enough that
+            // the surface is never quite still.
             float breathe = 1.0 + 0.022 * sin(uTime * 0.55);
-            // A slow travelling ripple around the ring, so the motion has a
+            // A travelling ripple around the ring, so the motion has a
             // direction rather than pulsing uniformly.
             float ripple = sin(atan(pos.y, pos.x) * 3.0 - uTime * 0.9) * 0.035;
             pos *= breathe + ripple;
 
-            vec2 center = normalize(pos.xy) * uRadius;
-            float distFromTube = length(pos.xy - center);
-            vDistanceFromCenter = 1.0 - (distFromTube / uTube);
-            
             vec3 worldPos = (modelMatrix * vec4(pos, 1.0)).xyz;
             vWorldPosition = worldPos;
             vNormal = normalize((modelMatrix * vec4(normalize(pos), 0.0)).xyz);
-            
+
             float distToMouse = length(worldPos - uMouse);
             float magneticInfluence = smoothstep(4.0, 0.0, distToMouse);
             magneticInfluence = pow(magneticInfluence, 0.7);
-            vMouseInfluence = magneticInfluence;
-            
+
             vec3 direction = normalize(uMouse - worldPos);
             vec3 perpendicular = cross(direction, vec3(0.0, 0.0, 1.0));
             pos += direction * magneticInfluence * uMagnetStrength;
@@ -120,31 +113,28 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
             spherePos.x = cos(angleXY) * cos(angleTube) * uSphereRadius;
             spherePos.y = sin(angleXY) * cos(angleTube) * uSphereRadius;
             spherePos.z = sin(angleTube) * uSphereRadius;
-            
-            // Proportional to the radius rather than a fixed 0.15, which at the
-            // smaller ball was 6% of it and made the silhouette read as a
-            // rounded cube instead of a wobble on a sphere.
+
+            // Proportional to the radius, so the wobble stays a wobble at any
+            // size rather than rounding the ball into a cube.
             spherePos += normalize(spherePos) * sin(uTime * 1.2 + angleXY * 4.0) * (uSphereRadius * 0.042);
 
             pos = mix(pos, spherePos, smoothstep(0.0, 1.0, uExpand));
 
-            // Assembly. Each point has its own start time from its seed, so the
-            // torus gathers itself out of the cloud over the intro rather than
-            // every point landing at once. Applied last, so it overrides the
-            // magnet and the expand: nothing should tug at a point that has not
-            // arrived yet.
-            // The start times spread across 0.6 of the intro and each point
-            // takes 0.4 to settle, so the two windows overlap heavily: at any
-            // instant a wide band of points is mid-flight. That overlap is what
-            // stops the form solidifying early and then collecting stragglers on
-            // top of itself, which is what the landing-on-top reading was.
-            float t = clamp((uIntro - seed * 0.6) / 0.4, 0.0, 1.0);
-            // Eased out hard: fast while distant, slow as it settles.
-            float ease = 1.0 - pow(1.0 - t, 3.0);
+            // Assembly. Start times spread across 0.62 of the intro and each
+            // point takes 0.42 to settle, so the windows overlap heavily and a
+            // wide band is always in flight. Without the overlap the form
+            // solidifies early and then collects stragglers on top of itself.
+            //
+            // Applied last, so it overrides the magnet and the expand: nothing
+            // should tug at a point that has not arrived yet.
+            float t = clamp((uIntro - seed * 0.62) / 0.42, 0.0, 1.0);
+            // Smootherstep: zero velocity at both ends, so there is no kick as
+            // a point leaves the cloud and none as it lands.
+            float ease = t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
             vIntro = ease;
 
             // A little spin on the way in, so points arc rather than travelling
-            // in straight lines. Gentler than it was, so the arc reads as drift.
+            // in straight lines.
             float swirl = (1.0 - ease) * 1.2;
             float cs = cos(swirl), sn = sin(swirl);
             vec3 from = vec3(scatter.x * cs - scatter.y * sn, scatter.x * sn + scatter.y * cs, scatter.z);
@@ -154,77 +144,101 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
             vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
             gl_Position = projectionMatrix * mvPosition;
 
-            // Arriving points are only slightly larger now. The old 1.8 made
-            // late arrivals read as fat blobs dropping onto the surface; at 0.7
-            // they resolve as the cloud tightening rather than grains landing.
+            // Arriving points run only slightly larger. Any more and late
+            // arrivals read as blobs dropping onto the surface.
             float introSize = 1.0 + (1.0 - ease) * 0.7;
-            // The expanded end is smaller than it was: the ball shrank from 3.6
-            // to 2.4, which puts the same point count into 44% of the area, and
-            // at the old size that read as a solid disc rather than a shell.
             gl_PointSize = mix(2.2 + magneticInfluence * 1.0, 1.25, uExpand) * introSize * (30.0 / -mvPosition.z);
           }
         `,
         fragmentShader: `
           uniform float uTime;
           uniform float uIsDark;
-          varying float vDistanceFromCenter;
-          varying float vMouseInfluence;
+          uniform float uCameraZ;
           varying vec3 vWorldPosition;
           varying vec3 vNormal;
           varying float vExpand;
           varying float vIntro;
 
-          // Cyanotype, not iridescence. Three closely related cold blues rather
-          // than three opposing hues, so the surface reads as one material
-          // catching light instead of an oil slick.
-          vec3 getSurfaceColor(vec3 worldPos, vec3 normal, float time, float isDarkTheme) {
+          const float TAU = 6.28318530718;
+
+          /** Four stops, wrapped, so the ramp closes on itself. */
+          vec3 ramp(vec3 a, vec3 b, vec3 c, vec3 d, float t) {
+            t = fract(t) * 4.0;
+            if (t < 1.0) return mix(a, b, t);
+            if (t < 2.0) return mix(b, c, t - 1.0);
+            if (t < 3.0) return mix(c, d, t - 2.0);
+            return mix(d, a, t - 3.0);
+          }
+
+          /**
+           * A toned cyanotype.
+           *
+           * An untoned print is one hue: Prussian blue, light to dark. Toning it
+           * in gold carries the deepest parts over into violet and then to a
+           * warm brown, which is the range this ramps through. The stop a point
+           * takes comes from where it sits around the ring, so the toning
+           * travels rather than being painted onto the form.
+           *
+           * The whole ramp is deliberately kept off white. Dark mode blends
+           * additively, so points on the near face sum, and any stop close to
+           * 1.0 clips the silhouette to a flat white ring.
+           */
+          vec3 getSurfaceColor(vec3 worldPos, float time, float isDarkTheme) {
             float angle = atan(worldPos.y, worldPos.x);
             float height = worldPos.z;
-            float shift = angle * 0.8 + height * 0.5 + time * 0.18;
 
-            vec3 shadow, body, highlight;
+            float around = angle / TAU + height * 0.05 + time * 0.02;
 
-            if (isDarkTheme > 0.5) {
-              shadow    = vec3(0.10, 0.24, 0.38);
-              body      = vec3(0.33, 0.55, 0.74);
-              highlight = vec3(0.72, 0.87, 0.97);
-            } else {
-              shadow    = vec3(0.05, 0.19, 0.33);
-              body      = vec3(0.11, 0.31, 0.47);
-              highlight = vec3(0.44, 0.66, 0.81);
-            }
+            vec3 base = isDarkTheme > 0.5
+              ? ramp(
+                  vec3(0.05, 0.17, 0.40),
+                  vec3(0.10, 0.52, 0.78),
+                  vec3(0.40, 0.28, 0.78),
+                  vec3(0.74, 0.46, 0.22),
+                  around)
+              : ramp(
+                  vec3(0.03, 0.13, 0.31),
+                  vec3(0.05, 0.36, 0.60),
+                  vec3(0.27, 0.17, 0.53),
+                  vec3(0.56, 0.32, 0.12),
+                  around);
 
-            vec3 c = mix(shadow, body, sin(shift) * 0.5 + 0.5);
-            c = mix(c, highlight, pow(cos(shift * 1.3) * 0.5 + 0.5, 2.0));
-            return c;
+            // Form shading, kept separate from the toning: one says which way
+            // the surface is turned, the other says where round the print it is.
+            float lit = 0.60 + 0.40 * (sin(angle * 0.8 + height * 0.9 + time * 0.22) * 0.5 + 0.5);
+            return base * lit;
           }
-          
+
           void main() {
             vec2 center = gl_PointCoord - 0.5;
             float dist = length(center);
-            
+
             if (dist > 0.5) discard;
-            
+
             float alpha = smoothstep(0.5, 0.35, dist);
-            
-            vec3 surface = getSurfaceColor(vWorldPosition, vNormal, uTime, uIsDark);
-            vec3 finalColor;
+
+            vec3 finalColor = getSurfaceColor(vWorldPosition, uTime, uIsDark);
+
+            // A pale edge where the surface turns away from the camera, so the
+            // silhouette has a line and the form reads as solid. Small: on the
+            // silhouette a great many points overlap, and anything stronger
+            // sums to white there.
+            vec3 viewDir = normalize(vec3(0.0, 0.0, uCameraZ) - vWorldPosition);
+            float rim = pow(1.0 - abs(dot(normalize(vNormal), viewDir)), 3.0);
+            finalColor += vec3(0.16, 0.22, 0.30) * rim * (1.0 - vExpand);
 
             if (uIsDark < 0.5) {
-                finalColor = surface * mix(1.15, 0.95, vExpand);
-                alpha *= mix(0.92, 0.7, vExpand);
+              finalColor *= mix(1.12, 0.95, vExpand);
+              alpha *= mix(0.96, 0.78, vExpand);
             } else {
-                // Was multiplied by 14, which clipped every channel and left a flat
-                // white ring. A gain just above 1 keeps the blues as blues.
-                finalColor = surface * mix(0.92, 0.7, vExpand);
-                alpha *= mix(0.34, 0.26, vExpand);
+              // Additive, so this is a gain rather than a blend.
+              finalColor *= mix(0.94, 0.72, vExpand);
+              alpha *= mix(0.34, 0.24, vExpand);
             }
 
-            // Points fade up as they arrive, and run a little hotter while in
-            // flight, so the assembly reads as light resolving into a form.
-            // Softened from 0.5: the brighter in-flight tint was part of what
-            // made late arrivals pop against the settled surface.
-            finalColor += vec3(0.20, 0.38, 0.58) * (1.0 - vIntro) * 0.3;
+            // Points fade up as they arrive and run a little hotter in flight,
+            // so the assembly reads as light resolving into a form.
+            finalColor += vec3(0.22, 0.36, 0.58) * (1.0 - vIntro) * 0.3;
             alpha *= vIntro;
 
             gl_FragColor = vec4(finalColor, alpha);
@@ -232,18 +246,16 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
         `,
         transparent: true,
         depthWrite: false,
-        blending: THREE.AdditiveBlending, 
+        blending: THREE.AdditiveBlending,
       }),
     [isDark],
   )
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      // Normalised against the canvas, not the window. It used to divide by
-      // window.innerWidth while unprojecting through a camera whose aspect is
-      // the canvas's, so the magnet target landed nowhere near the cursor: a
-      // pointer parked at the right of the page pulled a whole side of the
-      // form out sideways, and the ball sat visibly off its own centre.
+      // Normalised against the canvas, not the window: the camera's aspect is
+      // the canvas's, so dividing by innerWidth lands the magnet target nowhere
+      // near the pointer.
       const rect = gl.domElement.getBoundingClientRect()
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1
       const y = -((e.clientY - rect.top) / rect.height) * 2 + 1
@@ -252,13 +264,11 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
       vector.unproject(camera)
       const dir = vector.sub(camera.position).normalize()
       const distance = -camera.position.z / dir.z
-      const pos = camera.position.clone().add(dir.multiplyScalar(distance))
-
-      setMouse3D(pos)
+      mouse3D.current.copy(camera.position).add(dir.multiplyScalar(distance))
     }
 
-    window.addEventListener("mousemove", handleMouseMove)
-    return () => window.removeEventListener("mousemove", handleMouseMove)
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [camera, gl])
 
   useFrame((state, delta) => {
@@ -266,48 +276,41 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
 
     const u = materialRef.current.uniforms
     const t = state.clock.elapsedTime
+    // The first frame carries shader compilation and the first upload, so it
+    // can be hundreds of milliseconds. Uncapped, that jumps a visible chunk of
+    // the intro before anything has been drawn.
+    const dt = Math.min(delta, 1 / 30)
 
-    // Intro runs once, over about three and a quarter seconds. Longer than the
-    // old 2.5, which gives the overlapping arrivals room to drift in rather than
-    // hurry, and reads as settling rather than dropping.
     if (u.uIntro.value < 1) {
-      u.uIntro.value = Math.min(1, u.uIntro.value + delta / 3.25)
+      u.uIntro.value = Math.min(1, u.uIntro.value + dt / 3.4)
     }
     const intro = u.uIntro.value
 
-    // Spin about the ring's own axis. This is the one rotation that always
-    // looks right, so it is the only one allowed to accumulate. It runs a little
-    // fast as the points arrive and settles into its resting speed, which is
-    // most of what makes the entrance feel like motion rather than a fade. The
-    // spin-up is gentler than it was so the surface is not whipping round while
-    // the last points are still finding it.
-    pointsRef.current.rotation.y += 0.004 + (1 - intro) * (1 - intro) * 0.012
+    // Spin about the ring's own axis, the one rotation that always looks right,
+    // so it is the only one allowed to accumulate. Faster while the points
+    // arrive, settling to its resting speed.
+    pointsRef.current.rotation.y += (0.24 + (1 - intro) * (1 - intro) * 0.72) * dt
 
     // Tilt and roll oscillate around a fixed pose rather than accumulating.
     // Left to accumulate, the torus drifts edge-on, where the tube stacks on
-    // itself and additive blending clips the whole silhouette to white.
+    // itself and additive blending clips the silhouette to white.
     pointsRef.current.rotation.x = 0.46 + Math.sin(t * 0.17) * 0.16
     pointsRef.current.rotation.z = Math.sin(t * 0.13) * 0.2
     pointsRef.current.position.y = Math.sin(t * 0.42) * 0.09
 
     u.uTime.value = t
-    u.uMouse.value.copy(mouse3D)
+    u.uMouse.value.copy(mouse3D.current)
     u.uIsDark.value = isDark ? 1.0 : 0.0
 
     materialRef.current.blending = isDark ? THREE.AdditiveBlending : THREE.NormalBlending
 
-    u.uExpand.value = THREE.MathUtils.lerp(u.uExpand.value, explode ? 1.0 : 0.0, 0.05)
+    u.uExpand.value = approach(u.uExpand.value, explode ? 1.0 : 0.0, dt, 3.2)
 
-    // The magnet all but switches off once the menu is open. It is a full unit
-    // of pull over a four-unit radius against a ball of radius 2.4, and the
-    // pointer is necessarily inside the form whenever the icons are showing,
-    // since that is what opens it. Left at full strength it dragged one side of
-    // the ball out into a lobe, and no ring of icons is concentric with that.
-    u.uMagnetStrength.value = THREE.MathUtils.lerp(
-      u.uMagnetStrength.value,
-      explode ? 0.12 : 1.0,
-      0.06,
-    )
+    // The magnet all but switches off once the menu is open: the pointer is
+    // necessarily inside the form whenever the icons are showing, and at full
+    // strength it drags one side of the ball out into a lobe that no ring of
+    // icons is concentric with.
+    u.uMagnetStrength.value = approach(u.uMagnetStrength.value, explode ? 0.12 : 1.0, dt, 3.8)
   })
 
   return (

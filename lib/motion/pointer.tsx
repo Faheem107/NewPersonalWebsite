@@ -7,15 +7,11 @@ export type CursorVariant = 'default' | 'highlight' | 'stuck' | 'text'
 /**
  * Pointer state for the custom cursor.
  *
- * Deliberately NOT React state. The previous version kept the variant and the
- * stuck target in useState inside the provider, and every element using
- * useStick consumed that context, so hovering one link in a dense list
- * re-rendered the whole subtree. In the notes, where the sidebar is a column of
- * links a few pixels apart, that was most of the glitchiness.
- *
- * So: a module-level store, a subscribe function, and a context value that
- * never changes identity. Nothing here re-renders anything. The cursor reads it
- * from a single rAF loop.
+ * Deliberately not React state. Every element using useStick consumes this, so
+ * held in a provider it would re-render the whole subtree on each hover, which
+ * in a dense list of links is most of a frame. A module-level store and a
+ * context value that never changes identity instead: writers mutate, and the
+ * cursor reads from a single rAF loop.
  */
 
 type Store = {
@@ -31,10 +27,7 @@ type Store = {
 
 const store: Store = { x: -100, y: -100, variant: 'default', target: null, inside: false }
 
-/**
- * The cursor reads this from its own rAF loop, so there is no subscription and
- * nothing to notify. Writers just mutate.
- */
+/** Read from the cursor's own rAF loop, so there is nothing to notify. */
 export function getCursorState(): Readonly<Store> {
   return store
 }
@@ -61,11 +54,8 @@ export function setCursorTarget(el: HTMLElement | null) {
 }
 
 /**
- * Corner radius of a stick target.
- *
- * getComputedStyle forces a style recalc, and the old code called it on every
- * single mouseenter. Elements can declare the value up front with
- * data-cursor-radius; otherwise it is measured once and cached.
+ * Corner radius of a stick target. getComputedStyle forces a style recalc, so
+ * elements can declare it with data-cursor-radius; otherwise measure once.
  */
 const radiusCache = new WeakMap<HTMLElement, number>()
 
@@ -117,16 +107,14 @@ export function PointerProvider({ children }: { children: React.ReactNode }) {
 
     const onMove = (e: PointerEvent) => setCursorPosition(e.clientX, e.clientY)
 
-    // Losing the pointer out of the window used to leave the cursor stranded
-    // wherever it was last seen.
+    // Or the cursor is stranded wherever it was last seen.
     const onLeave = (e: PointerEvent) => {
       if (e.relatedTarget) return
       setCursorInside(false)
     }
 
-    // The text variant is resolved on pointerover, which fires once per element
-    // crossed, rather than per frame. Anything already stuck or highlighted
-    // keeps its variant: those are explicit and this is the fallback.
+    // Resolved on pointerover, which fires once per element crossed rather
+    // than per frame. Stuck and highlight are explicit and win over this.
     const onOver = (e: Event) => {
       if (store.variant === 'stuck' || store.variant === 'highlight') return
       const target = e.target as HTMLElement | null
@@ -157,9 +145,8 @@ export function usePointer() {
 
 /**
  * Makes an element a snap target: the cursor takes its shape on enter and
- * releases on leave. For isolated controls only. A dense list of links wants
- * useHighlight instead, since snapping between neighbours a few pixels apart
- * is jitter by construction.
+ * releases on leave. Isolated controls only. A dense list wants useHighlight,
+ * since snapping between neighbours a few pixels apart is jitter.
  */
 export function useStick() {
   return useMemo(

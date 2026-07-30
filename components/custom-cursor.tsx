@@ -4,22 +4,16 @@ import { useEffect, useRef } from 'react'
 import { getCursorState, targetRadius, usePointer } from '@/lib/motion/pointer'
 
 /**
- * The pointer.
+ * The pointer. One rAF loop writing transforms straight to the DOM: nothing
+ * goes through React state and nothing re-renders while the pointer moves.
  *
- * One rAF loop writing transforms straight to the DOM. Nothing here goes
- * through React state, and nothing re-renders while the pointer moves.
+ * No mix-blend-mode: blending over .plate, which uses backdrop-filter and so
+ * creates a stacking context the compositor redraws every frame, flickers. The
+ * ring below buys the contrast the blend was for.
  *
- * Two things it deliberately does not do any more:
- *
- *  - No mix-blend-mode. It used difference, which meant it needed no knowledge
- *    of the theme, but blending over .plate (which uses backdrop-filter, and so
- *    creates a stacking context the compositor redraws every frame) flickered
- *    in Chrome and Safari. A ring gives the contrast the blend was buying.
- *
- *  - No dropping the stuck state on scroll. The old version stored the target's
- *    rect and unstuck on any scroll event, which with Lenis fires every frame,
- *    so the cursor popped out constantly. It keeps the element instead and
- *    re-measures, which is one getBoundingClientRect per frame while stuck.
+ * It stores the stuck element rather than its rect and re-measures each frame,
+ * because Lenis fires scroll every frame and unsticking on scroll drops the
+ * cursor constantly.
  */
 
 type Shape = { w: number; h: number; r: number; fill: number; ring: number }
@@ -129,11 +123,10 @@ export default function CustomCursor() {
         ref={boxRef}
         className="border"
         style={{
-          // Centred here rather than on the root, whose transform the rAF loop
+          // Centred here rather than on the root, whose transform the loop
           // rewrites every frame.
           transform: 'translate(-50%, -50%)',
-          // The ring keeps it legible over photographs, which is what the old
-          // difference blend was for.
+          // Keeps it legible over photographs.
           boxShadow: '0 0 0 1px rgb(var(--cursor-contrast) / 0.35)',
         }}
       />

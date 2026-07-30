@@ -25,20 +25,22 @@ export default function Home() {
 
     gsap.registerPlugin(SplitText)
 
-    // One timeline for the whole entrance. The page this replaces ran six
-    // independent transitions with hand-tuned delays, which is why nothing
-    // quite landed together.
-    // The name and the disciplines type themselves now, so the timeline no
-    // longer touches them: animating opacity underneath a typewriter fights it.
-    // [data-explore] takes an absolute start time rather than the '-=0.3' it
-    // used to take from the role line's tween. That line is gone, and a
-    // relative offset from a tween that no longer exists would have shifted the
-    // button back onto the torus's entrance.
+    // One timeline for the whole entrance. The name and the disciplines type
+    // themselves, so the timeline does not touch them: animating opacity
+    // underneath a typewriter fights it.
+    //
+    // Opacity only on the torus. Scaling the container is a second entrance
+    // competing with the shader's own assembly, and the transform it leaves
+    // behind is a containing block for anything fixed inside it.
     const ctx = gsap.context(() => {
       gsap
         .timeline({ defaults: { ease: 'power4.out' } })
-        .from('[data-torus]', { opacity: 0, scale: 0.9, duration: 1.4 })
-        .from('[data-explore]', { opacity: 0, duration: 0.6 }, NAME_DONE / 1000 + 0.5)
+        .from('[data-torus]', { opacity: 0, duration: 1.6, clearProps: 'opacity' })
+        .from(
+          '[data-explore]',
+          { opacity: 0, duration: 0.6, clearProps: 'opacity,transform' },
+          NAME_DONE / 1000 + 0.5,
+        )
     }, el)
 
     return () => ctx.revert()

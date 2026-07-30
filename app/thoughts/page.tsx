@@ -25,6 +25,7 @@ export default function ThoughtsPage() {
               key={thought.id}
               id={thought.id}
               data-reveal
+              data-enter
               className="scroll-mt-32 border-t border-border py-12"
             >
               <p data-reveal-child className="caption mb-4">

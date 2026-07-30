@@ -10,11 +10,7 @@ import { useScrollLock } from '@/lib/motion/scroll-lock'
 
 /**
  * Search across the whole site: notes and their sections, research entries,
- * thoughts, and the pages themselves.
- *
- * Hand-rolled rather than built on cmdk, which this replaces. Once the scorer,
- * the styling and the Escape handling all had to be overridden, the library was
- * only supplying a list box. Matching lives in lib/search.ts.
+ * thoughts, and the pages themselves. Matching lives in lib/search-match.ts.
  */
 
 const SECTION_ORDER: SearchSection[] = ['Notes', 'Research', 'Thoughts', 'Pages']
@@ -157,7 +153,11 @@ export default function SiteSearch({ docs }: { docs: SearchDoc[] }) {
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[100] flex items-start justify-center px-4 pt-[12vh]"
+          // Dynamic viewport units and a small top offset: on a phone the
+          // keyboard takes most of the screen the moment the field is focused,
+          // and 12vh of padding above the dialog put the results behind it.
+          className="fixed inset-0 z-[100] flex items-start justify-center px-4 pt-[6vh] sm:pt-[12vh]"
+          style={{ height: '100dvh' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -180,7 +180,9 @@ export default function SiteSearch({ docs }: { docs: SearchDoc[] }) {
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="flex items-center gap-3 border-b border-border px-5">
-              <span className="caption">Search</span>
+              {/* The label costs room a phone does not have, and the field's
+                  own placeholder already says what this is. */}
+              <span className="caption hidden sm:block">Search</span>
               <input
                 ref={inputRef}
                 value={query}
@@ -190,14 +192,19 @@ export default function SiteSearch({ docs }: { docs: SearchDoc[] }) {
                 aria-label="Search the site"
                 autoComplete="off"
                 spellCheck={false}
-                className="flex-1 bg-transparent py-4 text-[0.9375rem] outline-none placeholder:text-muted-foreground/60"
+                // 16px on small screens. Anything under it and iOS Safari zooms
+                // the whole page on focus, and never zooms back out.
+                className="flex-1 bg-transparent py-4 text-base outline-none placeholder:text-muted-foreground/60 sm:text-[0.9375rem]"
               />
-              <kbd className="caption rounded border border-border px-1.5 py-0.5">esc</kbd>
+              <kbd className="caption hidden rounded border border-border px-1.5 py-0.5 sm:block">
+                esc
+              </kbd>
             </div>
 
             <div
               ref={listRef}
-              className="max-h-[52vh] overflow-y-auto overscroll-contain p-2"
+              className="overflow-y-auto overscroll-contain p-2"
+              style={{ maxHeight: 'min(52dvh, 26rem)' }}
             >
               {flat.length === 0 ? (
                 <p className="px-3 py-8 text-center text-[0.9375rem] text-muted-foreground">

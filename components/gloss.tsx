@@ -7,29 +7,13 @@ import { GLOSSARY } from '@/content/glossary'
 import { useHighlight } from '@/lib/motion/pointer'
 
 /**
- * A term that explains itself.
+ * A term that explains itself. Hover opens it where there is a real pointer,
+ * tap where there is not, focus in both cases, and only one is ever open.
  *
- * Three decisions worth keeping:
- *
- *  - **The trigger is a span, not a button.** A button is inline-block, and an
- *    inline-block "University of Oxford" cannot break across lines, so a term
- *    landing near the end of a measure forces an early wrap. The site has been
- *    bitten by exactly this before, with SplitText tearing headings. A span
- *    with role="button" wraps like the prose it sits in, and the keyboard
- *    handling a button would have given for free is written out below.
- *
- *  - **The box is absolute, not fixed.** The research page puts GSAP transforms
- *    on [data-reveal] while it animates, and a transformed ancestor becomes the
- *    containing block for fixed positioning: that is the documented trap that
- *    pinned the torus modals above the torus. Absolute against a wrapper this
- *    component owns cannot hit it, and needs no portal.
- *
- *  - **It clamps horizontally.** html and body carry overflow-x: hidden as a
- *    backstop, so a box overhanging the right edge is cut rather than scrolled
- *    to. The shift is measured once per open.
- *
- * Hover opens it where there is a real pointer, tap where there is not, and
- * focus in both cases. Only one is open at a time.
+ * The trigger is a span rather than a button because an inline-block trigger
+ * cannot break across lines, so a long term near the end of a measure would
+ * force an early wrap. The keyboard handling a button gives for free is written
+ * out below instead.
  */
 
 /** Fired by whichever gloss is opening, so the others close. */
@@ -110,22 +94,27 @@ export default function Gloss({
     const pad = 12
     const r = box.getBoundingClientRect()
 
+    // html and body carry overflow-x: hidden, so a box overhanging the right
+    // edge is cut rather than scrolled to.
     let dx = 0
     if (r.right > window.innerWidth - pad) dx = window.innerWidth - pad - r.right
     else if (r.left < pad) dx = pad - r.left
     setShift(dx)
 
-    // Flip up only when below genuinely does not fit and above does.
+    // Flip up only when below genuinely does not fit and above does. The
+    // visual viewport, not innerHeight: on mobile Safari the latter is the
+    // large viewport, so a box near the fold opened under the browser chrome.
     const anchor = wrapRef.current?.getBoundingClientRect()
     if (anchor) {
-      const roomBelow = window.innerHeight - anchor.bottom
+      const viewport = window.visualViewport?.height ?? window.innerHeight
+      const roomBelow = viewport - anchor.bottom
       const roomAbove = anchor.top
       setAbove(roomBelow < r.height + pad && roomAbove > roomBelow)
     }
   }, [open])
 
-  // An unknown key should be loud in development and invisible in production,
-  // never a crash and never a bracket left in the prose.
+  // Loud in development, invisible in production. Never a crash, and never a
+  // bracket left in the prose.
   if (!entry) {
     if (process.env.NODE_ENV !== 'production') {
       console.warn(`[gloss] no glossary entry for "${entryKey}"`)
@@ -180,10 +169,9 @@ export default function Gloss({
             ref={boxRef}
             id={id}
             role="tooltip"
-            // The clamp goes through motion's own x, not a transform in
-            // `style`. motion writes `transform` to animate y, so a transform
-            // set alongside it is overwritten on the first frame and the box
-            // silently un-clamps itself back over the edge of the screen.
+            // The clamp goes through motion's own x, never a transform in
+            // `style`, which motion overwrites on the first frame of the y
+            // animation.
             initial={{ opacity: 0, y: above ? 4 : -4, x: shift }}
             animate={{ opacity: 1, y: 0, x: shift }}
             exit={{ opacity: 0, y: above ? 4 : -4, x: shift }}

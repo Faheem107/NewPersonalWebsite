@@ -78,6 +78,17 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${lexend.variable}`}>
+      <head>
+        {/* Blocking, so [data-enter] is hiding before the first paint rather
+            than one frame after it. Without a flag the rule would also apply
+            with JavaScript off, where nothing would ever reveal the content. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{matchMedia('(prefers-reduced-motion: reduce)').matches||(document.documentElement.dataset.motion='on')}catch(e){}",
+          }}
+        />
+      </head>
       <body suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <PointerProvider>

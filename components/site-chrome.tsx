@@ -36,11 +36,6 @@ function NavLink({ href, label, onClick }: { href: string; label: string; onClic
   )
 }
 
-/**
- * Says what it does. The shortcut used to be the label, which was learnable but
- * only once you already knew it was a search box; the hint sits inside the
- * dialog now instead.
- */
 function SearchButton() {
   const [mac, setMac] = useState(true)
   const stick = useStick()
@@ -62,6 +57,60 @@ function SearchButton() {
         {mac ? '⌘K' : 'Ctrl K'}
       </span>
     </button>
+  )
+}
+
+/**
+ * The links arrive behind the wipe rather than with it: the circle takes 0.5s
+ * to cross the screen, so a link that starts fading in at 0.12s is visible
+ * through paint that has not reached it yet.
+ */
+const STAGGER_START = 0.22
+const STAGGER_STEP = 0.055
+
+function MobileNavItem({
+  href,
+  label,
+  index,
+  onNavigate,
+}: {
+  href: string
+  label: string
+  index: number
+  onNavigate: () => void
+}) {
+  const pathname = usePathname()
+  const active = pathname === href || pathname.startsWith(href + '/')
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        delay: STAGGER_START + index * STAGGER_STEP,
+        duration: 0.4,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+    >
+      <Link
+        href={href}
+        onClick={onNavigate}
+        aria-current={active ? 'page' : undefined}
+        className={`flex min-h-12 items-center font-display text-3xl tracking-tight transition-colors ${
+          active ? 'text-foreground' : 'text-muted-foreground'
+        }`}
+      >
+        {/* A rule in the margin marks the current page. The desktop nav uses
+            weight for this, which is invisible at display sizes. */}
+        <span
+          aria-hidden
+          className={`mr-3 h-6 w-px shrink-0 transition-colors ${
+            active ? 'bg-accent' : 'bg-transparent'
+          }`}
+        />
+        {label}
+      </Link>
+    </motion.div>
   )
 }
 
@@ -91,16 +140,14 @@ export default function SiteChrome() {
 
   return (
     <>
-      {/* The header has to outrank the overlay while the menu is open. It is a
-          positioned element, so it establishes a stacking context and the
-          z-[70] on the close button could not escape it: the button sat under
-          the overlay at z-60 and did not respond to a tap. On a phone that left
-          no way out of the menu except following a link, since there is no
-          Escape key to press. */}
+      {/* The header outranks the overlay while the menu is open. It is a
+          positioned element, so it establishes a stacking context and a z-index
+          on the close button alone cannot escape it. */}
       <motion.header
         className={`fixed inset-x-0 top-0 flex items-center justify-between gap-6 px-6 py-5 md:px-10 md:py-7 ${
           open ? 'z-[70]' : 'z-50'
         }`}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.25rem)' }}
         animate={{ y: visible ? 0 : -96, opacity: visible ? 1 : 0 }}
         transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
       >
@@ -134,7 +181,8 @@ export default function SiteChrome() {
       <AnimatePresence>
         {open && (
           <motion.div
-            className="fixed inset-0 z-[60] bg-background/95 backdrop-blur-xl md:hidden"
+            className="fixed inset-0 z-[60] touch-none bg-background/95 backdrop-blur-xl md:hidden"
+            style={{ height: '100dvh' }}
             initial={{ clipPath: 'circle(0% at 92% 4%)' }}
             animate={{ clipPath: 'circle(140% at 92% 4%)' }}
             exit={{ clipPath: 'circle(0% at 92% 4%)' }}
@@ -142,39 +190,43 @@ export default function SiteChrome() {
           >
             <nav
               aria-label="Primary"
-              className="flex h-full flex-col justify-center gap-6 px-8"
+              className="flex h-full flex-col justify-center gap-1 px-8"
+              style={{
+                paddingTop: 'calc(env(safe-area-inset-top) + 5rem)',
+                paddingBottom: 'calc(env(safe-area-inset-bottom) + 2rem)',
+              }}
             >
               {NAV.map((item, i) => (
-                <motion.div
+                <MobileNavItem
                   key={item.href}
-                  initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.12 + i * 0.06, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <Link
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className="font-display text-3xl tracking-tight"
-                  >
-                    {item.label}
-                  </Link>
-                </motion.div>
+                  href={item.href}
+                  label={item.label}
+                  index={i}
+                  onNavigate={() => setOpen(false)}
+                />
               ))}
 
-              {/* Search lived only in the desktop nav, so on a phone the index
-                  was reachable by the shortcut and by nothing else. */}
+              {/* Search lives only in the desktop nav otherwise, which leaves
+                  the index reachable by keyboard shortcut and nothing else. */}
               <motion.div
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.12 + NAV.length * 0.06, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                transition={{
+                  delay: STAGGER_START + NAV.length * STAGGER_STEP,
+                  duration: 0.4,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
               >
                 <button
                   onClick={() => {
                     setOpen(false)
                     window.dispatchEvent(new Event('open-site-search'))
                   }}
-                  className="font-display text-3xl tracking-tight text-muted-foreground"
+                  className="flex min-h-12 items-center font-display text-3xl tracking-tight text-muted-foreground"
                 >
+                  {/* Matches the rule the links reserve, so the column of
+                      labels lines up whichever one is current. */}
+                  <span aria-hidden className="mr-3 w-px shrink-0" />
                   search
                 </button>
               </motion.div>

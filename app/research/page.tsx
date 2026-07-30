@@ -26,6 +26,7 @@ export default function ResearchPage() {
               key={item.id}
               id={item.id}
               data-reveal
+              data-enter
               className="grid scroll-mt-32 gap-x-8 gap-y-3 border-t border-border py-10 md:grid-cols-[var(--rail)_1fr]"
             >
               {/* The rail carries when and where. Both were pill badges before,

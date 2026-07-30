@@ -110,11 +110,13 @@ export default function NotesSidebar({ subjects }: { subjects: Subject[] }) {
         ))}
       </nav>
 
-      {/* Narrow screens: a control in the flow, and a drawer. */}
+      {/* Narrow screens: a control in the flow, and a drawer. Both pills clear
+          the home indicator, which bottom-6 alone sits underneath. */}
       <button
         onClick={() => setOpen(true)}
         aria-expanded={open}
-        className="caption fixed bottom-6 left-1/2 z-40 -translate-x-1/2 rounded-full border border-border bg-background/90 px-4 py-2 backdrop-blur-sm lg:hidden"
+        className="caption fixed left-1/2 z-40 -translate-x-1/2 rounded-full border border-border bg-background/90 px-4 py-3 backdrop-blur-sm lg:hidden"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}
       >
         Contents
       </button>
@@ -122,13 +124,23 @@ export default function NotesSidebar({ subjects }: { subjects: Subject[] }) {
       <AnimatePresence>
         {open && (
           <motion.div
-            className="fixed inset-0 z-[60] overflow-y-auto bg-background/95 px-8 py-24 backdrop-blur-xl lg:hidden"
+            className="fixed inset-0 z-[60] bg-background/95 backdrop-blur-xl lg:hidden"
+            style={{ height: '100dvh' }}
             initial={{ clipPath: 'circle(0% at 50% 96%)' }}
             animate={{ clipPath: 'circle(150% at 50% 96%)' }}
             exit={{ clipPath: 'circle(0% at 50% 96%)' }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
-            <nav aria-label="Notes">
+            {/* The list scrolls inside the drawer and stops above the button,
+                rather than running underneath it. */}
+            <nav
+              aria-label="Notes"
+              className="h-full overflow-y-auto overscroll-contain px-8"
+              style={{
+                paddingTop: 'calc(env(safe-area-inset-top) + 6rem)',
+                paddingBottom: 'calc(env(safe-area-inset-bottom) + 6rem)',
+              }}
+            >
               {subjects.map(subject => (
                 <SubjectGroup
                   key={subject.slug}
@@ -140,7 +152,8 @@ export default function NotesSidebar({ subjects }: { subjects: Subject[] }) {
 
             <button
               onClick={() => setOpen(false)}
-              className="caption fixed bottom-6 left-1/2 -translate-x-1/2 rounded-full border border-border bg-background/90 px-4 py-2"
+              className="caption fixed left-1/2 -translate-x-1/2 rounded-full border border-border bg-background/90 px-4 py-3 backdrop-blur-sm"
+              style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}
             >
               Close
             </button>

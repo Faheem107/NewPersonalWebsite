@@ -9,11 +9,8 @@ export { default as Plot } from '@/components/mdx/plot'
 export { default as Gloss } from '@/components/gloss'
 
 /**
- * The note vocabulary. One set, shared by every note. The pages this replaces
- * redefined Section, Eq and Diagram inside all five subject files.
- *
- * Everything here uses the same device as the rest of the site: a condensed-caps
- * label in the left rail, prose in the field. No tinted boxes, no accent bars.
+ * The note vocabulary. One set, shared by every note, using the same device as
+ * the rest of the site: a caps label in the left rail, prose in the field.
  */
 
 /** A stated result. `kind` is the label; the rail carries it. */
@@ -28,8 +25,8 @@ export function Statement({
 }) {
   return (
     <div
-      // Titled statements get an anchor so search can deep-link to them. The id
-      // comes from the same slugify the index uses, so the two always agree.
+      // The id comes from the same slugify the index uses, so search can
+      // deep-link to a statement and the two always agree.
       id={title ? slugify(title) : undefined}
       className="my-9 grid scroll-mt-28 gap-x-8 gap-y-2 border-t border-border pt-5 md:grid-cols-[7rem_1fr]"
     >
@@ -63,10 +60,9 @@ export function Aside({ children }: { children: ReactNode }) {
  * A figure with a plate caption.
  *
  * Scientific plots arrive with white backgrounds, which glare on a dark page.
- * `tone="invert"` flips luminance and rotates hue back, so a line plot reads as
- * light-on-dark with its curve colours roughly intact. `tone="keep"` is for
- * images where that would be wrong, such as photographs and colour-mapped renders, and
- * just takes the brightness down so the plate reads as a print on a dark wall.
+ * `tone="invert"` flips luminance and rotates hue back, so a line plot reads
+ * light-on-dark with its curve colours intact. `tone="keep"` is for images
+ * where that would be wrong, such as photographs and colour-mapped renders.
  */
 export function Figure({
   src,
@@ -192,7 +188,7 @@ export const mdxComponents = {
   Diagram,
   Aside,
   // <Gloss entryKey="poisson">a Poisson process</Gloss> inside a note, for a
-  // term that deserves a sentence rather than its own <Definition>.
+  // term that wants a sentence rather than its own <Definition>.
   Gloss,
   Statement,
   Definition,

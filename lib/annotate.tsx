@@ -5,17 +5,15 @@ import { GLOSSARY } from '@/content/glossary'
 /**
  * Inline annotation, as a syntax rather than as markup.
  *
- * `content/research.ts` and `content/thoughts.ts` hold prose as plain strings,
- * and `lib/search.ts` indexes those strings directly. Turning the bodies into
- * JSX to get glossed terms would make the content files `.tsx` and leave the
- * index holding React elements it cannot search, so the terms go in as a
- * syntax the prose can carry and both readers agree on:
+ * The content files hold prose as plain strings and the search index reads
+ * those strings directly, so a glossed term goes in as syntax both readers
+ * agree on rather than as JSX:
  *
- *     [[key]]                 the entry's own term, as it reads in the glossary
+ *     [[key]]                    the entry's own term
  *     [[key|as it reads here]]   when the sentence needs different words
  *
- * Everything that reads that syntax lives in this file. Adding a third reader
- * later means calling `parseAnnotated`, not writing another regex.
+ * Everything that parses it lives in this file. A third reader means calling
+ * parseAnnotated, not writing another regex.
  */
 
 const TOKEN = /\[\[([a-z0-9-]+)(?:\|([^\]]+))?\]\]/g
@@ -40,10 +38,8 @@ export function parseAnnotated(text: string): AnnotatedPart[] {
 }
 
 /**
- * The prose without the brackets.
- *
- * The search index runs everything through this, so a search for a glossed term
- * matches the words a reader actually sees and no result ever shows `[[`.
+ * The prose without the brackets. Every content source routes through this, so
+ * the index matches the words a reader sees and no result shows a bracket.
  */
 export function stripAnnotations(text: string): string {
   return text.replace(TOKEN, (_, key: string, display?: string) =>
