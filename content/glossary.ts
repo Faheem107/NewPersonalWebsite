@@ -130,6 +130,41 @@ export const GLOSSARY: Record<string, GlossEntry> = {
   },
 
   // things in the thoughts
+  factorial: {
+    term: 'Factorial',
+    short:
+      'A whole number multiplied by every whole number below it, written with an exclamation mark. It counts the ways of putting that many things in order.',
+  },
+  'low-earth-orbit': {
+    term: 'Low Earth orbit',
+    short:
+      'Orbits up to about 2,000 kilometres above the ground. The International Space Station flies at roughly 400, and almost everyone who has been to space went no higher.',
+  },
+  'coastline-paradox': {
+    term: 'The coastline paradox',
+    short:
+      'A coastline has no single length, because the answer grows as the ruler shrinks. Lewis Fry Richardson found it and Benoit Mandelbrot made it well known.',
+  },
+  'sidereal-day': {
+    term: 'The sidereal day',
+    short:
+      'One full turn of the Earth measured against the distant stars: 23 hours, 56 minutes and 4 seconds. The 24 hour day is measured against the Sun instead.',
+  },
+  'friendship-paradox': {
+    term: 'The friendship paradox',
+    short:
+      'On average your friends have more friends than you do, because sociable people appear in more lists of friends. Scott Feld described it in 1991.',
+  },
+  'birthday-problem': {
+    term: 'The birthday problem',
+    short:
+      'How many people you need before two of them probably share a birthday. The answer is 23, because what grows quickly is the number of pairs.',
+  },
+  cumulus: {
+    term: 'Cumulus',
+    short:
+      'The puffy, flat-bottomed cloud of a fair day. It forms where a column of warm air rises and cools until its water vapour condenses.',
+  },
   eliza: {
     term: 'ELIZA',
     short:

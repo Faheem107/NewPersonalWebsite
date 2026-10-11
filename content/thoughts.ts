@@ -18,6 +18,83 @@ export type Thought = {
 
 export const THOUGHTS: Thought[] = [
   {
+    id: 'a-new-order-every-shuffle',
+    date: 'October 10, 2026',
+    title: 'Shuffle a deck and nobody has seen it before',
+    body: [
+      'A deck of 52 cards can be put in order in [[factorial|52 factorial]] ways. Written out, that is roughly an 8 followed by 67 zeros.',
+      'Suppose all eight billion of us had shuffled one deck every second since the Big Bang. Together we would have dealt a number of orderings that is 28 digits long. The number of possible orderings is 68 digits long, so we would have barely started.',
+      'This means a properly shuffled deck is almost certainly in an order no deck has been in before.',
+      'The word carrying the weight there is "properly". In 1992 Dave Bayer and Persi Diaconis showed that it takes about seven riffle shuffles to mix a deck. I usually stop at three, which leaves whole runs of the last game sitting where they were.',
+    ],
+  },
+  {
+    id: 'the-great-wall-from-space',
+    date: 'September 27, 2026',
+    title: 'Can you see the Great Wall from space?',
+    body: [
+      'The claim is older than spaceflight. In 1932 a Ripley\'s Believe It or Not cartoon called the Great Wall the only man-made thing visible from the Moon, decades before anyone could go and look.',
+      'From the Moon the whole Earth is about as wide as your thumb held at arm\'s length. Nothing anyone has built shows up at that size.',
+      'From [[low-earth-orbit|low orbit]], about 400 kilometres up, it is still very hard. The wall is long, but being long does not help. Width is what the eye needs, and most of the wall is under six metres wide, which from that height is like picking out a single hair from across a room. It is also made of the local stone and earth, so it is the same colour as the hills under it.',
+      'In 2003 Yang Liwei, the first Chinese astronaut, came home and said he had not seen it. Motorways and airport runways are easier, because they are wider and they contrast with the ground. Cities at night are easier still.',
+    ],
+  },
+  {
+    id: 'how-long-is-a-coastline',
+    date: 'September 19, 2026',
+    title: 'Nobody knows how long the coast of Britain is',
+    body: [
+      'Lewis Fry Richardson was a pacifist who wanted to know whether countries with longer shared borders fought more wars. For that he needed the lengths of the borders. Spain gave its border with Portugal as 987 kilometres. Portugal gave the same border as 1,214.',
+      'Neither country had made a mistake. A border that follows rivers and ridges wiggles, and a shorter ruler follows more of the wiggles. Step around the coast of Britain with a 100 kilometre ruler and you get about 2,800 kilometres. With a 50 kilometre ruler it comes to about 3,400.',
+      'It never settles. Each time the ruler shrinks there are smaller bays to go around, then rocks, then pebbles, and the total keeps climbing. Benoit Mandelbrot picked the problem up in 1967, and the [[coastline-paradox|coastline paradox]] became one of the starting points for fractals.',
+      'So a coastline length only means something next to the ruler that measured it. Atlases print the first number and almost never the second.',
+    ],
+  },
+  {
+    id: 'a-day-is-not-24-hours',
+    date: 'September 6, 2026',
+    title: 'A day is not 24 hours long',
+    body: [
+      'The Earth turns once in 23 hours, 56 minutes and 4 seconds. That is a [[sidereal-day|sidereal day]], which is one turn measured against the distant stars.',
+      'The missing four minutes come from the orbit. While the Earth turns once it also moves about one degree around the Sun, so the Sun is no longer quite where it was. The planet has to turn a little further to bring it back overhead, and that extra bit takes about four minutes.',
+      'Noon to noon is 24 hours, then, but it is slightly more than one turn. Over a year the extra bits add up to one whole turn: the Earth spins about 366 times in 365 days.',
+      'You can watch the four minutes go by. Every star rises four minutes earlier than it did the night before, which is two hours over a month. It is why Orion is up on winter evenings and nowhere to be found on summer ones.',
+    ],
+  },
+  {
+    id: 'your-friends-have-more-friends',
+    date: 'August 29, 2026',
+    title: 'Your friends have more friends than you do',
+    body: [
+      'This is true for most people, so it is not an insult. In 1991 the sociologist Scott Feld showed that it falls out of how the counting works.',
+      'Someone with a hundred friends appears in a hundred lists of friends. Someone with one friend appears in one. When you read down your own list, the sociable people are in it more often than they deserve to be, and the average comes out above you.',
+      'It is called the [[friendship-paradox|friendship paradox]], and it turned out to be useful. During the 2009 flu outbreak, Nicholas Christakis and James Fowler picked Harvard students at random and asked each one to name a friend. The named friends caught the flu about two weeks before the random group did, because they sat closer to the middle of the network.',
+      'The same counting is behind the train that is always crowded when you take it. Most trains in a day may run half empty, but most passengers are on the full ones.',
+    ],
+  },
+  {
+    id: 'twenty-three-people',
+    date: 'August 15, 2026',
+    title: 'Twenty-three people and a birthday',
+    body: [
+      'A football match has 22 players and a referee. The chance that two of those 23 people share a birthday is a little over half.',
+      'It sounds wrong because I picture a different question. I imagine walking onto the pitch and asking whether anyone has my birthday, and for that the odds really are poor, about 6 percent. But nobody said it had to be mine. Any two people will do, and 23 people make 253 pairs.',
+      'This is the [[birthday-problem|birthday problem]], and the number keeps climbing. With 70 people in a room the chance is 99.9 percent.',
+      'The 2014 World Cup made a tidy test, since every squad had exactly 23 players. By the BBC\'s count, 16 of the 32 squads had two players with the same birthday.',
+    ],
+  },
+  {
+    id: 'how-much-does-a-cloud-weigh',
+    date: 'August 2, 2026',
+    title: 'How much does a cloud weigh?',
+    body: [
+      'Take a small fair-weather cloud, the [[cumulus|cumulus]] kind a child would draw. A reasonable one is about a kilometre wide, a kilometre long and a kilometre tall.',
+      'Peggy LeMone, an atmospheric scientist, worked out what is in it. Each cubic metre holds about half a gram of water, which is a few drops. There are a billion cubic metres. That comes to roughly 500 tonnes, or a hundred elephants, drifting over your head.',
+      'It stays up because the water is split into droplets about a hundredth of a millimetre across. Something that small falls at around a centimetre a second, and the air under a growing cloud is rising faster than that.',
+      'The air in the same box weighs about a million tonnes. By weight the cloud is 99.95 percent air, and everything you can see of it is in the remaining twentieth of a percent.',
+    ],
+  },
+  {
     id: 'the-machine-wants-things',
     date: 'July 18, 2026',
     title: 'We keep saying the machine wants things',
