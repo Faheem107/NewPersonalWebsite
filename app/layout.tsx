@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     template: '%s · Faheem',
   },
   description:
-    'Mohammed Faheem, a second-year Physics student at NYU Abu Dhabi with a Film & New Media minor. Coursework notes, biophysics research, photography and film.',
+    'Mohammed Faheem, a third-year Physics student at NYU Abu Dhabi with a Film & New Media minor. Coursework notes, biophysics research, photography and film.',
   keywords: ['physics', 'biophysics', 'NYU Abu Dhabi', 'statistical mechanics', 'photography', 'film'],
   authors: [{ name: 'Mohammed Faheem' }],
   openGraph: {

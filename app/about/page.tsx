@@ -6,7 +6,7 @@ import PageHeader from '@/components/page-header'
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'Mohammed Faheem, a second-year Physics student at NYU Abu Dhabi with a Film & New Media minor.',
+    'Mohammed Faheem, a third-year Physics student at NYU Abu Dhabi with a Film & New Media minor.',
 }
 
 const FACTS = [
@@ -36,7 +36,7 @@ export default function AboutPage() {
               a sentence. "Transcription" is the one that matters, because it is
               the hand-off to the research page. */}
           <p>
-            I am Mohammed Faheem. I am in my second year at{' '}
+            I am Mohammed Faheem. I am in my third year at{' '}
             <Gloss entryKey="nyuad">NYU Abu Dhabi</Gloss>, studying Physics with a minor in{' '}
             <Gloss entryKey="film-new-media">Film &amp; New Media</Gloss>. Most of what I do is
             pointing maths and code at biology problems, which at the moment means the random side

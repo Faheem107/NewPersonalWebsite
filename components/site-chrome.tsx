@@ -37,12 +37,7 @@ function NavLink({ href, label, onClick }: { href: string; label: string; onClic
 }
 
 function SearchButton() {
-  const [mac, setMac] = useState(true)
   const stick = useStick()
-
-  useEffect(() => {
-    setMac(/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent))
-  }, [])
 
   return (
     <button
@@ -50,12 +45,9 @@ function SearchButton() {
       onClick={() => window.dispatchEvent(new Event('open-site-search'))}
       aria-label="Search the site"
       aria-keyshortcuts="Meta+K Control+K"
-      className="caption flex items-center gap-2 rounded-full border border-border px-3 py-1 transition-colors hover:border-foreground/40 hover:text-foreground"
+      className="caption flex items-center rounded-full border border-border px-3 py-1 transition-colors hover:border-foreground/40 hover:text-foreground"
     >
       Search
-      <span aria-hidden className="opacity-50">
-        {mac ? '⌘K' : 'Ctrl K'}
-      </span>
     </button>
   )
 }
