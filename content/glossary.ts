@@ -150,15 +150,15 @@ export const GLOSSARY: Record<string, GlossEntry> = {
     short:
       'One full turn of the Earth measured against the distant stars: 23 hours, 56 minutes and 4 seconds. The 24 hour day is measured against the Sun instead.',
   },
-  'friendship-paradox': {
-    term: 'The friendship paradox',
+  apogee: {
+    term: 'Apogee',
     short:
-      'On average your friends have more friends than you do, because sociable people appear in more lists of friends. Scott Feld described it in 1991.',
+      'The point in the Moon\'s orbit where it is furthest from the Earth, about 405,500 kilometres away. The closest point is perigee, at about 363,300.',
   },
-  'birthday-problem': {
-    term: 'The birthday problem',
+  'retrograde-rotation': {
+    term: 'Retrograde rotation',
     short:
-      'How many people you need before two of them probably share a birthday. The answer is 23, because what grows quickly is the number of pairs.',
+      'Spinning in the opposite direction to the orbit. Venus and Uranus are the two planets that do it, and on Venus it makes the Sun rise in the west.',
   },
   cumulus: {
     term: 'Cumulus',
