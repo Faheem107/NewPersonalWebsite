@@ -1,21 +1,22 @@
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef } from "react"
-import { createPortal } from "react-dom"
 import {
   AnimatePresence,
+  animate,
   motion,
   useAnimationFrame,
   useMotionValue,
   useTransform,
   type MotionValue,
+  type TargetAndTransition,
 } from "motion/react"
 import { Linkedin, Instagram, Github, Mail } from "lucide-react"
 import { BookOpen, Disc3, Clapperboard } from "lucide-react"
-import Image from "next/image"
 import { Canvas } from "@react-three/fiber"
+import ModalShell from "@/components/modal-shell"
+import MusicPlayer from "@/components/music-player"
 import { TorusShader } from "@/components/torus-shader"
-import { useScrollLock } from "@/lib/motion/scroll-lock"
 import {
   CAMERA_FOV,
   CAMERA_Z,
@@ -59,518 +60,34 @@ type MenuItem = {
   icon?: React.ReactNode
   href?: string
   modal?: "vinyl" | "books" | "movies"
+  /** What the glyph itself does under the pointer. One gesture each. */
+  gesture: TargetAndTransition
+  /** Turns all the time, faster under the pointer. Only the disc. */
+  turns?: boolean
 }
+
+const REST: TargetAndTransition = { rotate: 0, x: 0, y: 0, scale: 1 }
+const once = { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }
+
+const GESTURES = {
+  none:  REST,
+  open:  { rotate: [0, -10, 7, 0], y: [0, -2, 0], transition: once },
+  clap:  { rotate: [0, -16, 0, -9, 0], transition: { ...once, duration: 0.5 } },
+  nod:   { rotate: [0, 9, -6, 0], scale: [1, 1.14, 1], transition: once },
+  send:  { x: [0, 3, 0], y: [0, -4, 0], rotate: [0, -8, 0], transition: once },
+} satisfies Record<string, TargetAndTransition>
 
 const MENU_ITEMS: MenuItem[] = [
-  { id: "music",    label: "Music",    icon: <Disc3 size={22} strokeWidth={1.5} />,        modal: "vinyl" },
-  { id: "books",    label: "Books",    icon: <BookOpen size={22} strokeWidth={1.5} />,     modal: "books" },
-  { id: "movies",   label: "Movies",   icon: <Clapperboard size={22} strokeWidth={1.5} />, modal: "movies" },
-  { id: "linkedin", label: "LinkedIn", icon: <Linkedin size={22} strokeWidth={1.5} />,     href: "https://www.linkedin.com/in/mohammed-faheem-33bb49295/" },
-  { id: "instagram",label: "Instagram",icon: <Instagram size={22} strokeWidth={1.5} />,    href: "https://www.instagram.com/faheemmmm._/" },
-  { id: "github",   label: "GitHub",   icon: <Github size={22} strokeWidth={1.5} />,       href: "https://github.com/Faheem107" },
-  { id: "email",    label: "Email",    icon: <Mail size={22} strokeWidth={1.5} />,         href: "mailto:mj3398@nyu.edu" },
+  { id: "music",    label: "Music",    icon: <Disc3 size={20} strokeWidth={1.6} />,        modal: "vinyl", gesture: GESTURES.none, turns: true },
+  { id: "books",    label: "Books",    icon: <BookOpen size={20} strokeWidth={1.6} />,     modal: "books", gesture: GESTURES.open },
+  { id: "movies",   label: "Movies",   icon: <Clapperboard size={20} strokeWidth={1.6} />, modal: "movies", gesture: GESTURES.clap },
+  { id: "linkedin", label: "LinkedIn", icon: <Linkedin size={20} strokeWidth={1.6} />,     href: "https://www.linkedin.com/in/mohammed-faheem-33bb49295/", gesture: GESTURES.nod },
+  { id: "instagram",label: "Instagram",icon: <Instagram size={20} strokeWidth={1.6} />,    href: "https://www.instagram.com/faheemmmm._/", gesture: GESTURES.nod },
+  { id: "github",   label: "GitHub",   icon: <Github size={20} strokeWidth={1.6} />,       href: "https://github.com/Faheem107", gesture: GESTURES.nod },
+  { id: "email",    label: "Email",    icon: <Mail size={20} strokeWidth={1.6} />,         href: "mailto:mj3398@nyu.edu", gesture: GESTURES.send },
 ]
 
-// Modal shell
-
-const FOCUSABLE =
-  'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
-
-/**
- * Backdrop, centring, focus and scroll behaviour for both modals.
- *
- * The portal is load-bearing. Rendered in place these sit inside [data-torus],
- * and a transformed ancestor becomes the containing block for position: fixed,
- * so inset-0 would resolve to the torus box rather than to the viewport.
- */
-function ModalShell({
-  label,
-  onClose,
-  panelClassName = '',
-  panelStyle,
-  children,
-}: {
-  label: string
-  onClose: () => void
-  panelClassName?: string
-  panelStyle?: React.CSSProperties
-  children: React.ReactNode
-}) {
-  const panelRef = useRef<HTMLDivElement>(null)
-  const restoreFocus = useRef<HTMLElement | null>(null)
-
-  useScrollLock(true)
-
-  useEffect(() => {
-    restoreFocus.current = document.activeElement as HTMLElement | null
-    panelRef.current?.focus()
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        onClose()
-        return
-      }
-      if (e.key !== 'Tab') return
-
-      const panel = panelRef.current
-      if (!panel) return
-      const items = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE))
-      if (!items.length) {
-        e.preventDefault()
-        return
-      }
-      const first = items[0]
-      const last = items[items.length - 1]
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault()
-        last.focus()
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault()
-        first.focus()
-      }
-    }
-
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      restoreFocus.current?.focus?.()
-    }
-  }, [onClose])
-
-  if (typeof document === 'undefined') return null
-
-  return createPortal(
-    <motion.div
-      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.24, ease: 'easeOut' }}
-    >
-      <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
-
-      <motion.div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label={label}
-        tabIndex={-1}
-        className={`relative outline-none will-change-transform ${panelClassName}`}
-        style={panelStyle}
-        initial={{ opacity: 0, scale: 0.96, y: 12 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.97, y: 8 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
-      >
-        {children}
-      </motion.div>
-    </motion.div>,
-    document.body,
-  )
-}
-
-// The turntable
-
-/**
- * A record on a beveled plate, in the same 98-era chrome as the player.
- *
- * Three layers: the disc turns, carrying the grooves and the label; the sheen
- * does not, because a light source does not turn with the record; the spindle
- * sits still in the middle of both. The album art is the label only.
- */
-function Turntable({ src, playing }: { src: string; playing: boolean }) {
-  const SIZE = 148
-  const LABEL = Math.round(SIZE * 0.38)
-
-  return (
-    <div
-      style={{
-        position: 'relative',
-        width: SIZE + 18,
-        height: SIZE + 18,
-        flexShrink: 0,
-        display: 'grid',
-        placeItems: 'center',
-        background: '#8a8a8a',
-        border: '2px solid',
-        // sunken, the inverse of the raised bevel the buttons use
-        borderColor: '#808080 #ffffff #ffffff #808080',
-      }}
-    >
-      <div style={{ position: 'relative', width: SIZE, height: SIZE }}>
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            borderRadius: '50%',
-            // Grooves, faked the way a 98 skin would have faked them.
-            background: `
-              repeating-radial-gradient(
-                circle at 50% 50%,
-                #0b0b0b 0px, #0b0b0b 1px,
-                #1a1a1a 2px, #0f0f0f 3px
-              )
-            `,
-            boxShadow: 'inset 0 0 12px rgba(0,0,0,0.9)',
-            animation: 'vinyl-spin 3.2s linear infinite',
-            animationPlayState: playing ? 'running' : 'paused',
-          }}
-        >
-          <div
-            style={{
-              position: 'absolute',
-              left: '50%',
-              top: '50%',
-              width: LABEL,
-              height: LABEL,
-              marginLeft: -LABEL / 2,
-              marginTop: -LABEL / 2,
-              borderRadius: '50%',
-              overflow: 'hidden',
-              border: '1px solid #000',
-            }}
-          >
-            <Image src={src} alt="" fill className="object-cover" sizes="60px" unoptimized />
-          </div>
-        </div>
-
-        {/* Fixed sheen. Stays put while the disc turns under it. */}
-        <div
-          aria-hidden
-          style={{
-            position: 'absolute',
-            inset: 0,
-            borderRadius: '50%',
-            pointerEvents: 'none',
-            background:
-              'conic-gradient(from 210deg, rgba(255,255,255,0) 0deg, rgba(255,255,255,0.16) 34deg, rgba(255,255,255,0) 78deg, rgba(255,255,255,0) 190deg, rgba(255,255,255,0.10) 220deg, rgba(255,255,255,0) 260deg)',
-          }}
-        />
-
-        {/* Spindle, punched through the label. */}
-        <div
-          aria-hidden
-          style={{
-            position: 'absolute',
-            left: '50%',
-            top: '50%',
-            width: 7,
-            height: 7,
-            marginLeft: -3.5,
-            marginTop: -3.5,
-            borderRadius: '50%',
-            background: '#8a8a8a',
-            boxShadow: 'inset 1px 1px 0 #555',
-          }}
-        />
-      </div>
-
-      {/* Tonearm: swings onto the record while it plays, lifts when it stops. */}
-      <motion.div
-        aria-hidden
-        style={{
-          position: 'absolute',
-          right: 8,
-          top: 10,
-          width: 6,
-          height: SIZE * 0.62,
-          transformOrigin: '50% 6px',
-          background: '#c0c0c0',
-          border: '1px solid',
-          borderColor: '#ffffff #707070 #707070 #ffffff',
-        }}
-        animate={{ rotate: playing ? 26 : 2 }}
-        transition={{ type: 'spring', stiffness: 120, damping: 18 }}
-      >
-        {/* pivot */}
-        <div
-          style={{
-            position: 'absolute',
-            left: -5,
-            top: -6,
-            width: 14,
-            height: 14,
-            borderRadius: '50%',
-            background: '#c0c0c0',
-            border: '2px solid',
-            borderColor: '#ffffff #707070 #707070 #ffffff',
-          }}
-        />
-        {/* headshell */}
-        <div
-          style={{
-            position: 'absolute',
-            left: -3,
-            bottom: -6,
-            width: 11,
-            height: 9,
-            background: '#a8a8a8',
-            border: '1px solid #6a6a6a',
-          }}
-        />
-      </motion.div>
-    </div>
-  )
-}
-
-// Windows 95 vinyl modal
-
-function Win95Modal({ onClose }: { onClose: () => void }) {
-  const [currentTrack, setCurrentTrack] = useState(0)
-  const [isPlaying, setIsPlaying]       = useState(false)
-  const [volume, setVolume]             = useState(0.5)
-  const [bars, setBars]                 = useState<number[]>(Array(22).fill(6))
-  const audioRef                        = useRef<HTMLAudioElement>(null)
-
-  // Bars are decorative: real analysis would need an AudioContext per track.
-  useEffect(() => {
-    if (!isPlaying) {
-      setBars(Array(22).fill(4))
-      return
-    }
-    const interval = setInterval(() => {
-      setBars(Array.from({ length: 22 }, () => Math.random() * 32 + 8))
-    }, 120)
-    return () => clearInterval(interval)
-  }, [isPlaying])
-
-  // Each track plays the thirty seconds around its midpoint.
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
-
-    const handleTimeUpdate = () => {
-      if (audio.duration) {
-        const midPoint = audio.duration / 2
-        const endTime = midPoint + 15
-        
-        if (audio.currentTime >= endTime) {
-          audio.pause()
-          setIsPlaying(false)
-          audio.currentTime = midPoint - 15
-        }
-      }
-    }
-
-    const handleLoadedMetadata = () => {
-      const midPoint = audio.duration / 2
-      audio.currentTime = Math.max(0, midPoint - 15)
-      if (isPlaying) {
-        audio.play().catch(() => {})
-      }
-    }
-
-    audio.addEventListener("timeupdate", handleTimeUpdate)
-    audio.addEventListener("loadedmetadata", handleLoadedMetadata)
-    audio.addEventListener("ended", () => setIsPlaying(false))
-
-    return () => {
-      audio.removeEventListener("timeupdate", handleTimeUpdate)
-      audio.removeEventListener("loadedmetadata", handleLoadedMetadata)
-      audio.removeEventListener("ended", () => setIsPlaying(false))
-    }
-  }, [currentTrack, isPlaying])
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume
-    }
-  }, [volume])
-
-  const togglePlay = () => {
-    if (!audioRef.current) return
-    if (isPlaying) audioRef.current.pause()
-    else audioRef.current.play().catch(() => {})
-    setIsPlaying(!isPlaying)
-  }
-
-  const nextTrack = () => {
-    setCurrentTrack((prev) => (prev + 1) % SONGS.length)
-    setIsPlaying(true)
-  }
-
-  const prevTrack = () => {
-    setCurrentTrack((prev) => (prev - 1 + SONGS.length) % SONGS.length)
-    setIsPlaying(true)
-  }
-
-  return (
-    <ModalShell
-      label="Music player"
-      onClose={onClose}
-      panelStyle={{
-        background:  "#c0c0c0",
-        border:      "2px solid",
-        borderColor: "#ffffff #808080 #808080 #ffffff",
-        boxShadow:   "inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 #707070",
-        fontFamily:  '"MS Sans Serif", "Pixelated MS Sans Serif", Arial, sans-serif',
-        width:       "100%",
-        maxWidth:    560,
-      }}
-    >
-      <audio
-        ref={audioRef}
-        src={SONGS[currentTrack].audioSrc}
-        autoPlay={isPlaying}
-      />
-
-      <div>
-        {/* Title bar */}
-        <div
-          style={{
-            background:  "linear-gradient(90deg,#000080,#1084d0)",
-            color:       "#fff",
-            padding:     "3px 6px",
-            display:     "flex",
-            alignItems:  "center",
-            justifyContent: "space-between",
-            fontSize:    11,
-            fontWeight:  700,
-            letterSpacing: 0.3,
-          }}
-        >
-          <span>Winamp · Now Playing</span>
-          <div style={{ display: "flex", gap: 2 }}>
-            <button
-              onClick={onClose}
-              style={{
-                background:  "#c0c0c0",
-                border:      "2px solid",
-                borderColor: "#ffffff #808080 #808080 #ffffff",
-                color:       "#000",
-                width:       16,
-                height:      14,
-                fontSize:    9,
-                cursor:      "pointer",
-                display:     "flex",
-                alignItems:  "center",
-                justifyContent: "center",
-                lineHeight:  1,
-              }}
-            >
-              ×
-            </button>
-          </div>
-        </div>
-
-        {/* Body. The turntable sits beside the player above 520px and stacks
-            above it below that, which is the only breakpoint in here. */}
-        <div
-          style={{
-            padding: "10px 12px 12px",
-            display: "flex",
-            gap: 12,
-            alignItems: "flex-start",
-            flexWrap: "wrap",
-          }}
-        >
-          <Turntable src={SONGS[currentTrack].imgSrc} playing={isPlaying} />
-
-          <div style={{ flex: "1 1 260px", minWidth: 0 }}>
-
-          {/* Visualizer bars */}
-          <div
-            style={{
-              background:  "#000",
-              display:     "flex",
-              alignItems:  "flex-end",
-              gap:         2,
-              padding:     "4px 6px",
-              height:      50,
-              marginBottom: 10,
-            }}
-          >
-            {bars.map((h, i) => (
-              <div
-                key={i}
-                style={{
-                  flex:       1,
-                  height:     h,
-                  background: i < 8 ? "#00ff00" : i < 16 ? "#ffff00" : "#ff4444",
-                  transition: "height 0.1s ease-in-out"
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Track list */}
-          <div
-            style={{
-              border:      "2px solid",
-              borderColor: "#808080 #ffffff #ffffff #808080",
-              background:  "#fff",
-              padding:     "2px 0",
-              marginBottom: 10,
-            }}
-          >
-            {SONGS.map((s, i) => (
-              <div
-                key={i}
-                onClick={() => { setCurrentTrack(i); setIsPlaying(true) }}
-                style={{
-                  padding:     "3px 8px",
-                  fontSize:    11,
-                  display:     "flex",
-                  gap:         8,
-                  background:  i === currentTrack ? "#000080" : "transparent",
-                  color:       i === currentTrack ? "#fff" : "#000",
-                  cursor:      "pointer",
-                }}
-              >
-                <span style={{ color: i === currentTrack ? "#aac8ff" : "#808080", minWidth: 14 }}>{i + 1}.</span>
-                <span>{s.title}</span>
-                <span style={{ marginLeft: "auto", color: i === currentTrack ? "#aac8ff" : "#808080" }}>{s.artist}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Bottom Controls (Volume & Playback) */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            
-            {/* Volume Slider */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 10, fontWeight: "bold", letterSpacing: 0.5 }}>VOL</span>
-              <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.01" 
-                value={volume}
-                onChange={(e) => setVolume(parseFloat(e.target.value))}
-                style={{ width: 64, cursor: "pointer", accentColor: "#000080" }}
-              />
-            </div>
-
-            {/* Buttons */}
-            <div style={{ display: "flex", gap: 4 }}>
-              <button onClick={prevTrack} style={buttonStyle}> |◄◄ </button>
-              <button onClick={togglePlay} style={buttonStyle}> {isPlaying ? " || " : " ► "} </button>
-              <button onClick={() => { setIsPlaying(false); if(audioRef.current) audioRef.current.pause() }} style={buttonStyle}> ■ </button>
-              <button onClick={nextTrack} style={buttonStyle}> ► ►| </button>
-              <button onClick={onClose} style={{ ...buttonStyle, marginLeft: 8 }}>Close</button>
-            </div>
-          </div>
-          </div>
-        </div>
-      </div>
-    </ModalShell>
-  )
-}
-
-const buttonStyle = {
-  background:  "#c0c0c0",
-  border:      "2px solid",
-  borderColor: "#ffffff #808080 #808080 #ffffff",
-  fontSize:    10,
-  fontFamily:  "inherit",
-  // 2px 6px is authentic and unusable with a thumb.
-  padding:     "5px 9px",
-  cursor:      "pointer",
-  letterSpacing: 0.5,
-}
-
-// Generic dark modal (books / movies)
+// Books and films
 
 function ContentModal({
   type,
@@ -620,40 +137,66 @@ function ContentModal({
   )
 }
 
-// One item in the orbit. Its own component because the ring's rotation is a
-// motion value read through useTransform, which needs a hook per item.
+// One item in the orbit. Its own component because its position is derived
+// from motion values, which needs hooks per item.
 function OrbitItem({
   item,
+  index,
   theta0,
   radius,
   scale,
   delay,
   spin,
+  clock,
   touch,
   active,
   onActive,
   onSelect,
 }: {
   item: MenuItem
+  index: number
   theta0: number
   radius: number
   scale: number
   delay: number
   spin: MotionValue<number>
+  clock: MotionValue<number>
   touch: boolean
   active: boolean
   onActive: (id: string | null) => void
   onSelect: (item: MenuItem, e: React.MouseEvent) => void
 }) {
-  const x = useTransform(spin, s => Math.cos(theta0 + s) * radius)
-  const y = useTransform(spin, s => Math.sin(theta0 + s) * radius)
+  // How far out along its spoke the item has travelled. It leaves from the
+  // centre of the form and swings round as it goes, so the ring opens like an
+  // iris rather than seven marks appearing where they will end up.
+  const reach = useMotionValue(0)
+  useEffect(() => {
+    const controls = animate(reach, 1, { type: 'spring', stiffness: 150, damping: 17, delay })
+    return () => controls.stop()
+  }, [reach, delay])
+
+  // Each one rides a slow swell of its own, a few pixels in and out along the
+  // spoke and a couple around it, out of step with its neighbours.
+  const phase = index * 2.4
+  const x = useTransform(() => {
+    const k = reach.get()
+    const t = clock.get()
+    const angle = theta0 + spin.get() - (1 - k) * 1.2 + Math.sin(t * 0.9 + phase) * 0.03 * k
+    return Math.cos(angle) * (radius * k + Math.sin(t * 1.3 + phase) * 4 * k)
+  })
+  const y = useTransform(() => {
+    const k = reach.get()
+    const t = clock.get()
+    const angle = theta0 + spin.get() - (1 - k) * 1.2 + Math.sin(t * 0.9 + phase) * 0.03 * k
+    return Math.sin(angle) * (radius * k + Math.sin(t * 1.3 + phase) * 4 * k)
+  })
 
   return (
     <motion.button
       // The label is only visible on hover, so without this the orbit is seven
       // unnamed buttons to a screen reader.
       aria-label={item.label}
-      // The icon is 22px, half a usable tap target: size-11 is the hit area.
+      // The mark is under 44px, so size-11 is the hit area.
       className="absolute z-[50] flex size-11 cursor-pointer flex-col items-center justify-center gap-0.5"
       style={{ x, y }}
       initial={{ opacity: 0, scale: 0.3 }}
@@ -672,15 +215,48 @@ function OrbitItem({
           field of colour, and a bare glyph in either theme's foreground is
           unreadable against it. Framed field, hairline edge, no shadow. */}
       <motion.span
-        className={`flex items-center justify-center rounded-full border p-[7px] backdrop-blur-[2px] transition-colors duration-200 ${
+        className={`relative flex items-center justify-center rounded-full border p-[9px] backdrop-blur-[2px] transition-colors duration-300 ${
           active
-            ? 'border-foreground/35 bg-background text-foreground'
-            : 'border-plate-border bg-background/80 text-foreground/70'
+            ? 'border-accent bg-background text-accent'
+            : 'border-plate-border bg-background/85 text-foreground/75'
         }`}
-        animate={{ scale: active ? scale * 1.15 : scale }}
-        transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+        animate={{ scale: active ? scale * 1.16 : scale }}
+        transition={{ type: 'spring', stiffness: 380, damping: 24 }}
       >
-        {item.icon}
+        {/* A ring that leaves the plate now and then, each on its own beat, so
+            the orbit is never quite still. Hairline, and gone under the
+            pointer, where the plate's own edge is doing the work. */}
+        {!active && (
+          <motion.span
+            aria-hidden
+            className="pointer-events-none absolute inset-[-1px] rounded-full border border-accent"
+            initial={{ opacity: 0, scale: 1 }}
+            animate={{ opacity: [0, 0.55, 0], scale: [1, 1.12, 1.6] }}
+            transition={{
+              duration: 2.2,
+              times: [0, 0.15, 1],
+              ease: 'easeOut',
+              repeat: Infinity,
+              repeatDelay: 3.4,
+              delay: 0.9 + index * 0.8,
+            }}
+          />
+        )}
+
+        <motion.span
+          className="flex"
+          animate={active ? item.gesture : REST}
+          style={
+            item.turns
+              ? {
+                  animation: 'vinyl-spin linear infinite',
+                  animationDuration: active ? '1.3s' : '9s',
+                }
+              : { transformOrigin: item.id === 'movies' ? '15% 85%' : '50% 50%' }
+          }
+        >
+          {item.icon}
+        </motion.span>
       </motion.span>
 
       <AnimatePresence>
@@ -692,7 +268,7 @@ function OrbitItem({
             exit={{ opacity: 0, y: -2 }}
             // Behind the ring's own spring, so the labels settle after the
             // icons have found their places rather than travelling with them.
-            transition={{ duration: 0.16, delay: touch ? delay + 0.12 : 0 }}
+            transition={{ duration: 0.16, delay: touch ? delay + 0.3 : 0 }}
           >
             {item.label}
           </motion.span>
@@ -768,10 +344,16 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
   // The ring's rotation, in radians, advanced on the frame clock. Nothing
   // re-renders as it turns: each item reads it through useTransform.
   const spin = useMotionValue(0)
+  // Seconds the ring has been open for, which the items' own drift runs on.
+  const clock = useMotionValue(0)
   useAnimationFrame((_, delta) => {
     if (!isExpanded) return
-    spin.set(spin.get() + (ORBIT_SPEED * Math.PI) / 180 * (Math.min(delta, 50) / 1000))
+    const dt = Math.min(delta, 50) / 1000
+    spin.set(spin.get() + (ORBIT_SPEED * Math.PI) / 180 * dt)
+    clock.set(clock.get() + dt)
   })
+  // The line the items ride, turning the other way.
+  const trackTurn = useTransform(spin, s => (-s * 180) / Math.PI * 2.5)
 
   // Escape is handled by ModalShell, which only listens while a modal is open.
   const handleClick = useCallback((item: MenuItem, e: React.MouseEvent) => {
@@ -855,16 +437,30 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
         </div>
 
         <AnimatePresence>
+          {isExpanded && (
+            <motion.span
+              key="track"
+              aria-hidden
+              className="pointer-events-none absolute z-[45] rounded-full border border-dashed border-foreground/20"
+              style={{ width: RADIUS * 2, height: RADIUS * 2, rotate: trackTurn }}
+              initial={{ opacity: 0, scale: 0.4 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              transition={{ type: 'spring', stiffness: 150, damping: 20 }}
+            />
+          )}
           {isExpanded &&
             MENU_ITEMS.map((item, i) => (
               <OrbitItem
                 key={item.id}
                 item={item}
+                index={i}
                 theta0={angleStep * i - Math.PI / 2}
                 radius={RADIUS}
                 scale={itemScale}
-                delay={i * 0.04}
+                delay={i * 0.05}
                 spin={spin}
+                clock={clock}
                 touch={touch}
                 active={activeItem === item.id}
                 onActive={setActiveItem}
@@ -876,7 +472,7 @@ export default function CircularMenu({ forceOpen = false }: { forceOpen?: boolea
       </div>
 
       <AnimatePresence>
-        {modal === "vinyl"  && <Win95Modal        onClose={() => setModal(null)} />}
+        {modal === "vinyl"  && <MusicPlayer songs={SONGS} onClose={() => setModal(null)} />}
         {modal === "books"  && <ContentModal type="books"  onClose={() => setModal(null)} />}
         {modal === "movies" && <ContentModal type="movies" onClose={() => setModal(null)} />}
       </AnimatePresence>

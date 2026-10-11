@@ -224,10 +224,15 @@
     100%      { opacity: 1; }
   }
 
-  /* The record on the music player. CSS rather than a motion loop so it can be
+  /* The disc on the music player. CSS rather than a motion loop so it can be
      paused with animation-play-state instead of animated back to zero. */
   @keyframes vinyl-spin {
     to { transform: rotate(360deg); }
+  }
+
+  /* The prompt on the music player's screen. Stepped, as a cabinet's was. */
+  @keyframes arcade-blink {
+    50% { opacity: 0; }
   }
 }
 
