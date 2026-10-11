@@ -11,10 +11,6 @@ function approach(current: number, goal: number, dt: number, rate: number) {
   return current + (goal - current) * (1 - Math.exp(-dt * rate))
 }
 
-const SCATTER_JITTER = 2.2
-const SCATTER_NEAR = 3.6
-const SCATTER_FAR = CAMERA_Z * 0.78
-
 export function TorusShader({ explode = false }: { explode?: boolean }) {
   const pointsRef = useRef<THREE.Points>(null)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
@@ -26,37 +22,30 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme !== 'light'
 
-  // `scatter` is where each point starts, out along its own direction from the
-  // centre, so it travels inward to its place rather than across the form.
-  // `seed` roughens the order of arrival.
-  const { positions, scatter, seed } = useMemo(() => {
-    const torusGeometry = new THREE.TorusGeometry(TORUS_RADIUS, TUBE_RADIUS, 80, 160)
-    const positions = torusGeometry.attributes.position.array as Float32Array
-    const count = positions.length / 3
+  // `seed` roughens the order the points arrive in, so the front of the intro
+  // is a band rather than a line.
+  const { positions, seed } = useMemo(() => {
+    const RADIAL = 80
+    const TUBULAR = 160
+    const source = new THREE.TorusGeometry(TORUS_RADIUS, TUBE_RADIUS, RADIAL, TUBULAR).attributes
+      .position.array as Float32Array
 
-    const scatter = new Float32Array(positions.length)
-    const seed = new Float32Array(count)
-
-    for (let i = 0; i < count; i++) {
-      // The point's own direction, loosened, so neighbours start near each
-      // other without the cloud being a scaled copy of the torus.
-      const x = positions[i * 3] + (Math.random() * 2 - 1) * SCATTER_JITTER
-      const y = positions[i * 3 + 1] + (Math.random() * 2 - 1) * SCATTER_JITTER
-      const z = positions[i * 3 + 2] + (Math.random() * 2 - 1) * SCATTER_JITTER
-      const len = Math.hypot(x, y, z) || 1
-
-      // Kept inside the camera distance. The form tumbles, so any direction can
-      // end up facing the lens, and a point starting beyond it crosses the near
-      // plane as a flash.
-      const dist = SCATTER_NEAR + Math.pow(Math.random(), 0.6) * (SCATTER_FAR - SCATTER_NEAR)
-
-      scatter[i * 3] = (x / len) * dist
-      scatter[i * 3 + 1] = (y / len) * dist
-      scatter[i * 3 + 2] = (z / len) * dist
-      seed[i] = Math.random()
+    // The geometry closes each loop by repeating its first vertex. As a mesh
+    // that is a seam; as points it is one circle drawn twice, which shows as a
+    // bright band around the tube.
+    const positions = new Float32Array(RADIAL * TUBULAR * 3)
+    let n = 0
+    for (let j = 0; j < RADIAL; j++) {
+      for (let i = 0; i < TUBULAR; i++) {
+        const k = (j * (TUBULAR + 1) + i) * 3
+        positions[n++] = source[k]
+        positions[n++] = source[k + 1]
+        positions[n++] = source[k + 2]
+      }
     }
-
-    return { positions, scatter, seed }
+    const seed = new Float32Array(positions.length / 3)
+    for (let i = 0; i < seed.length; i++) seed[i] = Math.random()
+    return { positions, seed }
   }, [])
 
   const shaderMaterial = useMemo(
@@ -83,12 +72,12 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
           uniform float uIntro;
           uniform float uRadius;
           uniform float uSphereRadius;
-          attribute vec3 scatter;
           attribute float seed;
           varying vec3 vWorldPosition;
           varying vec3 vNormal;
           varying float vExpand;
           varying float vIntro;
+          varying float vSwell;
 
           void main() {
             vec3 pos = position;
@@ -129,39 +118,51 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
 
             pos = mix(pos, spherePos, smoothstep(0.0, 1.0, uExpand));
 
-            // Assembly. The order of arrival runs both ways round the ring
-            // from one side and closes on the other, roughened by the seed so
-            // the front is a band rather than a line.
-            //
-            // Start times spread across 0.58 of the intro and each point takes
-            // 0.42 to settle, so the windows overlap heavily and the last point
-            // lands exactly as the intro ends. Without the overlap the form
-            // solidifies early and then collects stragglers on top of itself.
+            // Assembly, in two movements. First the points spiral in onto the
+            // ring's centreline, so what appears is a single circle being
+            // drawn both ways round from one side. Then the tube swells out of
+            // that line, following the same order. The movements overlap, so
+            // the far side is still closing while the near side has begun to
+            // fill.
             //
             // Applied last, so it overrides the magnet and the expand: nothing
             // should tug at a point that has not arrived yet.
             float sweep = abs(atan(position.y, position.x)) / 3.14159265;
-            float order = mix(seed, sweep, 0.55);
-            float t = clamp((uIntro - order * 0.58) / 0.42, 0.0, 1.0);
-            // Smootherstep: zero velocity at both ends, so there is no kick as
-            // a point leaves the cloud and none as it lands.
-            float ease = t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
-            vIntro = ease;
+            float order = mix(seed, sweep, 0.72);
 
-            // A little spin on the way in, so points arc rather than travelling
-            // in straight lines.
-            float swirl = (1.0 - ease) * 0.9;
-            float cs = cos(swirl), sn = sin(swirl);
-            vec3 from = vec3(scatter.x * cs - scatter.y * sn, scatter.x * sn + scatter.y * cs, scatter.z);
+            // Smootherstep on both: zero velocity at each end, so there is no
+            // kick as a point sets off and none as it lands.
+            float ta = clamp((uIntro - order * 0.40) / 0.30, 0.0, 1.0);
+            float arrive = ta * ta * ta * (ta * (ta * 6.0 - 15.0) + 10.0);
+            float tb = clamp((uIntro - 0.26 - order * 0.30) / 0.44, 0.0, 1.0);
+            float swell = tb * tb * tb * (tb * (tb * 6.0 - 15.0) + 10.0);
+            vIntro = arrive;
+            vSwell = swell;
 
-            pos = mix(from, pos, ease);
+            vec3 centre = vec3(normalize(position.xy) * uRadius, 0.0);
+
+            // Where a point sets off from: further out along its own radius,
+            // turned back round the ring, and a little off the plane.
+            float back = 1.0 - arrive;
+            float turn = back * (1.3 + seed * 0.5);
+            float cs = cos(turn), sn = sin(turn);
+            // Kept inside the frame: the canvas has an edge, and a point that
+            // starts beyond it appears there as a cut.
+            float far = 1.0 + back * (0.5 + seed * 0.4);
+            vec3 from = vec3(
+              (centre.x * cs - centre.y * sn) * far,
+              (centre.x * sn + centre.y * cs) * far,
+              (seed - 0.5) * 2.4 * back
+            );
+
+            pos = from + (pos - centre) * swell;
 
             vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
             gl_Position = projectionMatrix * mvPosition;
 
-            // Arriving points run only slightly larger. Any more and late
-            // arrivals read as blobs dropping onto the surface.
-            float introSize = 1.0 + (1.0 - ease) * 0.7;
+            // Finer while they are still a line, since the whole tube is
+            // stacked on one circle there.
+            float introSize = mix(0.72, 1.0, swell) * (1.0 + back * 0.5);
             gl_PointSize = mix(2.2 + magneticInfluence * 1.0, 1.25, uExpand) * introSize * (30.0 / -mvPosition.z);
           }
         `,
@@ -173,6 +174,7 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
           varying vec3 vNormal;
           varying float vExpand;
           varying float vIntro;
+          varying float vSwell;
 
           const float TAU = 6.28318530718;
 
@@ -252,10 +254,11 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
             }
 
             // Points fade up over the first part of the flight and run a little
-            // hotter until they land, so the assembly reads as light resolving
-            // into a form rather than dots switching on in place.
-            finalColor += vec3(0.22, 0.36, 0.58) * (1.0 - vIntro) * 0.3;
-            alpha *= smoothstep(0.0, 0.7, vIntro);
+            // hotter until the tube has opened. They are also held dim while
+            // they are a line: every point of the tube sits on one circle then,
+            // and at full strength that sums to a white ring.
+            finalColor += vec3(0.22, 0.36, 0.58) * (1.0 - vSwell) * 0.3;
+            alpha *= smoothstep(0.0, 0.7, vIntro) * mix(0.3, 1.0, vSwell);
 
             gl_FragColor = vec4(finalColor, alpha);
           }
@@ -298,14 +301,13 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
     const dt = Math.min(delta, 1 / 30)
 
     if (u.uIntro.value < 1) {
-      u.uIntro.value = Math.min(1, u.uIntro.value + dt / 3.2)
+      u.uIntro.value = Math.min(1, u.uIntro.value + dt / 3.6)
     }
     const intro = u.uIntro.value
 
-    // Spin about the ring's own axis, the one rotation that always looks right,
-    // so it is the only one allowed to accumulate. Faster while the points
-    // arrive, settling to its resting speed.
-    pointsRef.current.rotation.y += (0.24 + (1 - intro) * (1 - intro) * 0.72) * dt
+    // The one rotation allowed to accumulate. Nearly still while the ring is
+    // being drawn, so it reads as a ring, then easing up to its resting speed.
+    pointsRef.current.rotation.y += (0.05 + intro * intro * 0.19) * dt
 
     // Tilt and roll oscillate around a fixed pose rather than accumulating.
     // Left to accumulate, the torus drifts edge-on, where the tube stacks on
@@ -333,7 +335,6 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
     <points ref={pointsRef}>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-        <bufferAttribute attach="attributes-scatter" args={[scatter, 3]} />
         <bufferAttribute attach="attributes-seed" args={[seed, 1]} />
       </bufferGeometry>
       <primitive object={shaderMaterial} ref={materialRef} attach="material" />
