@@ -77,7 +77,7 @@ is set by `CAMERA_Z`: lowering it makes the form occupy more of the frame withou
 touching any of the shape's own numbers.
 
 The colour is a toned cyanotype, ramping deep Prussian to cyan to violet to a
-warm gold around the ring. Dark mode blends additively, so nothing in the ramp
+warm copper around the ring. Dark mode blends additively, so nothing in the ramp
 may approach 1.0 or the silhouette clips to a flat white ring.
 
 The `Canvas` keeps `resize={{ offsetSize: true }}` so an ancestor's transform

@@ -11,6 +11,10 @@ function approach(current: number, goal: number, dt: number, rate: number) {
   return current + (goal - current) * (1 - Math.exp(-dt * rate))
 }
 
+const SCATTER_JITTER = 2.2
+const SCATTER_NEAR = 3.6
+const SCATTER_FAR = CAMERA_Z * 0.78
+
 export function TorusShader({ explode = false }: { explode?: boolean }) {
   const pointsRef = useRef<THREE.Points>(null)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
@@ -22,8 +26,9 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme !== 'light'
 
-  // `scatter` is where each point starts, on a loose cloud around the torus;
-  // `seed` staggers its arrival so the form assembles rather than appearing.
+  // `scatter` is where each point starts, out along its own direction from the
+  // centre, so it travels inward to its place rather than across the form.
+  // `seed` roughens the order of arrival.
   const { positions, scatter, seed } = useMemo(() => {
     const torusGeometry = new THREE.TorusGeometry(TORUS_RADIUS, TUBE_RADIUS, 80, 160)
     const positions = torusGeometry.attributes.position.array as Float32Array
@@ -33,17 +38,21 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
     const seed = new Float32Array(count)
 
     for (let i = 0; i < count; i++) {
-      const u = Math.random() * 2 - 1
-      const theta = Math.random() * Math.PI * 2
-      const r = Math.sqrt(1 - u * u)
+      // The point's own direction, loosened, so neighbours start near each
+      // other without the cloud being a scaled copy of the torus.
+      const x = positions[i * 3] + (Math.random() * 2 - 1) * SCATTER_JITTER
+      const y = positions[i * 3 + 1] + (Math.random() * 2 - 1) * SCATTER_JITTER
+      const z = positions[i * 3 + 2] + (Math.random() * 2 - 1) * SCATTER_JITTER
+      const len = Math.hypot(x, y, z) || 1
 
-      // Heavy-tailed rather than a narrow shell: a shell has a visible edge, and
-      // the intro then reads as a hollow ball collapsing.
-      const dist = 5 + Math.pow(Math.random(), 0.28) * 55
+      // Kept inside the camera distance. The form tumbles, so any direction can
+      // end up facing the lens, and a point starting beyond it crosses the near
+      // plane as a flash.
+      const dist = SCATTER_NEAR + Math.pow(Math.random(), 0.6) * (SCATTER_FAR - SCATTER_NEAR)
 
-      scatter[i * 3] = Math.cos(theta) * r * dist
-      scatter[i * 3 + 1] = Math.sin(theta) * r * dist
-      scatter[i * 3 + 2] = u * dist
+      scatter[i * 3] = (x / len) * dist
+      scatter[i * 3 + 1] = (y / len) * dist
+      scatter[i * 3 + 2] = (z / len) * dist
       seed[i] = Math.random()
     }
 
@@ -120,14 +129,20 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
 
             pos = mix(pos, spherePos, smoothstep(0.0, 1.0, uExpand));
 
-            // Assembly. Start times spread across 0.62 of the intro and each
-            // point takes 0.42 to settle, so the windows overlap heavily and a
-            // wide band is always in flight. Without the overlap the form
+            // Assembly. The order of arrival runs both ways round the ring
+            // from one side and closes on the other, roughened by the seed so
+            // the front is a band rather than a line.
+            //
+            // Start times spread across 0.58 of the intro and each point takes
+            // 0.42 to settle, so the windows overlap heavily and the last point
+            // lands exactly as the intro ends. Without the overlap the form
             // solidifies early and then collects stragglers on top of itself.
             //
             // Applied last, so it overrides the magnet and the expand: nothing
             // should tug at a point that has not arrived yet.
-            float t = clamp((uIntro - seed * 0.62) / 0.42, 0.0, 1.0);
+            float sweep = abs(atan(position.y, position.x)) / 3.14159265;
+            float order = mix(seed, sweep, 0.55);
+            float t = clamp((uIntro - order * 0.58) / 0.42, 0.0, 1.0);
             // Smootherstep: zero velocity at both ends, so there is no kick as
             // a point leaves the cloud and none as it lands.
             float ease = t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
@@ -135,7 +150,7 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
 
             // A little spin on the way in, so points arc rather than travelling
             // in straight lines.
-            float swirl = (1.0 - ease) * 1.2;
+            float swirl = (1.0 - ease) * 0.9;
             float cs = cos(swirl), sn = sin(swirl);
             vec3 from = vec3(scatter.x * cs - scatter.y * sn, scatter.x * sn + scatter.y * cs, scatter.z);
 
@@ -175,7 +190,7 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
            *
            * An untoned print is one hue: Prussian blue, light to dark. Toning it
            * in gold carries the deepest parts over into violet and then to a
-           * warm brown, which is the range this ramps through. The stop a point
+           * warm copper, which is the range this ramps through. The stop a point
            * takes comes from where it sits around the ring, so the toning
            * travels rather than being painted onto the form.
            *
@@ -191,16 +206,16 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
 
             vec3 base = isDarkTheme > 0.5
               ? ramp(
-                  vec3(0.05, 0.17, 0.40),
-                  vec3(0.10, 0.52, 0.78),
-                  vec3(0.40, 0.28, 0.78),
-                  vec3(0.74, 0.46, 0.22),
+                  vec3(0.05, 0.19, 0.46),
+                  vec3(0.08, 0.56, 0.74),
+                  vec3(0.36, 0.32, 0.80),
+                  vec3(0.78, 0.44, 0.30),
                   around)
               : ramp(
-                  vec3(0.03, 0.13, 0.31),
-                  vec3(0.05, 0.36, 0.60),
-                  vec3(0.27, 0.17, 0.53),
-                  vec3(0.56, 0.32, 0.12),
+                  vec3(0.03, 0.14, 0.35),
+                  vec3(0.03, 0.39, 0.57),
+                  vec3(0.25, 0.20, 0.57),
+                  vec3(0.60, 0.29, 0.17),
                   around);
 
             // Form shading, kept separate from the toning: one says which way
@@ -236,10 +251,11 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
               alpha *= mix(0.34, 0.24, vExpand);
             }
 
-            // Points fade up as they arrive and run a little hotter in flight,
-            // so the assembly reads as light resolving into a form.
+            // Points fade up over the first part of the flight and run a little
+            // hotter until they land, so the assembly reads as light resolving
+            // into a form rather than dots switching on in place.
             finalColor += vec3(0.22, 0.36, 0.58) * (1.0 - vIntro) * 0.3;
-            alpha *= vIntro;
+            alpha *= smoothstep(0.0, 0.7, vIntro);
 
             gl_FragColor = vec4(finalColor, alpha);
           }
@@ -282,7 +298,7 @@ export function TorusShader({ explode = false }: { explode?: boolean }) {
     const dt = Math.min(delta, 1 / 30)
 
     if (u.uIntro.value < 1) {
-      u.uIntro.value = Math.min(1, u.uIntro.value + dt / 3.4)
+      u.uIntro.value = Math.min(1, u.uIntro.value + dt / 3.2)
     }
     const intro = u.uIntro.value
 
