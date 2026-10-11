@@ -2,10 +2,13 @@
  * Short pieces, newest first. Same arrangement as the research entries: the
  * page and the search index read this one file.
  *
- * House style: open on something concrete, follow one thread, name the effect
- * or the study where there is one, and stop before the moral. Where a well
- * known story turns out shakier than its retelling, say so. No em dashes, and
- * watch the last line of every piece: that is where a landing gets smuggled in.
+ * House style: open on something concrete, a person or a date or a number,
+ * and follow one thread. Name the effect or the study where there is one, and
+ * where a well known story is shakier than its retelling, say so. Then turn it
+ * round and ask what it means for the person reading, which is the point of
+ * the piece. The reflection is first person and unsure of itself; it notices
+ * things and does not hand down a moral. The range is wide on purpose: the
+ * sky, minds, machines, risk, how things end. No em dashes.
  */
 
 export type Thought = {
@@ -18,81 +21,82 @@ export type Thought = {
 
 export const THOUGHTS: Thought[] = [
   {
-    id: 'a-new-order-every-shuffle',
+    id: 'the-bright-part',
     date: 'October 10, 2026',
-    title: 'Shuffle a deck and nobody has seen it before',
+    title: 'We live in the bright part',
     body: [
-      'A deck of 52 cards can be put in order in [[factorial|52 factorial]] ways. Written out, that is roughly an 8 followed by 67 zeros.',
-      'Suppose all eight billion of us had shuffled one deck every second since the Big Bang. Together we would have dealt a number of orderings that is 28 digits long. The number of possible orderings is 68 digits long, so we would have barely started.',
-      'This means a properly shuffled deck is almost certainly in an order no deck has been in before.',
-      'The word carrying the weight there is "properly". In 1992 Dave Bayer and Persi Diaconis showed that it takes about seven riffle shuffles to mix a deck. I usually stop at three, which leaves whole runs of the last game sitting where they were.',
+      'The universe is 13.8 billion years old, which sounds like a long time until you look toward the other end. Stars will go on forming for something like a hundred trillion years. The smallest red dwarfs burn so slowly that some of the ones alive tonight will still be shining long after the Sun has gone out.',
+      'After that comes a stretch so long that the numbers stop meaning anything to me. Cooling embers, then black holes, then the black holes themselves evaporating, and nothing new ever lit. Cosmologists call our own period the [[stelliferous-era|stelliferous era]], the age of stars, and on the full timeline it is a thin bright line at the very start.',
+      'So we are early. If the whole age of stars were a single year, we would be a little over an hour into the first of January.',
+      'I do not know what to do with that except notice it. The sky is crowded with light, there is a warm rock to stand on, and there are creatures on it who can work out roughly how long the light will last. On a clear night out in the desert, away from the city, that seems like a great deal to have been handed.',
     ],
   },
   {
-    id: 'the-great-wall-from-space',
-    date: 'September 27, 2026',
-    title: 'Can you see the Great Wall from space?',
+    id: 'the-night-nothing-happened',
+    date: 'September 26, 2026',
+    title: 'The night nothing happened',
     body: [
-      'The claim is older than spaceflight. In 1932 a Ripley\'s Believe It or Not cartoon called the Great Wall the only man-made thing visible from the Moon, decades before anyone could go and look.',
-      'From the Moon the whole Earth is about as wide as your thumb held at arm\'s length. Nothing anyone has built shows up at that size.',
-      'From [[low-earth-orbit|low orbit]], about 400 kilometres up, it is still very hard. The wall is long, but being long does not help. Width is what the eye needs, and the wall is only five to ten metres wide, which from that height is like picking out a single hair from across a room. It is also made of the local stone and earth, so it is the same colour as the hills under it.',
-      'In 2003 Yang Liwei, the first Chinese astronaut, came home and said he had not seen it. Motorways and airport runways are easier, because they are wider and they contrast with the ground. Cities at night are easier still.',
+      'Just after midnight on 26 September 1983, a Soviet early-warning satellite reported that the United States had launched a missile. Then it reported four more. The officer on duty in the bunker outside Moscow was Stanislav Petrov, and his job was to pass that report up the chain, where the people above him would have had minutes to decide whether to answer it.',
+      'He reported a malfunction instead. He had reasons, though none of them was proof. The system was new and he did not trust it. Ground radar showed nothing. And a real first strike, he thought, would not be five missiles. "When people start a war," he said years later, "they don\'t start it with only five missiles."',
+      'He was right. The satellite had taken sunlight on high clouds for rocket exhaust. He finished his shift and went home, and for years almost nobody knew.',
+      'The system failed, which systems do. What unsettles me is how little stood behind it: between an ordinary Monday and the end of most things there was one tired man\'s sense that the numbers looked wrong.',
+      'I also wonder how many nights like that there have been. We only ever look back from a history in which they went well, because [[anthropic-shadow|nobody is left to look back from the other kind]]. The record looks calm, and it would look calm to us either way.',
     ],
   },
   {
-    id: 'how-long-is-a-coastline',
-    date: 'September 19, 2026',
-    title: 'Nobody knows how long the coast of Britain is',
+    id: 'the-horse-that-could-count',
+    date: 'September 15, 2026',
+    title: 'The horse that could count',
     body: [
-      'Lewis Fry Richardson was a pacifist who wanted to know whether countries with longer shared borders fought more wars. For that he needed the lengths of the borders. He found the one between Spain and Portugal listed as 987 kilometres in one reference book and 1,214 in another.',
-      'Neither book had made a mistake. A border that follows rivers and ridges wiggles, and a shorter ruler follows more of the wiggles. Step around the coast of Britain with a 100 kilometre ruler and you get about 2,800 kilometres. With a 50 kilometre ruler it comes to about 3,400.',
-      'It never settles. Each time the ruler shrinks there are smaller bays to go around, then rocks, then pebbles, and the total keeps climbing. Benoit Mandelbrot picked the problem up in 1967, and the [[coastline-paradox|coastline paradox]] became one of the starting points for fractals.',
-      'So a coastline length only means something next to the ruler that measured it. Atlases print the first number and almost never the second.',
+      'In Berlin in 1904 a horse named Hans could add, subtract, tell the time and spell, tapping out his answers with a hoof. His owner, a retired teacher called Wilhelm von Osten, was not a fraud. A commission of experts watched closely and found no trick.',
+      'Then a psychologist, Oskar Pfungst, tried something simple. He arranged things so that Hans could not see the person asking, or so that the person asking did not know the answer. With the questioner in view, Hans got 50 out of 56 right. Without, he got 2 out of 35.',
+      'Hans had been reading people. As the taps came close to the right number the questioner tensed, and at the last one they relaxed by some tiny amount they knew nothing about, and he stopped. Nobody was cheating. The audience was supplying the answer and then being amazed by it.',
+      'The story is usually told as a warning about animals, and lately about [[clever-hans|machines that seem to understand]]. I think it is mostly about the people leaning forward. When I ask a model a question I already know how I hope it will answer. I word things to suit, and I am pleased when it gets there. Pfungst\'s test is hard to run on yourself, because the whole trouble is that you cannot feel yourself giving the cue.',
+      'I do have some sympathy for the horse. Noticing a millimetre of relief in a stranger\'s shoulders is not arithmetic, but it is not nothing either.',
     ],
   },
   {
-    id: 'a-day-is-not-24-hours',
-    date: 'September 6, 2026',
-    title: 'A day is not 24 hours long',
+    id: 'which-part-of-you-is-the-same',
+    date: 'September 5, 2026',
+    title: 'Which part of you is the same?',
     body: [
-      'The Earth turns once in 23 hours, 56 minutes and 4 seconds. That is a [[sidereal-day|sidereal day]], which is one turn measured against the distant stars.',
-      'The missing four minutes come from the orbit. While the Earth turns once it also moves about one degree around the Sun, so the Sun is no longer quite where it was. The planet has to turn a little further to bring it back overhead, and that extra bit takes about four minutes.',
-      'Noon to noon is 24 hours, then, but it is slightly more than one turn. Over a year the extra bits add up to one whole turn: the Earth spins about 366 times in 365 days.',
-      'You can watch the four minutes go by. Every star rises four minutes earlier than it did the night before, which is two hours over a month. It is why Orion is up on winter evenings and nowhere to be found on summer ones.',
+      'People say every cell in your body is replaced every seven years. It is a lovely idea, it is not quite true, and the way we found out is strange.',
+      'Nuclear tests in the 1950s and 60s nearly doubled the carbon-14 in the air. After the tests were banned it fell away steadily, and all through that rise and fall it was being breathed, eaten and built into living things. A cell\'s DNA is written when the cell is born, so it keeps the level of that year like a date stamp. In 2005 Jonas Frisén\'s group in Stockholm used this [[bomb-pulse|bomb pulse]] to read the ages of cells in adults.',
+      'The lining of the gut lasts days. Red blood cells last about four months. Muscle between the ribs averaged around fifteen years. But the neurons of the cortex were as old as the person they came from. Most of the body is a river, and the part that does the remembering is one of the few places where the first cells are still at work.',
+      'Even there, the atoms inside each neuron are swapped out all the time, so what has lasted is an arrangement and not a material. I used to think of the ship of Theseus as a classroom puzzle. I now suspect I am one. Whatever I mean by "me" is closer to a tune than to the instrument it is being played on, and I do not know how much of the tune can change before it is a different one.',
     ],
   },
   {
-    id: 'planets-between-here-and-the-moon',
+    id: 'less-than-a-pixel',
     date: 'August 29, 2026',
-    title: 'Do all the planets fit between here and the Moon?',
+    title: 'Less than a pixel',
     body: [
-      'There is a picture that goes around of the seven other planets lined up in the gap between the Earth and the Moon, with a little room left over. Jupiter and Saturn are both in there. It looks impossible.',
-      'The sum nearly works. Add the average widths of Mercury, Venus, Mars, Jupiter, Saturn, Uranus and Neptune and you get about 380,000 kilometres. The Moon is 384,400 kilometres away on average.',
-      'The catch is that the distance runs from the centre of the Earth to the centre of the Moon. Take off the two radii and the gap is about 376,000 kilometres, which is too small. The planets are also wider at the equator than their averages, Saturn most of all.',
-      'It can still be done on the right day. The Moon\'s orbit is not a circle, and at [[apogee|its furthest]] it is about 405,500 kilometres away, which leaves room for all seven. At its closest you would have to leave out Uranus or Neptune.',
+      'On 14 February 1990, Voyager 1 was six billion kilometres from home and on its way out of the solar system. Carl Sagan had spent years asking for one last thing before its cameras were switched off for good: turn around and photograph the Earth.',
+      'There was no science in it. From that distance the planet would be smaller than a single pixel, and pointing the camera back toward the Sun put it at risk. The picture was taken anyway. In it the Earth is [[pale-blue-dot|a pale speck]] caught by chance in a band of scattered sunlight, and you would not find it unless somebody showed you where to look.',
+      'Everything is in that speck. Every border I have crossed and every one I could not, every lecture hall, every argument I have lost sleep over, and the whole of history along with the people it left out.',
+      'Sagan wrote that the picture underscores our responsibility to deal more kindly with one another. For me it does something smaller first. It makes my certainty feel out of scale. I can hold a strong opinion in a seminar room without much effort. It is harder to hold it in quite the same way while looking at the room from there.',
     ],
   },
   {
-    id: 'a-day-longer-than-a-year',
+    id: 'counting-from-the-middle',
     date: 'August 15, 2026',
-    title: 'On Venus a day lasts longer than a year',
+    title: 'Counting from the middle',
     body: [
-      'Venus goes around the Sun in about 225 Earth days. It takes 243 to turn once on its axis. The planet finishes a lap of the Sun before it finishes a single spin.',
-      'It also spins the other way. Nearly every planet turns in the direction it orbits, and Venus turns [[retrograde-rotation|backwards]]. At its equator the ground moves at about 6.5 kilometres an hour, which is a brisk walk.',
-      'The backwards spin changes what a day looks like from the surface. The orbit and the spin work against each other, so sunrise to sunrise takes about 117 Earth days, and the Sun comes up in the west.',
-      'So the famous line is true for one meaning of day, the full turn, and false for the other. Counted in sunrises, a Venus year has not quite two days in it.',
-      'Nobody is sure why it spins like this. One idea is a very old collision. Another is the slow drag of its own thick atmosphere over billions of years.',
+      'In 1969 a young physicist named Richard Gott stood in front of the Berlin Wall, which was then eight years old, and tried to guess how long it had left. He had no special knowledge. He reasoned only that he was probably not visiting at a special moment, neither the very start of the wall\'s life nor the very end. From that alone he gave even odds that it would stand for somewhere between two and two-thirds and twenty-four more years. It came down twenty years later.',
+      'The same reasoning can be turned on us. Something like 117 billion people have been born so far. If I am not special, I am probably not among the first few percent of all the humans who will ever live, and that puts a ceiling on how many are still to come. This is the [[doomsday-argument|doomsday argument]], and it concludes that we are more likely near the middle of the human story than on its opening page.',
+      'Philosophers have argued over it for about forty years. Most think something is wrong with it and they do not agree on what. Perhaps it depends too much on who counts as "us". Perhaps your own birth is not the kind of thing you can treat as a random draw.',
+      'What stays with me is how little it needs. There is no asteroid in it, no war and no machine, only the suggestion that I should not assume I am early. Every generation before mine seems to have felt it was living at the hinge of things. I notice that I feel it too.',
     ],
   },
   {
-    id: 'how-much-does-a-cloud-weigh',
+    id: 'two-triangles-and-a-circle',
     date: 'August 2, 2026',
-    title: 'How much does a cloud weigh?',
+    title: 'Two triangles and a circle',
     body: [
-      'Take a small fair-weather cloud, the [[cumulus|cumulus]] kind a child would draw. A reasonable one is about a kilometre wide, a kilometre long and a kilometre tall.',
-      'Peggy LeMone, an atmospheric scientist, worked out what is in it. Each cubic metre holds about half a gram of water, which is a few drops. There are a billion cubic metres. That comes to roughly 500 tonnes, or a hundred elephants, drifting over your head.',
-      'It stays up because the water is split into droplets about a hundredth of a millimetre across. Something that small falls at around a centimetre a second, and the air under a growing cloud is rising faster than that.',
-      'The air in the same box weighs about a million tonnes. By weight the cloud is 99.95 percent air, and everything you can see of it is in the remaining twentieth of a percent.',
+      'In 1944 Fritz Heider and Marianne Simmel showed a group of students a short silent film. In it a large triangle, a small triangle and a circle slide around a box with a door. That is the whole cast.',
+      'Asked what they had seen, almost nobody answered with geometry. They described a bully and a couple, a chase, someone shut in a room, an escape. The big triangle was jealous. The circle was afraid. People who had never met agreed on this, about [[heider-simmel|three shapes cut out of card]].',
+      'I think about that film whenever a language model tells me it is happy to help. If three shapes were enough to make people see fear, then something that answers in full sentences, remembers what I said and apologises was never going to leave me much choice. The sense that someone is there arrives before I have decided anything.',
+      'None of this shows the sense is wrong. It shows that it is cheap, since it comes just as readily for a triangle. And it is the same sense I rely on for everyone I know. I have never seen another mind directly. I have only ever watched things move and listened to what they said, and filled in the rest myself.',
     ],
   },
   {

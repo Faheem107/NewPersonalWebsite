@@ -80,11 +80,24 @@ The colour is a toned cyanotype, ramping deep Prussian to cyan to violet to a
 warm copper around the ring. Dark mode blends additively, so nothing in the ramp
 may approach 1.0 or the silhouette clips to a flat white ring.
 
+The intro is two movements in the vertex shader: the points spiral onto the
+ring's centreline, drawing one circle both ways round, and then the tube swells
+out of that line. Points are held dim while they are a line, since the whole
+tube is stacked on one circle there. Everything stays inside the canvas, which
+has an edge.
+
 The `Canvas` keeps `resize={{ offsetSize: true }}` so an ancestor's transform
 cannot size it, and `dpr={[1, 2]}` so a phone does not render at 3x.
 
 The magnet winds down to almost nothing while the menu is open, since the pointer
 is necessarily inside the form whenever the icons are showing.
+
+## Music player
+
+`components/music-player.tsx` is a Windows 98 window around an arcade screen. It
+is the one surface that does not use the site's plates, type or palette, on
+purpose, and it loads its own two pixel faces so they stay off every other page.
+Do not bring its neon or its bevels anywhere else.
 
 ## Content
 
@@ -101,7 +114,9 @@ Matching is strict all-terms, not fuzzy.
 
 **No em dashes anywhere.** Use a comma, colon or full stop, or restructure.
 
-Voice is humble and plain enough to follow first time. Avoid the generic tells:
+Voice is humble and plain enough to follow first time. The thoughts are allowed to be
+reflective and to end on a question about the reader or the writer, as long as
+it is first person and unsure of itself. Avoid the generic tells:
 "Here is the strange part", rhetorical questions as transitions, triads for
 rhythm, a closing aphorism on every piece, "genuinely beautiful", "worth thinking
 about". Vary sentence and paragraph length.

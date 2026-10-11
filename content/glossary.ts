@@ -130,40 +130,40 @@ export const GLOSSARY: Record<string, GlossEntry> = {
   },
 
   // things in the thoughts
-  factorial: {
-    term: 'Factorial',
+  'stelliferous-era': {
+    term: 'The stelliferous era',
     short:
-      'A whole number multiplied by every whole number below it, written with an exclamation mark. It counts the ways of putting that many things in order.',
+      'The age of the universe in which stars form and shine. On Fred Adams and Greg Laughlin\'s timeline it lasts until roughly a hundred trillion years after the Big Bang.',
   },
-  'low-earth-orbit': {
-    term: 'Low Earth orbit',
+  'anthropic-shadow': {
+    term: 'Anthropic shadow',
     short:
-      'Orbits up to about 2,000 kilometres above the ground. The International Space Station flies at roughly 400, and almost everyone who has been to space went no higher.',
+      'The idea that our record of past catastrophes is biased, because the worst ones would have left nobody to keep the record. Close escapes may be more common than they look.',
   },
-  'coastline-paradox': {
-    term: 'The coastline paradox',
+  'clever-hans': {
+    term: 'The Clever Hans effect',
     short:
-      'A coastline has no single length, because the answer grows as the ruler shrinks. Lewis Fry Richardson found it and Benoit Mandelbrot made it well known.',
+      'When a subject seems to solve a problem but is really responding to cues the questioner does not know they are giving. In machine learning it also names a model that gets the right answer for the wrong reason.',
   },
-  'sidereal-day': {
-    term: 'The sidereal day',
+  'bomb-pulse': {
+    term: 'The bomb pulse',
     short:
-      'One full turn of the Earth measured against the distant stars: 23 hours, 56 minutes and 4 seconds. The 24 hour day is measured against the Sun instead.',
+      'The spike of carbon-14 that nuclear tests put into the atmosphere in the 1950s and 60s. It rose and fell on a known curve, so the amount in a cell\'s DNA shows when that cell was made.',
   },
-  apogee: {
-    term: 'Apogee',
+  'pale-blue-dot': {
+    term: 'Pale Blue Dot',
     short:
-      'The point in the Moon\'s orbit where it is furthest from the Earth, about 405,500 kilometres away. The closest point is perigee, at about 363,300.',
+      'A photograph of the Earth taken by Voyager 1 on 14 February 1990 from about six billion kilometres away, at Carl Sagan\'s request. The planet fills less than one pixel.',
   },
-  'retrograde-rotation': {
-    term: 'Retrograde rotation',
+  'doomsday-argument': {
+    term: 'The doomsday argument',
     short:
-      'Spinning in the opposite direction to the orbit. Venus and Uranus are the two planets that do it, and on Venus it makes the Sun rise in the west.',
+      'If you are a typical human you are unlikely to be among the very earliest, which limits how many are likely to come after you. Brandon Carter raised it in 1983 and it has been disputed ever since.',
   },
-  cumulus: {
-    term: 'Cumulus',
+  'heider-simmel': {
+    term: 'The Heider-Simmel film',
     short:
-      'The puffy, flat-bottomed cloud of a fair day. It forms where a column of warm air rises and cools until its water vapour condenses.',
+      'A 1944 animation of two triangles and a circle moving around a box. Almost everyone who watches it describes characters with intentions, which made it an early experiment in how readily we see minds.',
   },
   eliza: {
     term: 'ELIZA',
